@@ -1,0 +1,10 @@
+{
+  "name": "dev-assistant",
+  "version": "0.1.0",
+  "description": "Personal Claude Code development assistant: mechanical guards as hooks, procedures as skills, noisy work in subagents.",
+  "author": {
+    "name": "BagrijRoman",
+    "email": "bagrijroman@gmail.com"
+  },
+  "license": "UNLICENSED"
+}
