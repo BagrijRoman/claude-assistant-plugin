@@ -16,18 +16,25 @@ Restart Claude Code and check that `dev-assistant` is listed in `/plugin`.
 
 ## Update after changes
 
-An installed plugin is a copy cached per version, so a change reaches Claude Code only after a version bump:
+How a change reaches Claude Code depends on where the plugin was installed from.
 
-1. Bump `version` in both `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`.
-2. Refresh the marketplace and the plugin, then restart Claude Code:
+**From this folder** (a local `directory` marketplace, as on the author's machine): the hooks run straight
+from the working copy, so a change is live after a Claude Code restart, with no version bump. The flip side:
+an unfinished edit is live in every session too, so run `npm test` before restarting.
+
+**From a git marketplace** (any other machine): the plugin is copied to
+`~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/`, and a change arrives only with a new version:
+
+1. Bump `version` in both `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`, and publish it.
+2. Each user refreshes the marketplace and the plugin, then restarts Claude Code:
 
 ```bash
 claude plugin marketplace update bagrijroman
 claude plugin update dev-assistant@bagrijroman
 ```
 
-While iterating, skip the install entirely: `claude --plugin-dir /path/to/assistant` loads the working copy
-for one session.
+To try a change without touching the installed plugin, `claude --plugin-dir /path/to/assistant` loads the
+working copy for one session.
 
 ## Validate
 
