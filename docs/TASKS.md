@@ -9,6 +9,7 @@ Statuses: `todo` · `in progress` · `done`.
 
 - Plugin name: **dev-assistant**. Commands look like `/dev-assistant:verify`, or just `/verify` when the name is not taken.
 - The repository is its own local marketplace, `bagrijroman`; the install id is `dev-assistant@bagrijroman`.
+- Every hook ships with its own page in [hooks/](hooks/README.md) and a row in its index; `npm test` fails otherwise.
 - apiko-agent is disabled (2026-09-11) so its hooks do not fire alongside ours. Re-enable with `claude plugin enable apiko-agent@apiko`.
 
 ## Open questions

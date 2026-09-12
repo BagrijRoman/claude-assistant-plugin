@@ -1,7 +1,8 @@
 # dev-assistant
 
 A personal Claude Code plugin. Mechanical guards live in hooks, procedures in skills, noisy work in
-subagents. The task list is in [docs/TASKS.md](docs/TASKS.md).
+subagents. The task list is in [docs/TASKS.md](docs/TASKS.md); how the hooks work, and a page per hook, in
+[docs/hooks/](docs/hooks/README.md).
 
 ## Install
 
