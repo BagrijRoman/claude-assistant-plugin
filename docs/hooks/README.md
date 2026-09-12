@@ -11,6 +11,7 @@ to skills and CLAUDE.md.
 | [main-branch-guard](mainBranchGuard.md) | `PreToolUse` · `Bash` | Blocks commits on main and pushes that update main | 0.2.0 |
 | [secret-files-guard](secretFilesGuard.md) | `PreToolUse` · file tools and `Bash` | Blocks reading, editing, printing or copying `.env`, key material and credential files | 0.3.0 |
 | [secret-commit-guard](secretCommitGuard.md) | `PreToolUse` · `Bash` (`git commit`) | Blocks a commit whose diff adds a token, a key, a password in a connection string, or a secret file | 0.4.0 |
+| [format-changed](formatChanged.md) | `PostToolUse` · `Edit\|Write\|MultiEdit` | Runs the project's Prettier, ESLint and oxlint fixers on the file just written; never blocks | 0.6.0 |
 
 Every registered hook has its own page here; `npm test` fails if one is missing (`tests/structure.test.mjs`).
 

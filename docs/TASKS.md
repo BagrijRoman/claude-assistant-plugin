@@ -12,12 +12,13 @@ Statuses: `todo` · `in progress` · `done`.
 - Every hook ships with its own page in [hooks/](hooks/README.md) and a row in its index; `npm test` fails otherwise.
 - apiko-agent is disabled (2026-09-11) so its hooks do not fire alongside ours. Re-enable with `claude plugin enable apiko-agent@apiko`.
 - Files are named in camelCase; a hook keeps its kebab-case name in messages and docs. `TASKS.md` and `README.md` stay upper-case.
-- Project config comes from the plugin through a script, not by hand: templates live in `templates/`, `bin/setup.mjs`
-  merges them into the project (idempotent, never deletes foreign entries, prints what it added), and the `/setup`
-  skill runs it. A SessionStart hook never edits project files on its own.
+- Project config comes from the plugin through a script, not by hand: templates live in `templates/`,
+  `bin/setupPermissions.mjs` merges them into the project (idempotent, never deletes foreign entries, prints what it
+  added), and the `/setup-permissions` skill runs it. A SessionStart hook never edits project files on its own.
 - Secret protection is two hooks, because they fire on different events: `secret-files-guard` (file access) and
   `secret-commit-guard` (staged diff at commit time). The permission `deny` list covers Read/Edit as a hard boundary
-  once `/setup` has written it into the project; whether Claude Code honours a plugin's own `settings.json` is unverified.
+  once `/setup-permissions` has written it into the project; whether Claude Code honours a plugin's own `settings.json`
+  is unverified.
 
 ## Open questions
 
@@ -146,13 +147,36 @@ be tried once the plugin is put to use.
 Later (not in this task): interactive mode via `AskUserQuestion` to pick rule groups; `CLAUDE.md` template with
 the command map; `.claude/rules/` files.
 
+## T6 — `format-changed` hook · `done`
+
+Formatting never costs the model a turn: the project's own formatter and lint fixer run on the one file the
+model just wrote.
+
+What was done:
+- `bin/formatChanged.mjs`, registered as `PostToolUse` on `Edit|Write|MultiEdit`, timeout 60 s.
+- Runs, in order, Prettier (`--write`), ESLint (`--fix --quiet`) and oxlint (`--fix --quiet`) on the file — each
+  only when the project configures it (config file or `package.json` key/dependency) **and** has it installed
+  under `node_modules/.bin`, searching upwards for a hoisted install. Nothing is downloaded.
+- Project root is the nearest `package.json` above the file, so in a monorepo the package's own config applies.
+- Skips generated and vendored directories and every extension outside the formattable list; lints source
+  extensions only.
+- Always exits 0: no output, no block, nothing shown to the model; a failing or slow tool leaves the file as it was.
+
+Done when:
+- `npm test` proves the right tool is called from the right directory on the right file, and that nothing runs
+  without a config or without an install.
+- A page `docs/hooks/formatChanged.md`, a row in the index and a row in the root README.
+
+Result: released as 0.6.0; 108 tests pass. Tests use fake tools under `node_modules/.bin` that record their calls,
+so the plugin stays dependency-free. Limitations on the page: only files written through the file tools, only the
+changed file, only what the fixers can autofix; a `format` command from the command map (T7) can take precedence later.
+
 ## Draft of the next tasks
 
 Order and contents are still being refined.
 
 | # | Task | Essence |
 |---|------|---------|
-| T6 | `format-changed` hook | Prettier and oxlint --fix on the edited file (PostToolUse); a convenience, after the guards |
 | T7 | "Done = verified" | `/verify` skill, `track` hook, `done-gate` Stop hook |
 | T8 | `guard-bash` | the other git rules and dangerous commands, on top of `bin/lib/shell.mjs` |
 | T9 | `guard-files` | protected paths and plan approval |
