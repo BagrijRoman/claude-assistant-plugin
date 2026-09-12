@@ -1,8 +1,31 @@
 # dev-assistant
 
 A personal Claude Code plugin. Mechanical guards live in hooks, procedures in skills, noisy work in
-subagents. The task list is in [docs/TASKS.md](docs/TASKS.md); how the hooks work, and a page per hook, in
-[docs/hooks/](docs/hooks/README.md).
+subagents. The task list is in [docs/TASKS.md](docs/TASKS.md).
+
+## What is in the plugin
+
+Every hook, skill and agent has its own page with the full description: what it blocks or does, how it
+decides, its limitations and its tests. The tables below are the map; the pages are the detail.
+
+### Hooks — run on an event, cannot be skipped by the model
+
+How hooks work in general, the rules every hook follows and how to add one: [docs/hooks/](docs/hooks/README.md).
+
+| Hook | Event | What it does | Page |
+|------|-------|--------------|------|
+| `main-branch-guard` | `PreToolUse` · `Bash` | Blocks commits on `main` and pushes that update `main`; main changes only through a pull request | [mainBranchGuard.md](docs/hooks/mainBranchGuard.md) |
+| `secret-files-guard` | `PreToolUse` · file tools and `Bash` | Blocks reading, editing, printing or copying `.env`, key material and credential files; example files pass | [secretFilesGuard.md](docs/hooks/secretFilesGuard.md) |
+
+### Skills — procedures the model follows, invoked as `/name`
+
+None yet. The first one is `/setup-permissions` (task T5 in [docs/TASKS.md](docs/TASKS.md)); its pages will live
+in `docs/skills/`.
+
+### Agents — workers with their own context, delegated to by the model
+
+None yet. Planned: `security-reviewer` (task T14 in [docs/TASKS.md](docs/TASKS.md)); its pages will live in
+`docs/agents/`.
 
 ## Install
 
