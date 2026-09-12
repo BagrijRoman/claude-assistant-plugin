@@ -64,22 +64,28 @@ Done when:
 
 Result: released as 0.2.0; both done criteria hold.
 
-## T3 — `secret-files-guard` hook · `todo`
+## T3 — `secret-files-guard` hook · `done`
 
-No secret file is read, edited or printed. `.env`, `.env.*`, `*.pem`, `*.key`, `*.p8`, `*.p12`, `*.jks`, `*.keystore`,
-`*.mobileprovision`, `id_rsa*`, `*credentials*.json`, `*service-account*.json`.
+No secret file is read, edited, printed or copied. `.env`, `.env.*`, key material (`*.pem`, `*.key`, `*.p8`,
+`*.p12`, `*.pfx`, `*.jks`, `*.keystore`, `*.mobileprovision`, `*.ppk`), ssh private keys and everything in `.ssh/`,
+`*credentials*.json`, `*service-account*.json`, `.aws/credentials`, `.netrc`, `.pgpass`.
 
-What to do:
-- `bin/secretFilesGuard.mjs`, registered as `PreToolUse` on `Read|Edit|Write|MultiEdit` and on `Bash`.
-- For file tools: block when the target path matches the list.
-- For Bash: use `listCommands` from `bin/lib/shell.mjs` and block a command whose argument is a secret file
-  (`cat .env`, `head`, `less`, `grep … .env`, `cp .env …`); a commit message that mentions `.env` passes.
-- Allow `.env.example` and `.env.sample`: they are documentation, not secrets.
-- The pattern list lives in one place (`bin/lib/secretPaths.mjs`) so the setup template and the hook agree.
+What was done:
+- `bin/secretFilesGuard.mjs`, registered as `PreToolUse` on `Read|Edit|Write|MultiEdit|NotebookEdit|Grep` and on `Bash`.
+- File tools: blocks when the target path (`file_path`, `notebook_path`, `path`) is a secret file.
+- Bash: through `listCommands`; blocks readers (`cat`, `head`, `grep`, `sed`, `base64`, …) given a secret file and
+  copiers (`cp`, `mv`, `scp`, `rsync`, …) whose source is one. Every other program passes, so `ls -la .env`,
+  `rm .env`, `cp .env.example .env` and a commit message that mentions `.env` are never blocked.
+- Example files pass: `.env*.example|sample|template|dist`, `.ssh/*.pub`, `.ssh/config`, `.ssh/known_hosts*`.
+- `bin/lib/secretPaths.mjs`: the glob lists and `isSecretFile(path)`, shared with the T5 template.
+- `tests/helpers.mjs` gained `runHook(script, payload)` and `runFileHook(...)`.
 
 Done when:
-- `npm test` covers a blocked and a passing case per rule, plus the `.env.example` exception.
+- `npm test` covers a blocked and a passing case per rule, plus the example-file exception.
 - A page `docs/hooks/secretFilesGuard.md` and a row in the index.
+
+Result: released as 0.3.0; 50 tests pass. Known gaps are listed on the hook's page: redirections (`cat < .env`,
+`echo … >> .env`) and programs outside the reader/copier lists (`source .env`, `node -e`) are not seen.
 
 ## T4 — `secret-commit-guard` hook · `todo`
 

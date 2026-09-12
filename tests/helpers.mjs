@@ -43,9 +43,16 @@ export const makeRepo = ({ branch = 'main', withCommit = true } = {}) => {
   return dir;
 };
 
-/** Runs a Bash-matcher hook the way Claude Code does and returns its exit code and stderr. */
-export const runBashHook = (script, command, cwd) => {
-  const payload = { hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command }, cwd };
+/** Runs a hook with the JSON payload Claude Code would send and returns its exit code and stderr. */
+export const runHook = (script, payload) => {
   const result = spawnSync('node', [script], { input: JSON.stringify(payload), env: GIT_ENV, encoding: 'utf8' });
   return { status: result.status, stderr: result.stderr };
 };
+
+/** Runs a Bash-matcher hook the way Claude Code does. */
+export const runBashHook = (script, command, cwd) =>
+  runHook(script, { hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command }, cwd });
+
+/** Runs a hook for a file tool (`Read`, `Edit`, `Write`, …) on `file_path`. */
+export const runFileHook = (script, toolName, file_path, cwd) =>
+  runHook(script, { hook_event_name: 'PreToolUse', tool_name: toolName, tool_input: { file_path }, cwd });

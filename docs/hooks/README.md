@@ -9,6 +9,7 @@ to skills and CLAUDE.md.
 | Hook | Event · matcher | What it does | Since |
 |------|-----------------|--------------|-------|
 | [main-branch-guard](mainBranchGuard.md) | `PreToolUse` · `Bash` | Blocks commits on main and pushes that update main | 0.2.0 |
+| [secret-files-guard](secretFilesGuard.md) | `PreToolUse` · file tools and `Bash` | Blocks reading, editing, printing or copying `.env`, key material and credential files | 0.3.0 |
 
 Every registered hook has its own page here; `npm test` fails if one is missing (`tests/structure.test.mjs`).
 
@@ -63,6 +64,9 @@ The event arrives as one JSON object on stdin. For `PreToolUse` on `Bash` the fi
 
 `cwd` is the shell's current directory, which is not always the project root — a hook resolves paths against it.
 
+For the file tools the target is in `tool_input`: `file_path` for `Read`, `Edit`, `Write` and `MultiEdit`,
+`notebook_path` for `NotebookEdit`, `path` for `Grep`. A path may be relative to `cwd`, absolute, or start with `~`.
+
 ### Output
 
 | The hook… | Claude Code… |
@@ -79,6 +83,7 @@ The event arrives as one JSON object on stdin. For `PreToolUse` on `Bash` the fi
 | `hookIo.mjs` | `readPayload()`, `pass()`, and `block(hook, reason, alternative)` — the single block format |
 | `shell.mjs` | `listCommands(script)` — the commands a Bash call really runs, as argv arrays |
 | `git.mjs` | `currentBranch(dir)`, `hasCommits(dir)` |
+| `secretPaths.mjs` | `isSecretFile(path)` and the glob lists behind it — the one definition of a secret file, shared with the setup-permissions template |
 
 `listCommands` is the part to reuse for any Bash guard. Matching raw command text is how guards produce false
 blocks: a commit message or an `echo` that merely *mentions* a command is not that command. The reader skips
