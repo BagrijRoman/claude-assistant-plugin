@@ -4,36 +4,14 @@
 // nothing to protect yet, and every new repository needs its root commit somewhere.
 // Fails open: a crashing guard must never lock a session, which is why every rule has a test case.
 
-import { homedir } from 'node:os';
-import { basename, resolve } from 'node:path';
 import { currentBranch, hasCommits } from './lib/git.mjs';
+import { gitCommands } from './lib/gitCommands.mjs';
 import { block, pass, readPayload } from './lib/hookIo.mjs';
-import { listCommands } from './lib/shell.mjs';
 
 const HOOK = 'main-branch-guard';
 const PROTECTED_BRANCHES = new Set(['main', 'master']);
-const GIT_GLOBAL_OPTIONS_WITH_VALUE = new Set(['-C', '-c', '--git-dir', '--work-tree', '--namespace', '--config-env']);
 const PUSH_OPTIONS_WITH_VALUE = new Set(['--repo', '-o', '--push-option', '--receive-pack', '--exec']);
 const PUSH_EVERY_BRANCH = new Set(['--all', '--branches', '--mirror']);
-
-const expandHome = (path) => (path === '~' || path.startsWith('~/') ? homedir() + path.slice(1) : path);
-
-/** Splits `git [global options] <subcommand> [args]`; every `-C` is resolved against the directory so far. */
-const parseGit = (args, cwd) => {
-  let dir = cwd;
-  for (let k = 0; k < args.length; k += 1) {
-    const arg = args[k];
-    if (arg === '-C') {
-      k += 1;
-      dir = resolve(dir, expandHome(args[k] ?? ''));
-    } else if (GIT_GLOBAL_OPTIONS_WITH_VALUE.has(arg)) {
-      k += 1;
-    } else if (!arg.startsWith('-')) {
-      return { dir, subcommand: arg, rest: args.slice(k + 1) };
-    }
-  }
-  return { dir, subcommand: undefined, rest: [] };
-};
 
 /** The remote branch a refspec updates: `dev:main` → main, `+main` → main, `HEAD` → the current branch. */
 const refspecTarget = (refspec, dir) => {
@@ -61,8 +39,7 @@ const pushTargets = (args, dir) => {
   return { everyBranch, branches: tags ? [] : [currentBranch(dir)] };
 };
 
-const checkGit = (argv, cwd) => {
-  const { dir, subcommand, rest } = parseGit(argv.slice(1), cwd);
+const checkGit = ({ dir, subcommand, rest }) => {
 
   if (subcommand === 'commit') {
     const branch = currentBranch(dir);
@@ -91,17 +68,7 @@ const main = async () => {
   const command = payload?.tool_input?.command;
   if (typeof command !== 'string') pass();
 
-  // `cd` inside the command moves where the following git commands run, so it is tracked.
-  let dir = payload.cwd || process.cwd();
-  for (const argv of listCommands(command)) {
-    const program = basename(argv[0]);
-    if (program === 'cd' || program === 'pushd') {
-      if (argv[1] === undefined) dir = homedir();
-      else if (argv[1] !== '-') dir = resolve(dir, expandHome(argv[1]));
-    } else if (program === 'git') {
-      checkGit(argv, dir);
-    }
-  }
+  for (const gitCommand of gitCommands(command, payload.cwd || process.cwd())) checkGit(gitCommand);
   pass();
 };
 

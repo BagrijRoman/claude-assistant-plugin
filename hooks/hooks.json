@@ -13,6 +13,11 @@
             "type": "command",
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/bin/secretFilesGuard.mjs\"",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/bin/secretCommitGuard.mjs\"",
+            "timeout": 15
           }
         ]
       },

@@ -10,6 +10,7 @@ to skills and CLAUDE.md.
 |------|-----------------|--------------|-------|
 | [main-branch-guard](mainBranchGuard.md) | `PreToolUse` · `Bash` | Blocks commits on main and pushes that update main | 0.2.0 |
 | [secret-files-guard](secretFilesGuard.md) | `PreToolUse` · file tools and `Bash` | Blocks reading, editing, printing or copying `.env`, key material and credential files | 0.3.0 |
+| [secret-commit-guard](secretCommitGuard.md) | `PreToolUse` · `Bash` (`git commit`) | Blocks a commit whose diff adds a token, a key, a password in a connection string, or a secret file | 0.4.0 |
 
 Every registered hook has its own page here; `npm test` fails if one is missing (`tests/structure.test.mjs`).
 
@@ -82,8 +83,10 @@ For the file tools the target is in `tool_input`: `file_path` for `Read`, `Edit`
 |--------|--------------|
 | `hookIo.mjs` | `readPayload()`, `pass()`, and `block(hook, reason, alternative)` — the single block format |
 | `shell.mjs` | `listCommands(script)` — the commands a Bash call really runs, as argv arrays |
-| `git.mjs` | `currentBranch(dir)`, `hasCommits(dir)` |
-| `secretPaths.mjs` | `isSecretFile(path)` and the glob lists behind it — the one definition of a secret file, shared with the setup-permissions template |
+| `git.mjs` | `currentBranch(dir)`, `hasCommits(dir)`, `commitDiff(dir, { all, paths })` |
+| `gitCommands.mjs` | `gitCommands(script, cwd)` — every git command in a Bash call with the repository it runs in, following `cd` and `git -C` |
+| `secretPaths.mjs` | `isSecretFile(path)`, `isExampleFile(path)` and the glob lists behind them — the one definition of a secret file, shared with the setup-permissions template |
+| `secretPatterns.mjs` | `findSecret(line)` — the kind of secret a line of text carries, or null; honours the `allow-secret:` marker |
 
 `listCommands` is the part to reuse for any Bash guard. Matching raw command text is how guards produce false
 blocks: a commit message or an `echo` that merely *mentions* a command is not that command. The reader skips

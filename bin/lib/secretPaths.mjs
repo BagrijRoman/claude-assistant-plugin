@@ -67,9 +67,16 @@ const EXAMPLE = EXAMPLE_FILE_GLOBS.map(globToRegExp);
 /** Forward slashes, no leading `./`, no trailing slash — so the same file spells the same way everywhere. */
 const normalize = (path) => String(path).replace(/\\/g, '/').replace(/^(\.\/)+/, '').replace(/\/+$/, '');
 
+/** True when the path names an example file: placeholders by definition, whatever the line says. */
+export const isExampleFile = (path) => {
+  if (typeof path !== 'string' || !path) return false;
+  const file = normalize(path);
+  return EXAMPLE.some((re) => re.test(file));
+};
+
 /** True when the path names a secret file. The path is not resolved: `~/.ssh/id_rsa` and `$HOME/.env` still match. */
 export const isSecretFile = (path) => {
   if (typeof path !== 'string' || !path) return false;
   const file = normalize(path);
-  return SECRET.some((re) => re.test(file)) && !EXAMPLE.some((re) => re.test(file));
+  return SECRET.some((re) => re.test(file)) && !isExampleFile(file);
 };

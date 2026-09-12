@@ -3,9 +3,9 @@
 // hooks, signing or default branch can never change a test's outcome.
 
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 export const GIT_ENV = {
   ...process.env,
@@ -42,6 +42,18 @@ export const makeRepo = ({ branch = 'main', withCommit = true } = {}) => {
   if (branch !== 'main') git(['switch', '--quiet', '--create', branch], dir);
   return dir;
 };
+
+/** Writes `files` ({ path: content }) into the repository and stages them (or only writes, with `stage: false`). */
+export const writeFiles = (dir, files, { stage = true } = {}) => {
+  for (const [path, content] of Object.entries(files)) {
+    mkdirSync(join(dir, dirname(path)), { recursive: true });
+    writeFileSync(join(dir, path), content);
+  }
+  if (stage) git(['add', '--', ...Object.keys(files)], dir);
+};
+
+/** Commits whatever is staged, quietly. */
+export const commit = (dir, message = 'wip') => git(['commit', '--quiet', '--message', message], dir);
 
 /** Runs a hook with the JSON payload Claude Code would send and returns its exit code and stderr. */
 export const runHook = (script, payload) => {

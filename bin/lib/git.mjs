@@ -12,3 +12,12 @@ const git = (args, dir) => {
 export const currentBranch = (dir) => git(['symbolic-ref', '--quiet', '--short', 'HEAD'], dir);
 
 export const hasCommits = (dir) => git(['rev-parse', '--verify', '--quiet', 'HEAD'], dir) !== null;
+
+/**
+ * The diff a commit would record, with no context lines. Staged changes by default; with `all`, also the
+ * unstaged changes to tracked files (`git commit -a`). Null outside a repository.
+ */
+export const commitDiff = (dir, { all = false, paths = [] } = {}) => {
+  const base = all && hasCommits(dir) ? ['diff', 'HEAD'] : ['diff', '--cached'];
+  return git([...base, '--unified=0', '--no-color', '--no-ext-diff', '--', ...paths], dir);
+};

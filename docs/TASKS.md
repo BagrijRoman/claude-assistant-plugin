@@ -87,21 +87,29 @@ Done when:
 Result: released as 0.3.0; 50 tests pass. Known gaps are listed on the hook's page: redirections (`cat < .env`,
 `echo … >> .env`) and programs outside the reader/copier lists (`source .env`, `node -e`) are not seen.
 
-## T4 — `secret-commit-guard` hook · `todo`
+## T4 — `secret-commit-guard` hook · `done`
 
-No token reaches a commit. Runs only when the command is `git commit`; scans the staged diff.
+No token reaches a commit. Runs only when the command is `git commit`; scans the diff the commit would record.
 
-What to do:
+What was done:
 - `bin/secretCommitGuard.mjs`, registered as `PreToolUse` on `Bash`.
-- Patterns: JWT (`eyJ…`), AWS access keys, private key blocks (`-----BEGIN … PRIVATE KEY-----`), connection strings
-  with a password (`mongodb://user:pass@`, `postgres://…`), GitHub/Slack/Stripe token prefixes, and `.env` files staged by mistake.
-- Reads `git diff --cached` in the repository the command really runs in (follows `cd` and `git -C`, as `main-branch-guard` does).
-- The block message names the file and the line, never prints the secret itself.
-- A line carrying `# allow-secret: <reason>` passes, so a test fixture can hold a fake token on purpose.
+- Patterns in `bin/lib/secretPatterns.mjs`: private key blocks, AWS access key ids, JWTs, GitHub, Slack, Stripe live,
+  OpenAI and Google keys, connection strings with a real password, and clear-text assignments to `SECRET`/`PASSWORD`/
+  `TOKEN`/`API_KEY`-like names. Placeholders, references (`process.env.X`, `${VAR}`, calls, constants) and words that
+  merely sound like secrets pass. A staged secret file (the T3 list) blocks on its own.
+- Reads `git diff --cached --unified=0`, or `git diff HEAD` with `-a`/`--all` (also inside `-am`), in the repository
+  the command really runs in. Only added lines are read, so removing a secret always passes.
+- The block names the file, the line and the kind of secret, never the value.
+- `allow-secret: <reason>` on a line lets it through; lines inside example env files are skipped.
+- `bin/lib/gitCommands.mjs` extracted from `main-branch-guard` (`cd`, `pushd`, `git -C` tracking) and shared by both.
+- `tests/helpers.mjs` gained `writeFiles(dir, files, { stage })` and `commit(dir)`.
 
 Done when:
 - `npm test` covers a blocked case per pattern, a passing clean diff, and the `allow-secret` exception.
-- A page `docs/hooks/secretCommitGuard.md` and a row in the index.
+- A page `docs/hooks/secretCommitGuard.md`, a row in the index and a row in the root README.
+
+Result: released as 0.4.0; 85 tests pass. Known gaps on the hook's page: only known shapes are recognised, only
+`git commit` is checked, and a secret already in the history is not found.
 
 ## T5 — `/setup-permissions` skill and the merge script · `todo`
 
