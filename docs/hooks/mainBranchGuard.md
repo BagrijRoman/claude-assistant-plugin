@@ -2,7 +2,7 @@
 
 | Event | Matcher | Script | Since |
 |-------|---------|--------|-------|
-| `PreToolUse` | `Bash` | [bin/main-branch-guard.mjs](../../bin/main-branch-guard.mjs) | 0.2.0 |
+| `PreToolUse` | `Bash` | [bin/mainBranchGuard.mjs](../../bin/mainBranchGuard.mjs) | 0.2.0 |
 
 ## Why
 
@@ -95,6 +95,6 @@ That disables the whole plugin in that repository, not just this hook.
 
 ## Tests
 
-- [tests/main-branch-guard.test.mjs](../../tests/main-branch-guard.test.mjs) — the hook against throwaway
+- [tests/mainBranchGuard.test.mjs](../../tests/mainBranchGuard.test.mjs) — the hook against throwaway
   repositories, one case per row of the tables above.
 - [tests/shell.test.mjs](../../tests/shell.test.mjs) — the command reader it relies on.

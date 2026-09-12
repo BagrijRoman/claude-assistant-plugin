@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { after, describe, it } from 'node:test';
 import { GIT_ENV, makeRepo, makeTempDir, removeTempDirs, runBashHook } from './helpers.mjs';
 
-const HOOK = fileURLToPath(new URL('../bin/main-branch-guard.mjs', import.meta.url));
+const HOOK = fileURLToPath(new URL('../bin/mainBranchGuard.mjs', import.meta.url));
 const BLOCKED = 2;
 const ALLOWED = 0;
 

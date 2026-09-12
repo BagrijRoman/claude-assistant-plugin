@@ -8,7 +8,7 @@ to skills and CLAUDE.md.
 
 | Hook | Event · matcher | What it does | Since |
 |------|-----------------|--------------|-------|
-| [main-branch-guard](main-branch-guard.md) | `PreToolUse` · `Bash` | Blocks commits on main and pushes that update main | 0.2.0 |
+| [main-branch-guard](mainBranchGuard.md) | `PreToolUse` · `Bash` | Blocks commits on main and pushes that update main | 0.2.0 |
 
 Every registered hook has its own page here; `npm test` fails if one is missing (`tests/structure.test.mjs`).
 
@@ -41,7 +41,7 @@ only after a Claude Code restart.
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/bin/main-branch-guard.mjs\"", "timeout": 10 }]
+        "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/bin/mainBranchGuard.mjs\"", "timeout": 10 }]
       }
     ]
   }
@@ -76,7 +76,7 @@ The event arrives as one JSON object on stdin. For `PreToolUse` on `Bash` the fi
 
 | Module | Gives a hook |
 |--------|--------------|
-| `hook-io.mjs` | `readPayload()`, `pass()`, and `block(hook, reason, alternative)` — the single block format |
+| `hookIo.mjs` | `readPayload()`, `pass()`, and `block(hook, reason, alternative)` — the single block format |
 | `shell.mjs` | `listCommands(script)` — the commands a Bash call really runs, as argv arrays |
 | `git.mjs` | `currentBranch(dir)`, `hasCommits(dir)` |
 
@@ -100,11 +100,11 @@ because those do run; and it strips `VAR=1`, `env`, `sudo` and shell keywords, s
 
 ## Adding a hook
 
-1. `bin/<hook-name>.mjs`, built on `bin/lib/`.
+1. `bin/<hookName>.mjs`, built on `bin/lib/`. Files are named in camelCase; the hook keeps its kebab-case name in messages and docs (`main-branch-guard` lives in `mainBranchGuard.mjs`).
 2. Register it in `hooks/hooks.json` under the right event and matcher.
-3. Tests in `tests/<hook-name>.test.mjs`: run the hook with a real payload through `runBashHook` from
+3. Tests in `tests/<hookName>.test.mjs`: run the hook with a real payload through `runBashHook` from
    `tests/helpers.mjs`; build git state with `makeRepo`.
-4. A page `docs/hooks/<hook-name>.md` in the layout below, plus a row in the table at the top of this file.
+4. A page `docs/hooks/<hookName>.md` in the layout below, plus a row in the table at the top of this file.
 5. A task entry in [../TASKS.md](../TASKS.md); bump the plugin version in both manifests.
 
 ### Page layout
@@ -127,7 +127,7 @@ Each hook page has the same sections, in this order:
 - Run a hook by hand with a saved payload; the exit code is the verdict:
 
   ```bash
-  node bin/main-branch-guard.mjs < payload.json; echo "exit=$?"
+  node bin/mainBranchGuard.mjs < payload.json; echo "exit=$?"
   ```
 
 - In Claude Code, `/hooks` lists the hooks the current session loaded.

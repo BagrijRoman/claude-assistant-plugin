@@ -1,7 +1,7 @@
 # Tasks
 
 Task list for our own Claude Code assistant plugin.
-Based on: [apiko-agent-research.md](apiko-agent-research.md).
+Based on: [apikoAgentResearch.md](apikoAgentResearch.md).
 
 Statuses: `todo` · `in progress` · `done`.
 
@@ -39,14 +39,14 @@ The first hook: main changes only through a pull request, so the agent may neith
 It carries the base every later hook reuses. Absorbs the former "Hook test harness" task.
 
 What was done:
-- `bin/main-branch-guard.mjs`, registered in `hooks/hooks.json` as `PreToolUse` on `Bash`.
+- `bin/mainBranchGuard.mjs`, registered in `hooks/hooks.json` as `PreToolUse` on `Bash`.
 - Blocks `git commit` while on `main` or `master`, and `git push` that updates them: `dev:main`, `+HEAD:refs/heads/main`,
   `origin main`, a bare `git push` while on main, `--all` / `--branches` / `--mirror`.
 - Allows the root commit on an unborn main: a new repository needs its first commit somewhere.
 - Follows `cd`, `git -C` and `bash -c "…"` to the repository the command really runs in.
 - `bin/lib/shell.mjs`: a quote-, heredoc- and substitution-aware command reader. A commit message that mentions
   `git push origin main` never trips a guard (weak spot 6 in the research).
-- `bin/lib/hook-io.mjs`: one block format for every hook, naming the hook and the allowed alternative. Hooks fail open.
+- `bin/lib/hookIo.mjs`: one block format for every hook, naming the hook and the allowed alternative. Hooks fail open.
 - `bin/lib/git.mjs`: current branch and "has commits" lookups.
 - Harness: `npm test` (`node --test`); `tests/helpers.mjs` builds throwaway repositories with git isolated from the
   machine's config and runs a hook with the payload Claude Code sends.

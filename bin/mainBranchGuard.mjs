@@ -7,7 +7,7 @@
 import { homedir } from 'node:os';
 import { basename, resolve } from 'node:path';
 import { currentBranch, hasCommits } from './lib/git.mjs';
-import { block, pass, readPayload } from './lib/hook-io.mjs';
+import { block, pass, readPayload } from './lib/hookIo.mjs';
 import { listCommands } from './lib/shell.mjs';
 
 const HOOK = 'main-branch-guard';
