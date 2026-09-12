@@ -111,30 +111,37 @@ Done when:
 Result: released as 0.4.0; 85 tests pass. Known gaps on the hook's page: only known shapes are recognised, only
 `git commit` is checked, and a secret already in the history is not found.
 
-## T5 — `/setup-permissions` skill and the merge script · `todo`
+## T5 — `/setup-permissions` skill and the merge script · `done`
 
 The first skill, and the one way plugin permissions reach a project. Deliberately narrow: it writes the `deny`
 list and nothing else. Later it grows into an interactive setup (choose rule groups, fill the command map,
 create `CLAUDE.md`); the script is written so that adding a second template is a small change.
 
-What to do:
-- `templates/permissions.json`: the `deny` list for secret files, built from the same list as T3
-  (`Read(…)`, `Edit(…)` and the `Bash(cat …)` shapes), plus the irreversible git and publish commands
-  (`git push --force`, `gh pr merge`, `npm publish`).
-- `bin/setupPermissions.mjs`: merges the template into `.claude/settings.json` of the project it runs in
-  (`cwd`, or the path given as an argument). Adds missing `deny` entries only, keeps the file's other keys and
-  order, never removes an entry it did not add, records `"devAssistant": { "version": … }`, and prints a report:
-  added, already present, file created or updated. Idempotent.
-- `skills/setupPermissions/SKILL.md` with `name: setup-permissions` and `disable-model-invocation: true`: runs
-  `node "${CLAUDE_PLUGIN_ROOT}/bin/setupPermissions.mjs"`, shows the report, and reminds that the project's
-  `.claude/settings.json` is meant to be committed.
-- A doc page `docs/skills/setupPermissions.md` and a `docs/skills/README.md` index, in the same spirit as the hooks
-  docs; `tests/structure.test.mjs` extended to require a page per skill.
+What was done:
+- `bin/lib/permissionRules.mjs`: builds the `deny` list in code from the T3 secret-file globs — `Read(./**/…)` and
+  `Edit(./**/…)` per glob, the home-directory files as `~/…`, and the irreversible commands (`git push --force`,
+  `git push -f`, `gh pr merge`, `gh release create`, `npm|pnpm|yarn publish`, `eas submit`). 58 rules.
+  `Bash(cat …)` shapes were dropped: a `Bash` permission matches text by prefix, so they would catch nothing
+  useful; shell reads stay with the hook.
+- `templates/permissions.json`: the generated, readable copy (`node bin/setupPermissions.mjs --template`); a test
+  fails when it drifts from the builder.
+- `bin/setupPermissions.mjs [dir] [--dry-run] [--template]`: merges into `.claude/settings.json`, adds missing
+  `deny` entries only, keeps every other key and entry in order, records `devAssistant.version`, prints a report.
+  A file that is not valid JSON is reported (exit 1) and left untouched.
+- `skills/setupPermissions/SKILL.md` (`name: setup-permissions`, human-only, `allowed-tools: Bash(node:*), Read`):
+  runs the script, relays the report unchanged, reminds to commit and restart; says what it must not do.
+- `docs/skills/README.md` (how skills run, the rules, how to add one) and `docs/skills/setupPermissions.md`;
+  `tests/structure.test.mjs` now requires, per skill: a camelCase directory, a kebab-case `name:`, a page, an index
+  row and a root README row.
 
 Done when:
 - `npm test` runs the script against a throwaway project twice and proves the second run changes nothing, and
   against a project with an existing `settings.json` and proves foreign entries survive.
 - `/setup-permissions` in a fresh project writes `.claude/settings.json`, and after a restart `Read(./.env)` is denied.
+
+Result: released as 0.5.0; 97 tests pass; `claude plugin details` lists the skill. The second done criterion is
+checked by the script tests and by `claude plugin validate`; the end-to-end run in a real session is still to
+be tried once the plugin is put to use.
 
 Later (not in this task): interactive mode via `AskUserQuestion` to pick rule groups; `CLAUDE.md` template with
 the command map; `.claude/rules/` files.

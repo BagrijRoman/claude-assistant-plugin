@@ -20,8 +20,11 @@ How hooks work in general, the rules every hook follows and how to add one: [doc
 
 ### Skills — procedures the model follows, invoked as `/name`
 
-None yet. The first one is `/setup-permissions` (task T5 in [docs/TASKS.md](docs/TASKS.md)); its pages will live
-in `docs/skills/`.
+How skills work in general, the rules every skill follows and how to add one: [docs/skills/](docs/skills/README.md).
+
+| Skill | Command | What it does | Page |
+|-------|---------|--------------|------|
+| `setup-permissions` | `/setup-permissions [dir]` | Writes the plugin's permission `deny` rules (secret files, irreversible git and publish commands) into the project's `.claude/settings.json` through an idempotent script; human-invoked only | [setupPermissions.md](docs/skills/setupPermissions.md) |
 
 ### Agents — workers with their own context, delegated to by the model
 
