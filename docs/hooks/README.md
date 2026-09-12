@@ -11,7 +11,7 @@ to skills and CLAUDE.md.
 | [main-branch-guard](mainBranchGuard.md) | `PreToolUse` · `Bash` | Blocks commits on main and pushes that update main | 0.2.0 |
 | [secret-files-guard](secretFilesGuard.md) | `PreToolUse` · file tools and `Bash` | Blocks reading, editing, printing or copying `.env`, key material and credential files | 0.3.0 |
 | [secret-commit-guard](secretCommitGuard.md) | `PreToolUse` · `Bash` (`git commit`) | Blocks a commit whose diff adds a token, a key, a password in a connection string, or a secret file | 0.4.0 |
-| [format-changed](formatChanged.md) | `PostToolUse` · `Edit\|Write\|MultiEdit` | Runs the project's Prettier, ESLint and oxlint fixers on the file just written; never blocks | 0.6.0 |
+| [lint-feedback](lintFeedback.md) | `PostToolUse` · `Edit\|Write\|MultiEdit` | Formats the file just written, applies the project's lint fixes, and relays the lint errors that remain to the model in the same turn | 0.7.0 |
 
 Every registered hook has its own page here; `npm test` fails if one is missing (`tests/structure.test.mjs`).
 
@@ -74,7 +74,7 @@ For the file tools the target is in `tool_input`: `file_path` for `Read`, `Edit`
 | The hook… | Claude Code… |
 |-----------|--------------|
 | exits `0` | lets the tool call through |
-| exits `2`, message on stderr | cancels the tool call and shows the message to the model |
+| exits `2`, message on stderr | `PreToolUse`: cancels the tool call and shows the message to the model. `PostToolUse`: the tool already ran, so nothing is cancelled — the message reaches the model as feedback |
 | exits with any other code (a crash) | reports a hook error and lets the tool call through |
 | prints `{"hookSpecificOutput": {"permissionDecision": "ask", …}}` and exits `0` | asks the user to decide (not used yet) |
 
@@ -82,12 +82,13 @@ For the file tools the target is in `tool_input`: `file_path` for `Read`, `Edit`
 
 | Module | Gives a hook |
 |--------|--------------|
-| `hookIo.mjs` | `readPayload()`, `pass()`, and `block(hook, reason, alternative)` — the single block format |
+| `hookIo.mjs` | `readPayload()`, `pass()`, `block(hook, reason, alternative)` — the single block format — and `warn(...)`, its PostToolUse counterpart |
 | `shell.mjs` | `listCommands(script)` — the commands a Bash call really runs, as argv arrays |
 | `git.mjs` | `currentBranch(dir)`, `hasCommits(dir)`, `commitDiff(dir, { all, paths })` |
 | `gitCommands.mjs` | `gitCommands(script, cwd)` — every git command in a Bash call with the repository it runs in, following `cd` and `git -C` |
 | `secretPaths.mjs` | `isSecretFile(path)`, `isExampleFile(path)` and the glob lists behind them — the one definition of a secret file, shared with the setup-permissions template |
 | `secretPatterns.mjs` | `findSecret(line)` — the kind of secret a line of text carries, or null; honours the `allow-secret:` marker |
+| `projectTools.mjs` | `detectTools(file, cwd)` — the project root and which of Prettier, ESLint and oxlint are configured **and** installed for a file — and `runTool` |
 
 `listCommands` is the part to reuse for any Bash guard. Matching raw command text is how guards produce false
 blocks: a commit message or an `echo` that merely *mentions* a command is not that command. The reader skips
@@ -106,6 +107,9 @@ because those do run; and it strips `VAR=1`, `env`, `sudo` and shell keywords, s
 5. **Fast and dependency-free.** A `PreToolUse` hook starts on every matching tool call. Plain Node, no
    packages; expensive work (spawning git) only when the command is actually relevant.
 6. **Tested both ways.** Every rule has a case that must be blocked and a case that must pass.
+7. **Hooks on one event run in parallel, in no order.** Two hooks that write the same file, or one that
+   writes while another reads, race. Work that must happen in sequence on one file lives in one hook, as
+   stages (`lint-feedback`: format, fix, report).
 
 ## Adding a hook
 

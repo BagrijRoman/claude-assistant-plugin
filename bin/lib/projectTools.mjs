@@ -1,13 +1,9 @@
-#!/usr/bin/env node
-// format-changed — PostToolUse(Edit|Write|MultiEdit). Runs the project's own formatter and lint fixer on the
-// one file the model just wrote, so formatting never costs the model a turn and the pre-commit hook has
-// nothing left to rewrite. Only tools the project has configured and installed are run; nothing is
-// downloaded. Formatting never blocks and never reports to the model: always exit 0.
+// The project's own formatter and linters: which of them a file falls under, whether the project configured
+// and installed them, and how to run one. Nothing is downloaded; a tool runs only from node_modules/.bin.
 
 import { existsSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { dirname, extname, join, relative, resolve, sep } from 'node:path';
-import { pass, readPayload } from './lib/hookIo.mjs';
 
 const FORMATTABLE = new Set(['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs', '.json', '.jsonc', '.md', '.mdx',
   '.css', '.scss', '.less', '.html', '.vue', '.graphql', '.gql', '.yml', '.yaml']);
@@ -49,42 +45,39 @@ const binary = (root, name) => {
   }
 };
 
-const hasAny = (root, files) => files.some((file) => existsSync(join(root, file)));
-
 const configured = (root, configs, packageKey, dependency) => {
-  if (hasAny(root, configs)) return true;
+  if (configs.some((file) => existsSync(join(root, file)))) return true;
   const pkg = readJson(join(root, 'package.json')) ?? {};
   if (packageKey && pkg[packageKey] !== undefined) return true;
   return Boolean(dependency && (pkg.devDependencies?.[dependency] || pkg.dependencies?.[dependency]));
 };
 
-const run = (root, name, args) => {
-  const bin = binary(root, name);
-  if (!bin) return;
-  spawnSync(bin, args, { cwd: root, encoding: 'utf8', timeout: TOOL_TIMEOUT_MS, shell: process.platform === 'win32' });
-};
-
-const main = async () => {
-  const payload = await readPayload();
-  const target = payload?.tool_input?.file_path;
-  if (typeof target !== 'string' || !target) pass();
-
-  const file = resolve(payload.cwd || process.cwd(), target);
+/**
+ * What applies to `target` (a path from a tool payload, resolved against `cwd`): the project root, the file's
+ * path relative to it, and which tools are both configured and installed. Null when nothing applies.
+ */
+export const detectTools = (target, cwd) => {
+  if (typeof target !== 'string' || !target) return null;
+  const file = resolve(cwd || process.cwd(), target);
   const ext = extname(file).toLowerCase();
-  if (!FORMATTABLE.has(ext) || SKIPPED_DIRS.test(file.split(sep).join('/')) || !existsSync(file)) pass();
-
+  if (!FORMATTABLE.has(ext) || SKIPPED_DIRS.test(file.split(sep).join('/')) || !existsSync(file)) return null;
   const root = projectRoot(file);
-  if (!root) pass();
-  const rel = relative(root, file);
+  if (!root) return null;
 
-  if (configured(root, PRETTIER_CONFIGS, 'prettier')) {
-    run(root, 'prettier', ['--write', '--log-level', 'error', rel]);
-  }
-  if (LINTABLE.has(ext)) {
-    if (configured(root, ESLINT_CONFIGS, 'eslintConfig')) run(root, 'eslint', ['--fix', '--quiet', rel]);
-    if (configured(root, OXLINT_CONFIGS, null, 'oxlint')) run(root, 'oxlint', ['--fix', '--quiet', rel]);
-  }
-  pass();
+  const available = (name, configs, packageKey, dependency) =>
+    configured(root, configs, packageKey, dependency) ? binary(root, name) : null;
+  const lintable = LINTABLE.has(ext);
+  return {
+    root,
+    rel: relative(root, file),
+    prettier: available('prettier', PRETTIER_CONFIGS, 'prettier'),
+    eslint: lintable ? available('eslint', ESLINT_CONFIGS, 'eslintConfig') : null,
+    oxlint: lintable ? available('oxlint', OXLINT_CONFIGS, null, 'oxlint') : null,
+  };
 };
 
-main().catch(() => pass());
+/** Runs an installed tool from the project root; returns its stdout, or '' when it failed to start or timed out. */
+export const runTool = (root, bin, args) => {
+  const result = spawnSync(bin, args, { cwd: root, encoding: 'utf8', timeout: TOOL_TIMEOUT_MS, shell: process.platform === 'win32' });
+  return typeof result.stdout === 'string' ? result.stdout : '';
+};

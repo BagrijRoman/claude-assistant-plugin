@@ -38,8 +38,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/bin/formatChanged.mjs\"",
-            "timeout": 60
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/bin/lintFeedback.mjs\"",
+            "timeout": 90
           }
         ]
       }

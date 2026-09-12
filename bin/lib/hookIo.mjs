@@ -20,3 +20,12 @@ export const block = (hook, reason, alternative) => {
   process.stderr.write(`[dev-assistant] ${hook} blocked this command: ${reason}\nDo this instead: ${alternative}\n`);
   process.exit(2);
 };
+
+/**
+ * Feedback after the tool already ran (PostToolUse): the same exit 2 and stderr, but nothing is blocked —
+ * the model sees the message and acts on it in the same turn.
+ */
+export const warn = (hook, message, alternative) => {
+  process.stderr.write(`[dev-assistant] ${hook}: ${message}\nDo this instead: ${alternative}\n`);
+  process.exit(2);
+};

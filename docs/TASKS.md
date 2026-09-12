@@ -147,7 +147,11 @@ be tried once the plugin is put to use.
 Later (not in this task): interactive mode via `AskUserQuestion` to pick rule groups; `CLAUDE.md` template with
 the command map; `.claude/rules/` files.
 
-## T6 — `format-changed` hook · `done`
+## T6 — `format-changed` hook · `done` → merged into T7
+
+> Superseded in 0.7.0: hooks on one event run in parallel with no ordering, so a formatting hook and a linting hook
+> writing and reading the same file would race. Formatting became the first stage of `lint-feedback` (T7);
+> `bin/formatChanged.mjs` and its page were removed, the detection logic moved to `bin/lib/projectTools.mjs`.
 
 Formatting never costs the model a turn: the project's own formatter and lint fixer run on the one file the
 model just wrote.
@@ -171,17 +175,84 @@ Result: released as 0.6.0; 108 tests pass. Tests use fake tools under `node_modu
 so the plugin stays dependency-free. Limitations on the page: only files written through the file tools, only the
 changed file, only what the fixers can autofix; a `format` command from the command map (T7) can take precedence later.
 
+## T7 — `lint-feedback` hook · `done`
+
+The linter's verdict reaches the model in the same turn as the edit, so a pattern the linter can express is
+fixed before the next step, not discovered later by a lint run or a reviewer.
+
+What was done:
+- `bin/lintFeedback.mjs`, registered as `PostToolUse` on `Edit|Write|MultiEdit`, timeout 90 s. Three stages in one
+  process, because parallel hooks cannot share a file: Prettier `--write`, then ESLint and oxlint with `--fix --format
+  json`, then the errors that remain are relayed to the model (exit 2, stderr) as `line · rule · message` with the
+  way out: fix the code, never disable the rule. Warnings are not reported; a clean file is silent.
+- Capped at 20 lines, with a count of the rest and a pointer to the lint command.
+- ESLint's JSON (`severity: 2`, `ruleId`, a null rule is a parse error) and oxlint's JSON (`diagnostics`,
+  `severity: "error"`, `code`, first label's line) are both parsed; unreadable output is treated as no errors.
+- `bin/lib/projectTools.mjs`: `detectTools(file, cwd)` (nearest `package.json`, config or `package.json` key or
+  dependency, executable under `node_modules/.bin` searching upwards) and `runTool`.
+- `bin/lib/hookIo.mjs` gained `warn(hook, message, alternative)`: the PostToolUse shape of `block`.
+- Verified on `template-backend` with the real Prettier and oxlint: the probe file came back formatted and the two
+  errors without an autofix (`no-explicit-any`, `func-style`) were reported with their lines.
+
+Done when:
+- `npm test` proves errors are relayed in the fixed shape, warnings are not, a clean file is silent, the cap holds,
+  and a project without a linter stays silent.
+- A page `docs/hooks/lintFeedback.md`, a row in the index and a row in the root README.
+
+Result: released as 0.7.0; 113 tests pass. Project conventions that a lint rule can express (`no-restricted-imports`,
+`no-restricted-syntax`) are the cheapest way to teach the model a pattern; the page shows how.
+
+## T8 — Pattern rules in `.claude/rules/` and the `/derive-rules` skill · `todo`
+
+What the linter cannot express — layering, where business logic lives, how errors are thrown, naming from the
+glossary — lives in `.claude/rules/*.md` files with `paths:` frontmatter, loaded when the model touches a
+matching file. The rules are derived from the code that exists, confirmed one by one, not imported from a
+generic list.
+
+What to do:
+- `templates/rules/`: a rule-file template (frontmatter with `description` and `paths`, numbered rules, each with
+  the reason) and a short example for one layer.
+- `skills/deriveRules/SKILL.md` (`name: derive-rules`, human-only): reads 5–10 representative files per area of the
+  project, lists conventions that are consistent, opinionated or unusual, asks the human to confirm, edit or skip
+  each, and writes the confirmed ones into `.claude/rules/<area>.md`. Never writes a convention it merely inferred.
+- The setup script (`bin/setupPermissions.mjs`, or a sibling) learns to install a rule file without overwriting a
+  project's edits.
+
+Done when:
+- Running `/derive-rules` on `template-backend` yields a `.claude/rules/backend.md` the human recognises as true.
+- A page `docs/skills/deriveRules.md`, a row in the index and a row in the root README.
+
+## T9 — `pattern-reviewer` agent · `todo`
+
+A read-only subagent that reviews a diff against `CLAUDE.md` and the `.claude/rules/*.md` files matching the
+touched paths, and reports what a linter cannot see: logic in a controller, a swallowed error, a second pattern
+where the neighbouring module already has one.
+
+What to do:
+- `agents/patternReviewer.md`: read-only tools (`Read`, `Grep`, `Glob`, `Bash(git diff:*)`), a turn limit, a fixed
+  report shape — findings by severity, each with file, line, the rule it breaks (by name) and the concrete fix;
+  a clean diff gets a one-line PASS.
+- Reviews the diff, not the files: findings about untouched code are out of scope.
+- `docs/agents/README.md` (how agents run, the rules, how to add one) and `docs/agents/patternReviewer.md`;
+  `tests/structure.test.mjs` extended to require a page per agent, as for hooks and skills.
+- Feeds `/self-review` (T13) later; usable on its own as `@pattern-reviewer` meanwhile.
+
+Done when:
+- The agent, run on a diff with a planted layering violation and a swallowed error, reports both with the rule
+  name and the fix, and reports PASS on a clean diff.
+- A page per agent, a row in the index and a row in the root README.
+
 ## Draft of the next tasks
 
 Order and contents are still being refined.
 
 | # | Task | Essence |
 |---|------|---------|
-| T7 | "Done = verified" | `/verify` skill, `track` hook, `done-gate` Stop hook |
-| T8 | `guard-bash` | the other git rules and dangerous commands, on top of `bin/lib/shell.mjs` |
-| T9 | `guard-files` | protected paths and plan approval |
-| T10 | `/feature` | plan, check, approval, implementation, review, draft PR |
-| T11 | `/fix` | reproduce, root cause, minimal fix, test |
-| T12 | `/self-review` | diff review by a subagent |
-| T13 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
-| T14 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
+| T10 | "Done = verified" | `/verify` skill, `track` hook, `done-gate` Stop hook; needs the command map in `CLAUDE.md` |
+| T11 | `guard-bash` | the other git rules and dangerous commands, on top of `bin/lib/shell.mjs` |
+| T12 | `guard-files` | protected paths and plan approval |
+| T13 | `/self-review` | diff review through `pattern-reviewer` and `security-reviewer`, plus scope, bypass and docs checks |
+| T14 | `/feature` | plan, check, approval, implementation, review, draft PR |
+| T15 | `/fix` | reproduce, root cause, minimal fix, test |
+| T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
+| T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |

@@ -17,7 +17,7 @@ How hooks work in general, the rules every hook follows and how to add one: [doc
 | `main-branch-guard` | `PreToolUse` · `Bash` | Blocks commits on `main` and pushes that update `main`; main changes only through a pull request | [mainBranchGuard.md](docs/hooks/mainBranchGuard.md) |
 | `secret-files-guard` | `PreToolUse` · file tools and `Bash` | Blocks reading, editing, printing or copying `.env`, key material and credential files; example files pass | [secretFilesGuard.md](docs/hooks/secretFilesGuard.md) |
 | `secret-commit-guard` | `PreToolUse` · `Bash` (`git commit`) | Blocks a commit whose diff adds a token, a private key, a password in a connection string or a secret file; names the file and line, never the value | [secretCommitGuard.md](docs/hooks/secretCommitGuard.md) |
-| `format-changed` | `PostToolUse` · `Edit\|Write\|MultiEdit` | Runs the project's own Prettier, ESLint and oxlint fixers on the file the model just wrote, only when configured and installed; never blocks | [formatChanged.md](docs/hooks/formatChanged.md) |
+| `lint-feedback` | `PostToolUse` · `Edit\|Write\|MultiEdit` | After every edit: formats the file with the project's Prettier, applies ESLint and oxlint auto-fixes, and tells the model which lint errors remain, with line and rule, in the same turn | [lintFeedback.md](docs/hooks/lintFeedback.md) |
 
 ### Skills — procedures the model follows, invoked as `/name`
 

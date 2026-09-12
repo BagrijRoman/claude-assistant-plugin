@@ -11,7 +11,7 @@
     {
       "name": "dev-assistant",
       "description": "Personal Claude Code development assistant: mechanical guards as hooks, procedures as skills, noisy work in subagents.",
-      "version": "0.6.0",
+      "version": "0.7.0",
       "source": "./"
     }
   ]
