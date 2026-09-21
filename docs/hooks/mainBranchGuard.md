@@ -2,7 +2,7 @@
 
 | Event | Matcher | Script | Since |
 |-------|---------|--------|-------|
-| `PreToolUse` | `Bash` | [bin/mainBranchGuard.mjs](../../bin/mainBranchGuard.mjs) | 0.2.0 |
+| `PreToolUse` | `Bash` | [bin/mainBranchGuard.mjs](../../bin/mainBranchGuard.mjs) | 0.2.0; first-publication exception 0.7.1 |
 
 ## Why
 
@@ -28,6 +28,7 @@ directly — neither by committing on it locally nor by pushing to it. `master` 
 |---------|---------------|
 | `git commit …` on any other branch | not main |
 | the first commit of a new repository, on an unborn `main` | nothing to protect yet, and a repository needs its root commit somewhere |
+| `git push -u origin main` to a remote that has **no `main` yet** | the first publication: nothing there to change, and a branch cannot be created through a pull request |
 | `git push -u origin dev`, a bare `git push` on `dev` | updates another branch |
 | `git push origin --tags` | tags only |
 | `git commit -F - <<'EOF' … git push origin main … EOF` | the heredoc is the commit message, not a command |
@@ -47,7 +48,9 @@ directly — neither by committing on it locally nor by pushing to it. `master` 
    - with no refspec, the current branch, unless only `--tags` is pushed;
    - `--all`, `--branches` and `--mirror` count as updating every branch.
 
-   Blocks when any of them is protected.
+   Blocks when any of them is protected — unless the remote (the first positional argument, or `origin`)
+   confirms through `git ls-remote --heads` that it has no such branch yet. Only a confirmed absence counts:
+   a remote that cannot be reached, or does not exist, still blocks.
 6. Otherwise exits `0`. Any internal error also exits `0` (fail open).
 
 ## What the model sees
@@ -80,6 +83,10 @@ The guard sees the command line, not what git will eventually do. It does **not*
   from that branch updates main while the guard sees only the branch name.
 - **Anything outside the Bash tool**: git through an MCP server, an IDE, or a human's terminal. This protects
   against the agent, not against people — keep branch protection on the remote as well.
+- **The first-publication check asks the remote**, one `ls-remote` per push to a protected branch, with an
+  8-second limit. A push to any other branch never touches the network.
+- **The remote is read from the command line**: `git push` with no remote is taken as `origin`. A branch
+  whose upstream is another remote is checked against `origin` instead.
 - The protected branches are fixed to `main` and `master`; they are not configurable yet.
 
 ## Turning it off

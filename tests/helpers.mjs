@@ -55,6 +55,15 @@ export const writeFiles = (dir, files, { stage = true } = {}) => {
 /** Commits whatever is staged, quietly. */
 export const commit = (dir, message = 'wip') => git(['commit', '--quiet', '--message', message], dir);
 
+/** A bare repository on disk, wired as `origin` of `repo`; with `branches`, those local branches are pushed to it first. */
+export const addBareRemote = (repo, { branches = [] } = {}) => {
+  const remote = makeTempDir();
+  git(['init', '--quiet', '--bare', '--initial-branch=main'], remote);
+  git(['remote', 'add', 'origin', remote], repo);
+  for (const branch of branches) git(['push', '--quiet', 'origin', branch], repo);
+  return remote;
+};
+
 /** Runs a hook with the JSON payload Claude Code would send and returns its exit code and stderr. */
 export const runHook = (script, payload) => {
   const result = spawnSync('node', [script], { input: JSON.stringify(payload), env: GIT_ENV, encoding: 'utf8' });

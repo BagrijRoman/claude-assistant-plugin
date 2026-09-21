@@ -21,3 +21,17 @@ export const commitDiff = (dir, { all = false, paths = [] } = {}) => {
   const base = all && hasCommits(dir) ? ['diff', 'HEAD'] : ['diff', '--cached'];
   return git([...base, '--unified=0', '--no-color', '--no-ext-diff', '--', ...paths], dir);
 };
+
+const REMOTE_TIMEOUT_MS = 8000;
+
+/**
+ * Whether `branch` exists on `remote`: true, false, or null when the remote could not be asked
+ * (no network, no access, no such remote). A network call, so only for commands that will hit the network anyway.
+ */
+export const remoteHasBranch = (dir, remote, branch) => {
+  const result = spawnSync('git', ['ls-remote', '--heads', '--exit-code', remote, branch],
+    { cwd: dir, encoding: 'utf8', timeout: REMOTE_TIMEOUT_MS, env: { ...process.env, GIT_TERMINAL_PROMPT: '0' } });
+  if (result.status === 0) return true;
+  if (result.status === 2) return false;
+  return null;
+};

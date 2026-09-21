@@ -65,6 +65,11 @@ Done when:
 
 Result: released as 0.2.0; both done criteria hold.
 
+Follow-up (0.7.1), found on the first real use: publishing `template-backend` to a fresh GitHub repository was blocked,
+because `git push -u origin main` looked like a push to main. Added the second exception: a push to a protected branch
+passes when the remote confirms (`git ls-remote --heads --exit-code`) that it has no such branch yet. An unreachable
+remote still blocks; `--all` still blocks. `tests/helpers.mjs` gained `addBareRemote(repo, { branches })`; three cases added.
+
 ## T3 — `secret-files-guard` hook · `done`
 
 No secret file is read, edited, printed or copied. `.env`, `.env.*`, key material (`*.pem`, `*.key`, `*.p8`,

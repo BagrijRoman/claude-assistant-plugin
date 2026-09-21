@@ -84,7 +84,7 @@ For the file tools the target is in `tool_input`: `file_path` for `Read`, `Edit`
 |--------|--------------|
 | `hookIo.mjs` | `readPayload()`, `pass()`, `block(hook, reason, alternative)` — the single block format — and `warn(...)`, its PostToolUse counterpart |
 | `shell.mjs` | `listCommands(script)` — the commands a Bash call really runs, as argv arrays |
-| `git.mjs` | `currentBranch(dir)`, `hasCommits(dir)`, `commitDiff(dir, { all, paths })` |
+| `git.mjs` | `currentBranch(dir)`, `hasCommits(dir)`, `commitDiff(dir, { all, paths })`, `remoteHasBranch(dir, remote, branch)` |
 | `gitCommands.mjs` | `gitCommands(script, cwd)` — every git command in a Bash call with the repository it runs in, following `cd` and `git -C` |
 | `secretPaths.mjs` | `isSecretFile(path)`, `isExampleFile(path)` and the glob lists behind them — the one definition of a secret file, shared with the setup-permissions template |
 | `secretPatterns.mjs` | `findSecret(line)` — the kind of secret a line of text carries, or null; honours the `allow-secret:` marker |

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { after, describe, it } from 'node:test';
-import { GIT_ENV, makeRepo, makeTempDir, removeTempDirs, runBashHook } from './helpers.mjs';
+import { GIT_ENV, addBareRemote, makeRepo, makeTempDir, removeTempDirs, runBashHook } from './helpers.mjs';
 
 const HOOK = fileURLToPath(new URL('../bin/mainBranchGuard.mjs', import.meta.url));
 const BLOCKED = 2;
@@ -68,6 +68,32 @@ describe('main-branch-guard', () => {
 
     it('blocks pushes that update every branch', () => {
       assertBlocked(run('git push --all origin', makeRepo({ branch: 'dev' })));
+    });
+
+    it('allows the first publication of main to a remote that has no main yet', () => {
+      const repo = makeRepo({ branch: 'main' });
+      addBareRemote(repo);
+      assertAllowed(run('git push -u origin main', repo));
+      assertAllowed(run('git push origin HEAD:main', repo));
+      assertAllowed(run('git push', repo));
+    });
+
+    it('blocks pushing main once the remote has it', () => {
+      const repo = makeRepo({ branch: 'main' });
+      addBareRemote(repo, { branches: ['main'] });
+      spawnSync('git', ['commit', '--quiet', '--allow-empty', '-m', 'more'], { cwd: repo, env: GIT_ENV });
+      assertBlocked(run('git push origin main', repo));
+      assertBlocked(run('git push', repo));
+    });
+
+    it('blocks pushing main when the remote cannot be reached, and --all even to an empty remote', () => {
+      const unreachable = makeRepo({ branch: 'main' });
+      spawnSync('git', ['remote', 'add', 'origin', '/nonexistent/remote.git'], { cwd: unreachable, env: GIT_ENV });
+      assertBlocked(run('git push -u origin main', unreachable));
+
+      const empty = makeRepo({ branch: 'main' });
+      addBareRemote(empty);
+      assertBlocked(run('git push --all origin', empty));
     });
 
     it('allows pushing another branch and pushing tags', () => {
