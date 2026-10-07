@@ -62,6 +62,14 @@ describe('findSecret', () => {
     ]) assert.equal(findSecret(line), null, line);
   });
 
+  it('ignores a CSS custom property named by a design token', () => {
+    for (const line of [
+      '<div class="swatch" data-token="--color-gray-700" data-use="Field labels, tags" data-uses="30"></div>',
+      '<tr data-label="Stage chip" data-token="--color-primary-100"></tr>',
+      "const token = '--color-primary-600';",
+    ]) assert.equal(findSecret(line), null, line);
+  });
+
   it('lets a marked fixture line through', () => {
     assert.equal(findSecret(`${SECRETS['a JWT']} // allow-secret: fixture for the jwt parser test`), null);
     assert.equal(findSecret(`${SECRETS['a GitHub token']} # allow-secret: sample in the docs`), null);

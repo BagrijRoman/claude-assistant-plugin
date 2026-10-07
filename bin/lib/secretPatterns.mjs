@@ -5,8 +5,11 @@
 /** A value that is obviously a stand-in, not a real secret. */
 const PLACEHOLDER = /^(<[^>]*>|\$\{[^}]*\}|\$[A-Za-z_]+|x{3,}|\*{3,}|\.{3}|_+|-+|password|passwd|pass|secret|changeme|change[-_]me|your[-_]?[a-z_-]*|example|placeholder|dummy|redacted|todo|none|null|undefined|true|false)$/i;
 
-/** A value that refers to where the secret lives instead of being one: `process.env.X`, `${VAR}`, a call. */
-const REFERENCE = /process\.env|import\.meta\.env|os\.environ|getenv|Deno\.env|config\.get|\$\{|[()[\]]|^[A-Z_][A-Z0-9_]*$/;
+/**
+ * A value that refers to something instead of being a secret: `process.env.X`, `${VAR}`, a call, a constant's name,
+ * or a CSS custom property's name (`--color-gray-700`, e.g. a design token in a `data-token` attribute).
+ */
+const REFERENCE = /process\.env|import\.meta\.env|os\.environ|getenv|Deno\.env|config\.get|\$\{|[()[\]]|^[A-Z_][A-Z0-9_]*$|^--[A-Za-z0-9_-]+$/;
 
 const CONNECTION_STRING = /\b(?:mongodb(?:\+srv)?|postgres(?:ql)?|mysql|mariadb|redis|rediss|amqps?|mssql|clickhouse):\/\/[^\s:@/]+:([^\s@/]+)@/i;
 
