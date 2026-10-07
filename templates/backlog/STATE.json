@@ -1,0 +1,38 @@
+{
+  "kind": "backlog",
+  "version": 1,
+  "project": "{{project name}}",
+  "created": "{{YYYY-MM-DD}}",
+  "updated": "{{YYYY-MM-DD}}",
+  "blueprint": {
+    "path": "{{relative path to the blueprint folder}}",
+    "fingerprint": {
+      "updated": "{{blueprint STATE.json updated}}",
+      "modules": [],
+      "decisions": 0,
+      "openQuestions": 0,
+      "capabilities": 0,
+      "takenOn": "{{YYYY-MM-DD}}"
+    },
+    "adequacyApprovedAtInit": true
+  },
+  "strategy": {
+    "batchSize": "small",
+    "crossCutting": "foundation-task-plus-criterion",
+    "foundation": "walking-skeleton",
+    "firstFlow": "{{flow name from 02-architecture.md}}",
+    "platformMap": { "{{web}}": ["web"], "{{mobile}}": ["ios", "android"] },
+    "platformOrder": "one-first"
+  },
+  "batches": [
+    {
+      "id": "01",
+      "slug": "{{what-it-delivers}}",
+      "stage": "MVP",
+      "detailed": false,
+      "status": "todo"
+    }
+  ],
+  "currentBatch": "01",
+  "pending": null
+}

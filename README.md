@@ -26,6 +26,8 @@ How skills work in general, the rules every skill follows and how to add one: [d
 | Skill | Command | What it does | Page |
 |-------|---------|--------------|------|
 | `setup-permissions` | `/setup-permissions [dir]` | Writes the plugin's permission `deny` rules (secret files, irreversible git and publish commands) into the project's `.claude/settings.json` through an idempotent script; human-invoked only | [setupPermissions.md](docs/skills/setupPermissions.md) |
+| `blueprint` | `/blueprint [init \| continue \| status \| module <name> \| decide]` | Turns whatever the operator has — an idea, documents, requirements, similar products — into English product-design documents at three depths (brief and architecture, modules, capabilities) over eight gated phases; every structural fork is a question to the operator, every answer a logged decision; web research only with consent; resumable from its own files; human-invoked only | [blueprint.md](docs/skills/blueprint.md) |
+| `backlog` | `/backlog [init \| status \| next \| detail <batch> \| done <id> \| add \| resync]` | Cuts a finished blueprint into vertical batches — each leaves something working end to end — of tasks and subtasks with acceptance criteria, detailing lazily; then keeps the list true: next task, mark done, add manual work, resync after the blueprint changes; reads the blueprint, never writes it; human-invoked only | [backlog.md](docs/skills/backlog.md) |
 
 ### Agents — workers with their own context, delegated to by the model
 

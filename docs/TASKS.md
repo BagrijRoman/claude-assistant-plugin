@@ -19,6 +19,12 @@ Statuses: `todo` · `in progress` · `done`.
   `secret-commit-guard` (staged diff at commit time). The permission `deny` list covers Read/Edit as a hard boundary
   once `/setup-permissions` has written it into the project; whether Claude Code honours a plugin's own `settings.json`
   is unverified.
+- A skill with a long procedure is split: `skills/<name>/SKILL.md` holds the entry point and the rules that never
+  bend, `skills/<name>/references/*.md` the step-by-step procedure loaded per phase or mode, `templates/<name>/` one
+  template per output file. The product-design skills (`/blueprint`, `/backlog`) write English documents into
+  `docs/<name>/` by default; the folder is proposed in a dialog and is the operator's to change. Each of them is
+  used from the plugin while still script-less, so the procedure is proven before the mechanical parts are frozen in
+  `bin/`.
 
 ## Open questions
 
@@ -246,6 +252,48 @@ Done when:
 - The agent, run on a diff with a planted layering violation and a swallowed error, reports both with the rule
   name and the fix, and reports PASS on a clean diff.
 - A page per agent, a row in the index and a row in the root README.
+
+## T18 — `/blueprint` and `/backlog` skills · `in progress`
+
+Two skills that take a project from raw input to a list of work. `/blueprint` reads everything the operator has
+(documents, an idea, requirements, similar products) and writes English product-design documents at three depths —
+brief and architecture, modules, capabilities — through eight gated phases, asking the operator at every structural
+fork and logging each decision; web research only after consent. `/backlog` cuts a finished blueprint into vertical
+batches of tasks and subtasks (each batch leaves something working end to end), details lazily, and keeps the list
+true while the work happens (`next`, `done`, `add`, `resync`). The backlog reads the blueprint and never writes it.
+
+What was done (0.8.0):
+- `skills/blueprint/SKILL.md` + `references/phases.md`; `templates/blueprint/` (13 files: STATE.json, README index,
+  sources, brief, architecture, roadmap, adequacy review, module with L2/L3 capability block, competitor profile,
+  decisions, assumptions, open questions, glossary).
+- `skills/backlog/SKILL.md` + `references/slicing.md` + `references/modes.md`; `templates/backlog/` (STATE.json,
+  BACKLOG overview, PLANNING, COVERAGE, batch, task with subtask checklist).
+- Pages `docs/skills/blueprint.md` and `docs/skills/backlog.md`, rows in the index and the root README.
+- Both skills are human-only, write English only, keep state on disk (`STATE.json` with a `kind`), find each other
+  by that `kind`, and share one decision mechanism: 2–4 questions per round, recommendation first, "Other" always
+  possible, every outcome logged with an id the documents cite.
+- Surfaces and platforms. The blueprint carries **surfaces** (where an actor meets the product: web, mobile, …) as
+  one dimension through every document — decided in the brief (always a question; the Intake answer is a source),
+  a column on the module map, a row per module × surface in the roadmap, a `Surfaces:` line per capability that
+  inherits from its module so that only exceptions are asked, a *Surface parity* concern, and a surface walk in the
+  adequacy review. The backlog turns surfaces into **platforms** (`web`, `ios`, `android`, cross-platform `mobile`)
+  through a platform map decided at `init` from the brief's constraints; a task carries `platforms:`, a capability on
+  surfaces with different platforms becomes a task per platform.
+
+What is left:
+- Run `/blueprint` end to end on a real project (ETC.V2 with `initialDocs/` as sources), then `/backlog init` on the
+  result; adjust the procedures from what the run shows (question rhythm, structural-vs-assumption boundary, gate
+  friction on small phases, module drift between parallel subagents).
+- `bin/blueprint.mjs`: `init`, `status`, `next-id`, `validate`, `toc`; `bin/backlog.mjs`: `init`, `next-id`,
+  `render` (the views from task frontmatter and checklists), `tick`, `validate` (no dependency cycles, no
+  forward-batch edges). Tests for both in `tests/`.
+- `agents/blueprintReviewer.md` for phases 6–7 as a named read-only agent, with `docs/agents/` and the structure
+  test extended to agents.
+
+Done when:
+- A blueprint and a backlog exist for ETC.V2 that the operator recognises as true and can work from.
+- `npm test` covers both scripts; the skills call the scripts instead of counting ids and regenerating views by hand.
+- Pages, index rows and README rows exist (already true; the structure test holds).
 
 ## Draft of the next tasks
 

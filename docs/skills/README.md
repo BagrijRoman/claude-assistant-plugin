@@ -10,6 +10,8 @@ describe the steps and call the tools.
 | Skill | Command | What it does | Since |
 |-------|---------|--------------|-------|
 | [setup-permissions](setupPermissions.md) | `/setup-permissions [dir]` | Writes the plugin's permission `deny` rules into the project's `.claude/settings.json` through a script | 0.5.0 |
+| [blueprint](blueprint.md) | `/blueprint [init \| continue \| status \| module <name> \| decide]` | Turns raw project input into English product-design documents (brief, architecture, modules, capabilities) through eight gated phases, asking the operator at every structural fork and logging each decision | 0.8.0 |
+| [backlog](backlog.md) | `/backlog [init \| status \| next \| detail \| done <id> \| add \| resync]` | Cuts a finished blueprint into vertical batches of tasks and subtasks, then keeps the list true while the work happens | 0.8.0 |
 
 Every skill has its own page here; `npm test` fails if one is missing (`tests/structure.test.mjs`).
 
