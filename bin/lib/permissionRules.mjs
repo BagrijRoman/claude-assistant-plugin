@@ -1,6 +1,7 @@
 // The permission `deny` rules the plugin writes into a project. Built from the same secret-file list the
 // secret-files-guard hook uses, so the hard boundary (permissions) and the second line (the hook) agree.
-// `templates/permissions.json` is the generated, human-readable copy of this list; a test keeps it in sync.
+// `skills/setupPermissions/templates/permissions.json` is the generated, human-readable copy of this list; a
+// test keeps it in sync.
 
 import { SECRET_FILE_GLOBS } from './secretPaths.mjs';
 

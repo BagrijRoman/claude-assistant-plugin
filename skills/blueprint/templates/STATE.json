@@ -1,0 +1,35 @@
+{
+  "kind": "blueprint",
+  "version": 1,
+  "project": "{{project name}}",
+  "created": "{{YYYY-MM-DD}}",
+  "updated": "{{YYYY-MM-DDTHH:MM}}",
+  "depth": "standard",
+  "phase": "intake",
+  "phases": {
+    "intake": "in-progress",
+    "reading": "pending",
+    "brief": "pending",
+    "architecture": "pending",
+    "modules": "pending",
+    "capabilities": "pending",
+    "consistency": "pending",
+    "adequacy": "pending"
+  },
+  "research": {
+    "allowed": false,
+    "scope": [],
+    "grantedOn": null
+  },
+  "counts": {
+    "sources": 0,
+    "decisions": 0,
+    "assumptions": 0,
+    "openQuestions": 0,
+    "goals": 0,
+    "nfrs": 0,
+    "risks": 0,
+    "capabilities": 0
+  },
+  "modules": []
+}

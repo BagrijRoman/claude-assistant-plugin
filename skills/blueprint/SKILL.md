@@ -1,9 +1,9 @@
 ---
 name: blueprint
 description: Turns raw project input (idea, documents, requirements, references, similar products) into a set of English product-design documents — brief, architecture, modules, capabilities — plus a log of every decision taken with the operator. Multi-session, phase-gated, resumable from the files it writes. Human-invoked only.
-argument-hint: "[init [dir] | continue | status | module <name> | decide]"
+argument-hint: "[init [dir] | continue | status | module <name> | decide | restructure | feedback [file] | export]"
 disable-model-invocation: true
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(ls:*), Bash(mkdir:*), Bash(find:*), AskUserQuestion, Agent, WebSearch, WebFetch
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(node:*), Bash(ls:*), Bash(mkdir:*), Bash(mv:*), Bash(date:*), Bash(textutil:*), AskUserQuestion, Agent
 ---
 
 # Blueprint
@@ -26,10 +26,13 @@ is only needed to name the folder up front or to start a second blueprint.
 |----------|------------|
 | *(none)* | `continue` when a blueprint exists in the project, `init` when none does |
 | `init [dir]` | Start a new blueprint: choose the output folder, scaffold it, run phase 0 (Intake) |
-| `continue` | Find the existing blueprint, read `STATE.json`, resume the phase it is in |
-| `status` | Read `STATE.json` and the logs; report phase, counts, what waits for the operator; change nothing |
+| `continue` | Find the existing blueprint, read `STATE.json`, resume the phase it is in — units that failed last time first; on a finished blueprint, log the hand edits and offer the modes below |
+| `status` | Report phase, counts, hand edits, failed units, what `validate` finds and what waits for the operator; change nothing |
 | `module <name>` | Re-run phases 4–5 for one module only (after a decision changed it, or the operator edited it) |
 | `decide` | Walk through `OPEN-QUESTIONS.md` only; close what the operator is ready to close |
+| `restructure` | Add, split, merge, rename or remove a module after the map is frozen |
+| `feedback [file]` | Take a customer's or a colleague's comments on the blueprint: answer the questions, put every requested change to the operator, record the outcome |
+| `export` | Write the whole blueprint as one document, `export/blueprint.md`, for readers who will not open the folder |
 
 To find an existing blueprint, glob for `**/STATE.json` (skip `node_modules`, `.git`) and keep the
 files whose JSON has `"kind": "blueprint"`. One match — use it. Several — ask which. None — with no
@@ -47,35 +50,59 @@ read by more people, over a longer time, than any conversation; one language kee
 summarised or lost. Write every result to a file as soon as it exists, keep `STATE.json` current,
 and on `continue` trust the files over anything you remember. The operator may edit files between
 sessions by hand — that is expected and welcome. Re-read a file before you change it, and when
-you do change a file the operator touched, show them what you changed.
+you do change a file the operator touched, show them what you changed. Every operation that writes
+anything in the blueprint, in every mode, ends with the helper script's `stamp`, which writes
+`STATE.json.updated` and the counts: other skills read them to notice that the blueprint moved.
+(`export` writes only its own copy and does not stamp.)
 
 ## The output folder
 
-Templates for every file are in `${CLAUDE_PLUGIN_ROOT}/templates/blueprint/`; copy them, do not
-invent layouts. The phase procedures live next to this file in
-`${CLAUDE_PLUGIN_ROOT}/skills/blueprint/references/`.
+Templates for every file are in `templates/` next to this file
+(`${CLAUDE_PLUGIN_ROOT}/skills/blueprint/templates/`); copy them, do not invent layouts. The
+procedures are in `references/` beside them.
 
 ```
 <blueprint dir>/
 ├── STATE.json             phase, modules, depth, research consent — the resume point
 ├── README.md              index of the blueprint, regenerated at every gate
-├── 00-sources.md          every input registered as S-NN: what, where from, how reliable
-├── 01-brief.md            idea, audience & actors, goals, out of scope, non-functional needs
-├── 02-architecture.md     L1: modules, responsibilities, relationships, data flows, cross-cutting
-├── 03-roadmap.md          MVP vs later, per module — this sets how deep phase 5 goes
+├── 00-sources.md          every input as S-NN with its extract; decisions the sources took; coverage
+├── 01-brief.md            idea, actors, surfaces, goals G-NN, out of scope, non-functional N-NN, risks RK-NN
+├── 02-architecture.md     L1: modules, relationships, flows, domain model, roles and access, cross-cutting
+├── 03-roadmap.md          stage per module and surface — with the depth, sets how deep phases 4–5 go
 ├── 04-review.md           phase-7 findings: gaps found, improvements offered, what was done with each
-├── modules/<name>.md      L2 (module) on top, L3 (capabilities) below
+├── modules/<slug>.md      L2 (module) on top, L3 (capabilities with ids, access) below
 ├── references/
 │   └── competitors/<name>.md   profiles used for "do it like X" options
-├── DECISIONS.md           D-NNN records: context → options → choice → why → consequences
+├── DECISIONS.md           D-NNN records: context → options → choice → who decided, why → consequences
 ├── ASSUMPTIONS.md         A-NNN: small things you decided alone, for the operator to review
 ├── OPEN-QUESTIONS.md      Q-NNN: deferred forks, with where they came up
-└── GLOSSARY.md            the one vocabulary every document uses
+├── GLOSSARY.md            the one vocabulary every document uses
+├── CHANGELOG.md           every change after the blueprint is done: when, what, which ids
+└── export/blueprint.md    the whole blueprint as one document — generated by `export`, never edited
 ```
 
-Identifiers (`S-NN`, `D-NNN`, `A-NNN`, `Q-NNN`) are assigned by reading the log and taking the next
-number. Documents reference them inline (`…per D-014`), so a reader can always trace a construct to
-the decision behind it. Until a script takes this over, be careful: count, do not guess.
+Identifiers — `S-NN` sources, `D-NNN` decisions, `A-NNN` assumptions, `Q-NNN` questions, and in the
+brief `G-NN` goals, `N-NN` non-functional requirements and `RK-NN` risks — are given by the helper
+script, never counted by eye. Documents reference them inline (`…per D-014`), so a reader can always
+trace a construct to the decision behind it. Capabilities carry ids too — `<module code>-C<NN>`, as
+in `ORG-C03` — and an id never changes and is never reused: `/backlog` and the team link to
+capabilities by it. Ids that come from the sources (a decision `D14`, a feature `ORG-06`) are never
+renumbered into these; they are cited with their source (`S-01 §D14`, `Source: ORG-06`).
+
+## The helper script and the agents
+
+Bookkeeping is a script's job, not yours:
+`node "${CLAUDE_PLUGIN_ROOT}/bin/blueprint.mjs" <command> <blueprint dir>`. `next` gives every id;
+`changed` lists what was edited by hand since the last write; `validate` checks references, ids,
+coverage and counts before every gate; `stamp` ends every operation that wrote anything; `export`
+writes the one-document copy (`mechanics.md › The helper script`).
+
+Noisy or parallel work goes to subagents of four types, each with only the tools its role needs:
+the **reader** reads one source and can neither write, run a command nor search the web, the
+**writer** writes one module file, the **reviewer** cannot write at all, and only the **researcher**
+searches the web (`mechanics.md › Subagents`). No agent has a shell, so a Word file is converted once,
+by you, into a copy they read. Before a wave you tell the operator how many agents will run; a unit
+whose agent fails is marked failed and retried, never silently redone or dropped.
 
 ## The phases
 
@@ -86,21 +113,25 @@ Gates exist because every phase builds on the one before; a wrong brief makes ev
 | # | Phase | Produces | Detail |
 |---|-------|----------|--------|
 | 0 | Intake | `00-sources.md`, `STATE.json` | operator lists everything they have; you register it |
-| 1 | Research of input | per-source extracts in `00-sources.md`, gaps list, `GLOSSARY.md` seed | one subagent per source; ends with a gap report and, if input is thin, an offer to research |
-| 2 | Brief | `01-brief.md` | idea, actors, goals, out-of-scope, non-functional requirements |
-| 3 | Architecture | `02-architecture.md`, `03-roadmap.md`, empty `modules/*.md` | module map and relationships; most decisions happen here; the map is frozen after the gate |
-| 4 | Modules (L2) | top half of each `modules/<name>.md` | purpose, users, sub-modules, entities, what it gives/receives, integrations — subagents in parallel |
-| 5 | Capabilities (L3) | bottom half of each `modules/<name>.md` | what users and the system can do, rules, edge cases, states — depth per roadmap |
-| 6 | Consistency review | findings → fixes or `OPEN-QUESTIONS.md` | read-only agent hunts contradictions, dangling references, glossary drift |
-| 7 | Adequacy review | `04-review.md`, improvements as decisions, affected modules updated | does the whole thing work as a product? every actor reaches their goals, every goal has a capability, no dead ends; gaps closed, improvements offered |
+| 1 | Reading the input | per-source extracts in `00-sources.md` with the decisions the sources took and an index of their items, gaps list, `GLOSSARY.md` seed | one reader per document; a discovery interview when the input is little more than an idea; ends with a gap report and, when research could close gaps, an offer to research |
+| 2 | Brief | `01-brief.md` | idea, actors, surfaces, goals, out of scope, non-functional requirements, risks |
+| 3 | Architecture | `02-architecture.md`, `03-roadmap.md`, empty `modules/*.md` | module map (the sources' own when they have one), relationships, domain model with personal data marked, roles and access, sources mapped to modules; most decisions happen here; frozen after the gate, changed later only through `restructure` |
+| 4 | Modules (L2) | top half of each `modules/<slug>.md` | purpose, users, sub-modules, entities, what it gives/receives, integrations — writers in waves, each reading the module's sources in full |
+| 5 | Capabilities (L3) | bottom half of each `modules/<slug>.md` | what users and the system can do, with ids, rules, edge cases, states, access — as deep as the depth table says |
+| 6 | Consistency review | findings → fixes or `OPEN-QUESTIONS.md`; coverage of the sources | `validate` for the mechanical half; read-only reviewers per module and across modules; every item of the sources traced to a capability, the out of scope, or a question |
+| 7 | Adequacy review | `04-review.md`, improvements as decisions, affected modules updated | does the whole thing work as a product? every actor reaches their goals, every goal has a capability, no dead ends, no unnamed risk; gaps closed, improvements offered |
 
 Phases 6 and 7 are different questions. Six asks "do the documents agree with each other?"; seven
 asks "would this product actually work for the people in the brief?". A set of documents can pass
 six perfectly and still describe a product nobody can use.
 
-The step-by-step procedure for each phase, the gate checklist and the subagent briefs are in
-[references/phases.md](references/phases.md). Read the section for the phase you are in before
-starting it; do not run a phase from memory.
+The step-by-step procedures are in `references/`, one file per stretch of work:
+[mechanics.md](references/mechanics.md) — state, gates, ids, the helper script, subagents, depth;
+read it at the start of every session — then [intake.md](references/intake.md) (phases 0–1),
+[design.md](references/design.md) (2–3), [modules.md](references/modules.md) (4–5),
+[reviews.md](references/reviews.md) (6–7) and [modes.md](references/modes.md) (every mode other than
+`init` and `continue`). Read the file for the phase or mode you are in before starting it; do not
+run a phase from memory. A reference such as `mechanics.md › Depth` names a file and a heading in it.
 
 ## Making decisions with the operator
 
@@ -113,25 +144,65 @@ the outcome — not to decide quietly and move on.
 A fork is structural when it changes the module map, an actor, the scope, a relationship between
 modules, or how a core capability behaves. For these, use `AskUserQuestion`. Batch 2–4 related
 questions per round, grouped by topic or module; one question at a time exhausts the operator, ten
-at once overwhelms them. Each question offers:
+at once overwhelms them.
+
+The tool has hard limits, and a question that breaks one fails: at most 4 questions per call, 2–4
+options per question, a header of at most 12 characters (a topic word or the module's code, never
+its full name), and a free-text **Other** that the tool always adds — so never spend an option on
+"other" or "something else". Within that, each question offers:
 
 1. **Your recommendation first**, labelled `(Recommended)`, with a one-line reason in the description.
-2. **"Like <competitor>"** — only when `references/competitors/<name>.md` exists and actually covers
-   this point. If the operator asked for a competitor-aligned option and there is no profile, offer
-   to research it (see below) instead of guessing what the competitor does.
-3. **Defer** — the fork goes to `OPEN-QUESTIONS.md` as `Q-NNN`; mark the spot in the text `[?Q-NNN]`
-   and carry on.
+2. **The real alternatives** — one or two, each with its trade-off in the description. When a
+   competitor profile in `references/competitors/` shows one of them, say so in its label ("Per site
+   — like Persefoni"). If the operator wants to know what a competitor does and there is no profile,
+   offer to research it (see below) instead of guessing.
+3. **Defer**, when a slot is left — the fork goes to `OPEN-QUESTIONS.md` as `Q-NNN`, the spot in the
+   text is marked `[?Q-NNN]`, and work carries on. When no slot is left, the operator can still type
+   "defer" as Other. Defer belongs to forks only: the procedural questions — Folder, Depth,
+   Surfaces, Research, Gate, *how to take them* — have their options fixed in the references.
 
-The operator can always type their own answer ("Other") — that is their option 4, you do not need to
-add it. Whatever they choose, write a `D-NNN` record in `DECISIONS.md` the moment it is decided:
-context, the options as offered, the choice, the stated reason, the consequences you can see.
+A choice wider than four options (thirteen competitors to research, twenty modules to confirm) goes
+into the question text as a list; the options are ways of answering it ("all of them", "the three
+you marked", "none"), and Other takes a custom pick.
+
+Whatever the operator chooses on a structural fork, write a `D-NNN` record in `DECISIONS.md` the
+moment it is decided: context, the options as offered, the choice, who decided — the operator, or the
+operator on someone's request, such as a customer's feedback — the stated reason, the consequences
+you can see. A deferred fork is a `Q-` instead. A review finding or a feedback item the operator
+rejects is not a fork taken: its reason stays where it was raised — the finding's outcome in
+`04-review.md`, the item's outcome in the feedback source.
+
+When one merge raises more than four forks, ask first how to take them: **Go through them**
+(Recommended when any of them changes the module map, an actor or the scope) / **Accept all your
+recommendations** (Recommended when they only shape rules inside modules already agreed) — each
+listed in the question text with its one-line reason — / **Defer them all**. Accepting all still
+writes one `D-` per fork, as if each had been asked.
+
+### What the sources already decided
+
+Documentation often arrives with decisions already taken: a decision log, a module map, roles,
+feature ids, a chosen stack. A decision a source records is a fact, not a fork — cite it
+(`S-01 §D23`), build on it, and do not ask it again. If something you find contradicts it or makes
+it look wrong, ask one **Revisit?** question: **Keep** (Recommended) / **Change to <the alternative,
+named in the label>**. Either answer is a `D-` record that cites the source decision — "keeps
+S-01 §D23" or "supersedes S-01 §D23" — so the same doubt is not raised again.
+
+The same holds for structure. A module map, a role model or a feature catalogue in the sources is
+the starting point, adjusted rather than redrawn; source ids are kept and cited (`Source: ORG-06`
+on the capability that delivers it), never renumbered. Implementation decisions in the sources — the
+stack, the database, hosting, "one responsive web app, no native app" — go into the brief under
+**Decided outside this blueprint**, cited and not discussed: the blueprint still describes behaviour
+only, but nobody who builds from it may contradict them.
 
 ### Small forks → assume and show
 
 A fork that does not change structure (a default sort order, a label, which of two equivalent
-wordings) you resolve yourself, mark `[A-NNN]` in the text and log in `ASSUMPTIONS.md`. At every gate
-the operator sees the new assumptions as a list and can promote any of them into a question.
-This keeps the operator's attention on what matters while leaving nothing hidden.
+wordings) you resolve yourself, mark `[A-NNN]` in the text and log in `ASSUMPTIONS.md`. Keep them few
+enough to be read: a capability's edge cases that no source states are one assumption for the whole
+capability (`A-031 — edge cases of ORG-C03 as written`), not one per line. At every gate the operator
+sees how many new assumptions there are and the ten that matter most, can promote any of them into a
+question, and approving the gate accepts the phase's assumptions. Nothing is hidden: the rest are in
+`ASSUMPTIONS.md`.
 
 ### Facts vs. your additions
 
@@ -148,10 +219,12 @@ treats surfaces as one dimension running through every document — not as a mod
 module is a technical layer in disguise) and not as a separate blueprint.
 
 - **The brief decides the surfaces** (`## Surfaces`): which exist, which actors use each, what
-  constrains each (offline, device features, store distribution, screen size). This is always a
-  `D-` decision asked in phase 2 — the operator's answer from Intake, if they already knew, is a
-  source for it, not a substitute. The same record fixes the **default rule** for later phases:
-  "a module on several surfaces has every capability on all of them unless stated otherwise".
+  constrains each (offline, device features, store distribution, screen size). It is always decided
+  explicitly in phase 2: asked — a question with no *Defer*, since every later phase depends on it —
+  or, when a source already decided it, cited and named in the gate summary. The operator's answer
+  from Intake is a source for it, not a substitute. The same record fixes the **default rule** for
+  later phases: "a module on several surfaces has every capability on all of them unless stated
+  otherwise".
 - **The map and the roadmap carry it**: a `Surfaces` column per module; a roadmap stage per module
   *and* surface, so "web first, mobile next" is one table, not a rewrite.
 - **Capabilities inherit; you ask only about exceptions.** A capability is on its module's
@@ -177,18 +250,24 @@ never on your own initiative. Two situations call for it, and both start with a 
 - **A specific fork.** The operator wants a "like competitor X" option and there is no profile for
   X on this point. Ask to research exactly that question for exactly those products.
 
-Record consent in `STATE.json` (`research.allowed`, `research.scope`) and run the research in a
-subagent, which writes `references/competitors/<name>.md` from the template and registers each web
-page in `00-sources.md` as a source with URL and date, reliability `web`. Facts from the web carry
-`[web]` in the text so they are never mistaken for the operator's own input.
+Record consent in `STATE.json` (`research.allowed`, `research.scope`, `research.grantedOn`) and run
+the research in one researcher agent per product — the only role that has web search — which writes
+`references/competitors/<name>.md` from the template and returns the pages it used. You register
+each page in `00-sources.md` as a source with URL and date, reliability `web`, and put those `S-` ids
+into the profile. Facts from the web carry `[web]` in the text so they are never mistaken for the
+operator's own input. You do not search the web yourself: this skill does not grant you the tool,
+so an attempt would stop at a permission prompt.
 
-Reading a URL the operator gave you in Intake is not research — it is reading their input.
+Reading a URL the operator gave you in Intake is not research — it is reading their input, and the
+reader does it.
 
 ## What this skill does not do
 
 - **Invent facts.** No source, no decision, no assumption → it does not go in.
-- **Go to the web uninvited.** Consent first, scoped, recorded.
+- **Go to the web uninvited.** Consent first, scoped, recorded — and only a researcher searches.
 - **Decide structure silently.** Structural forks are asked; the operator can defer, not you.
+- **Re-ask what the sources decided.** Cite it and build on it; a doubt is one *Revisit?* question.
+- **Apply feedback on its own word.** A customer's requested change is put to the operator first.
 - **Describe implementation.** No code, API shapes, database schemas, libraries, frameworks or
   hosting — and no platforms: whether "mobile" is a native app or an installable web page is the
   backlog's decision, made from the constraints the brief records. If the operator wants a
@@ -201,12 +280,16 @@ Reading a URL the operator gave you in Intake is not research — it is reading 
 ## Done when
 
 - `STATE.json` shows every phase `approved` and `phase: "done"`.
-- Every module in `02-architecture.md` has a `modules/<name>.md` with L2 filled; MVP modules also
-  have L3 capabilities.
-- Every `D-`, `A-`, `Q-`, `S-` reference in the text exists in its log; no `[?Q-NNN]` remains in a
-  document for a question that is closed.
+- Every module in `02-architecture.md` that is not out of scope has a `modules/<slug>.md` with L2
+  filled and L3 as deep as `mechanics.md › Depth` says for its stage; every capability has its id.
+- Every item in the sources' indexes is covered: `00-sources.md › Coverage` points it to where the
+  blueprint deals with it — a capability, a module, a role, a row of the brief, the out of scope, or
+  an open question.
+- `validate` reports no errors: every reference exists in its log, no id is duplicated, no
+  placeholder id is left, no `[?Q-NNN]` remains for a closed question, the counts are fresh.
 - `04-review.md` lists every gap and improvement from phase 7 with its outcome (accepted → `D-`,
   deferred → `Q-`, rejected with the reason); no finding is left without an outcome.
 - `README.md` indexes every file and the operator has seen both review reports.
-- The operator knows the blueprint is theirs to edit, and that `/blueprint module <name>` or
-  `/blueprint decide` re-enters it later.
+- The operator knows the blueprint is theirs to edit, and that `/blueprint module <name>`,
+  `/blueprint decide` or `/blueprint feedback` re-enters it later, and `/blueprint export` gives
+  them one document to send.

@@ -10,8 +10,9 @@ describe the steps and call the tools.
 | Skill | Command | What it does | Since |
 |-------|---------|--------------|-------|
 | [setup-permissions](setupPermissions.md) | `/setup-permissions [dir]` | Writes the plugin's permission `deny` rules into the project's `.claude/settings.json` through a script | 0.5.0 |
-| [blueprint](blueprint.md) | `/blueprint [init \| continue \| status \| module <name> \| decide]` | Turns raw project input into English product-design documents (brief, architecture, modules, capabilities) through eight gated phases, asking the operator at every structural fork and logging each decision | 0.8.0 |
-| [backlog](backlog.md) | `/backlog [init \| status \| next \| detail \| done <id> \| add \| resync]` | Cuts a finished blueprint into vertical batches of tasks and subtasks, then keeps the list true while the work happens | 0.8.0 |
+| [blueprint](blueprint.md) | `/blueprint [init \| continue \| status \| module <name> \| decide \| restructure \| feedback \| export]` | Turns raw project input into English product-design documents (brief, architecture, modules, capabilities) through eight gated phases, asking the operator at every structural fork and logging each decision; its bookkeeping is a script, its workers are agents with narrowed tools | 0.8.0 |
+| [backlog](backlog.md) | `/backlog [init \| continue \| status \| next \| detail <batch> \| done <id> \| add \| plan <action> \| resync]` | Cuts a finished blueprint into vertical batches of tasks and subtasks, citing capabilities by id, then keeps the list true while the work happens — re-planning, and resyncing from the blueprint's changelog | 0.8.0 |
+| [showcase](showcase.md) | `/showcase [init \| continue \| status \| section <id> \| flow <id> \| pick \| add \| audit \| open]` | Builds the project's design showcase — a static site with logo, sign-in and app layouts, key screens, flows with a step player, emails, illustrations, states, 404, components, icons, tokens, microcopy, technology and decisions — from the whole documentation folder, with the operator deciding every fork; theme and language switch everywhere | 0.9.0 |
 
 Every skill has its own page here; `npm test` fails if one is missing (`tests/structure.test.mjs`).
 
@@ -41,7 +42,7 @@ Skills are loaded when a session starts; a change to a `SKILL.md` reaches a sess
 | `context: fork` | runs the skill in a fresh context, so the conversation so far cannot bias it |
 
 `${CLAUDE_PLUGIN_ROOT}` inside a skill expands to the folder the plugin is loaded from, which is how a skill
-reaches the plugin's own scripts in `bin/`.
+reaches the plugin's own scripts in `bin/` and its own files in `skills/<dirName>/`.
 
 ## Rules every skill follows
 
@@ -62,10 +63,14 @@ reaches the plugin's own scripts in `bin/`.
 ## Adding a skill
 
 1. `skills/<dirName>/SKILL.md` — the directory in camelCase, `name:` in kebab-case (the command).
-2. Any script it runs in `bin/<scriptName>.mjs`, with tests in `tests/<scriptName>.test.mjs`.
-3. A page `docs/skills/<dirName>.md` in the layout below, plus a row in the table at the top of this file and
+2. Everything else the skill reads or copies, in the same folder, so the skill travels whole: a long procedure in
+   `skills/<dirName>/references/*.md`, the files it writes into a project in `skills/<dirName>/templates/`. The
+   skill names them as `templates/…` (from its own folder) or `${CLAUDE_PLUGIN_ROOT}/skills/<dirName>/…`;
+   `npm test` fails when a skill names a file that does not exist.
+3. Any script it runs in `bin/<scriptName>.mjs`, with tests in `tests/<scriptName>.test.mjs`.
+4. A page `docs/skills/<dirName>.md` in the layout below, plus a row in the table at the top of this file and
    in the root `README.md`.
-4. A task entry in [../TASKS.md](../TASKS.md); bump the plugin version in both manifests.
+5. A task entry in [../TASKS.md](../TASKS.md); bump the plugin version in both manifests.
 
 ### Page layout
 

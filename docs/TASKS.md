@@ -12,19 +12,21 @@ Statuses: `todo` · `in progress` · `done`.
 - Every hook ships with its own page in [hooks/](hooks/README.md) and a row in its index; `npm test` fails otherwise.
 - apiko-agent is disabled (2026-09-11) so its hooks do not fire alongside ours. Re-enable with `claude plugin enable apiko-agent@apiko`.
 - Files are named in camelCase; a hook keeps its kebab-case name in messages and docs. `TASKS.md` and `README.md` stay upper-case.
-- Project config comes from the plugin through a script, not by hand: templates live in `templates/`,
-  `bin/setupPermissions.mjs` merges them into the project (idempotent, never deletes foreign entries, prints what it
+- Project config comes from the plugin through a script, not by hand: templates live in the skill's folder
+  (`skills/setupPermissions/templates/`), `bin/setupPermissions.mjs` merges them into the project (idempotent, never deletes foreign entries, prints what it
   added), and the `/setup-permissions` skill runs it. A SessionStart hook never edits project files on its own.
 - Secret protection is two hooks, because they fire on different events: `secret-files-guard` (file access) and
   `secret-commit-guard` (staged diff at commit time). The permission `deny` list covers Read/Edit as a hard boundary
   once `/setup-permissions` has written it into the project; whether Claude Code honours a plugin's own `settings.json`
   is unverified.
-- A skill with a long procedure is split: `skills/<name>/SKILL.md` holds the entry point and the rules that never
-  bend, `skills/<name>/references/*.md` the step-by-step procedure loaded per phase or mode, `templates/<name>/` one
-  template per output file. The product-design skills (`/blueprint`, `/backlog`) write English documents into
-  `docs/<name>/` by default; the folder is proposed in a dialog and is the operator's to change. Each of them is
-  used from the plugin while still script-less, so the procedure is proven before the mechanical parts are frozen in
-  `bin/`.
+- A skill keeps everything it reads or copies in its own folder, so it travels whole: `skills/<name>/SKILL.md` holds
+  the entry point and the rules that never bend, `skills/<name>/references/*.md` the step-by-step procedure loaded per
+  phase or mode, `skills/<name>/templates/` one template per output file. Until 0.9.0 the templates sat in a shared
+  root `templates/`; they moved so that each skill is self-contained once the plugin is published, and `npm test`
+  fails when a skill names a file that is not there. The product-design skills (`/blueprint`, `/backlog`,
+  `/showcase`) write into `docs/<name>/` by default; the folder is proposed in a dialog and is the operator's to
+  change. Each of them is used from the plugin while still script-less, so the procedure is proven before the
+  mechanical parts are frozen in `bin/`.
 
 ## Open questions
 
@@ -135,7 +137,7 @@ What was done:
   `git push -f`, `gh pr merge`, `gh release create`, `npm|pnpm|yarn publish`, `eas submit`). 58 rules.
   `Bash(cat …)` shapes were dropped: a `Bash` permission matches text by prefix, so they would catch nothing
   useful; shell reads stay with the hook.
-- `templates/permissions.json`: the generated, readable copy (`node bin/setupPermissions.mjs --template`); a test
+- `templates/permissions.json` (since 0.9.0 in `skills/setupPermissions/templates/`): the generated, readable copy (`node bin/setupPermissions.mjs --template`); a test
   fails when it drifts from the builder.
 - `bin/setupPermissions.mjs [dir] [--dry-run] [--template]`: merges into `.claude/settings.json`, adds missing
   `deny` entries only, keeps every other key and entry in order, records `devAssistant.version`, prints a report.
@@ -263,10 +265,10 @@ batches of tasks and subtasks (each batch leaves something working end to end), 
 true while the work happens (`next`, `done`, `add`, `resync`). The backlog reads the blueprint and never writes it.
 
 What was done (0.8.0):
-- `skills/blueprint/SKILL.md` + `references/phases.md`; `templates/blueprint/` (13 files: STATE.json, README index,
+- `skills/blueprint/SKILL.md` + `references/phases.md` + `templates/` (13 files: STATE.json, README index,
   sources, brief, architecture, roadmap, adequacy review, module with L2/L3 capability block, competitor profile,
   decisions, assumptions, open questions, glossary).
-- `skills/backlog/SKILL.md` + `references/slicing.md` + `references/modes.md`; `templates/backlog/` (STATE.json,
+- `skills/backlog/SKILL.md` + `references/slicing.md` + `references/modes.md` + `templates/` (STATE.json,
   BACKLOG overview, PLANNING, COVERAGE, batch, task with subtask checklist).
 - Pages `docs/skills/blueprint.md` and `docs/skills/backlog.md`, rows in the index and the root README.
 - Both skills are human-only, write English only, keep state on disk (`STATE.json` with a `kind`), find each other
@@ -279,21 +281,130 @@ What was done (0.8.0):
   adequacy review. The backlog turns surfaces into **platforms** (`web`, `ios`, `android`, cross-platform `mobile`)
   through a platform map decided at `init` from the brief's constraints; a task carries `platforms:`, a capability on
   surfaces with different platforms becomes a task per platform.
+- Review of `/blueprint` (0.9.0, 2026-10-08), from two independent readings checked against ETC.V2's documentation:
+  the module and capability writers read the module's sources in full; decisions, module maps and feature ids already
+  in the sources are cited and built on, not asked again, and implementation decisions go to the brief's *Decided
+  outside this blueprint*; questions keep within the tool's limits; `STATE.json.updated` is a timestamp written on
+  every change, with `counts`, and `CHANGELOG.md` after done; capabilities have stable ids (`ORG-C03`) in one block
+  format; one depth × stage table; subagents write only their own file and leave open points on disk; the output
+  folder is checked for git; folders are expanded file by file at intake; a coverage table traces every source item;
+  reviews are split by module, flow and actor; one assumption per capability, and gates show counts and the top ten;
+  a domain model and a roles × modules matrix in the architecture, an access table per module; a `restructure` mode.
+- Mechanisms for `/blueprint` (0.9.0, 2026-10-09). `bin/blueprint.mjs` does the bookkeeping — `next` (every id;
+  capability ids reserved through `lastCapability`), `stamp` (`updated` and `counts`), `changed` (hand edits),
+  `validate` (references, ids, markers, module files, counts, coverage), `export` (one document to send) — tested
+  in `tests/blueprint.test.mjs`. Four agents with narrowed tools — `blueprint-reader` (no web search),
+  `blueprint-writer`, `blueprint-reviewer` (read-only), `blueprint-researcher` (the only one with web search) —
+  documented in `docs/agents/`; the skill no longer grants itself web tools. A failed agent leaves its unit
+  `failed` for the next `continue`, and the operator hears the size of every wave first. Goals, non-functional
+  requirements and risks have ids (`G-`, `N-`, `RK-`) that capabilities cite; a *Risks* section in the brief and a
+  *risk* kind in the adequacy review; *Decided by* on every decision; personal data marked in the domain model and
+  walked in the adequacy review; a discovery interview for thin input; `feedback` and `export` modes; phase 1
+  renamed *Reading the input*. `references/phases.md` split into `mechanics.md`, `intake.md`, `design.md`,
+  `modules.md`, `reviews.md` and `modes.md`; the structure test checks `references/` paths, `file.md › Heading`
+  cross-references and agents.
+- Review of `/backlog` (0.9.0, 2026-10-09), from six independent readings — the contract with the blueprint,
+  internal consistency, the data model, a dry run of `init`/`detail` and of the daily loop on ETC.V2's documentation,
+  authoring and method — each finding checked by an adversarial verifier. Aligned with the blueprint: capabilities
+  cited by id, never by heading anchor; an inventory of the 0.9.0 capability block (own stage, R/E/S counts, access
+  row, open markers, list-only) from the module files `STATE.json` lists, never `modules/removed/` or `export/`; a
+  fingerprint that copies `updated`, `counts`, `phase`, `depth`, open questions and the module entries; the blueprint's
+  `changed` before `status`, `detail` and `resync`; `resync` from `CHANGELOG.md`, following ids through renames,
+  moves and restructures, stages, surfaces, opened and closed questions, and closing *Feedback* rows that go to
+  `/blueprint feedback`; effective stage per capability and surface, *in scope* as the first stage with a *first
+  release* question; list-only capabilities as outline rows, not gaps; *Decided outside this blueprint* settles the
+  platform map and mandates foundation work; `N-`, access rows and states reach acceptance criteria through
+  *Standing criteria*. Data model: `references/mechanics.md` split out; outline rows numbered at the outline gate
+  from `lastTask` and stored in the batch tables, `COVERAGE.md` rows stored, only the listed parts regenerated; four
+  stored statuses, *ready* and *blocked* computed; batch completion and closing with the operator, `currentBatch`
+  derived; `pending` with `continue`; hand edits listed by `find -newer STATE.json`; the output folder checked for
+  git and the blueprint path relative to it. Method: what the code already does is read at `init`; batch 1 exempt
+  from the batch size; an open question blocks only a core path; thin-batch capabilities leave their rules to the
+  widening batch; cross-cutting concerns arrive with the first batch that touches them; task types `bug`, `chore`,
+  `spike`, `polish` defined; operational requirements are tasks; a `plan` mode for moves, drops, reordering and
+  renumbering. `tests/backlogContract.test.mjs` checks the fields, phases and modes the backlog reads.
 
 What is left:
+- A way to deepen one module of the blueprint to full L3 (an option of `/blueprint module`, say), so that
+  `/backlog detail` can send list-only capabilities somewhere better than `/blueprint feedback`.
 - Run `/blueprint` end to end on a real project (ETC.V2 with `initialDocs/` as sources), then `/backlog init` on the
   result; adjust the procedures from what the run shows (question rhythm, structural-vs-assumption boundary, gate
-  friction on small phases, module drift between parallel subagents).
-- `bin/blueprint.mjs`: `init`, `status`, `next-id`, `validate`, `toc`; `bin/backlog.mjs`: `init`, `next-id`,
-  `render` (the views from task frontmatter and checklists), `tick`, `validate` (no dependency cycles, no
-  forward-batch edges). Tests for both in `tests/`.
-- `agents/blueprintReviewer.md` for phases 6–7 as a named read-only agent, with `docs/agents/` and the structure
-  test extended to agents.
+  friction on small phases, module drift between parallel subagents, the cost of regenerating views by hand).
+- `bin/backlog.mjs`: `init`, `next-id` (from `lastTask`), `render` (the regenerated parts of
+  `mechanics.md › Views` only — outline rows and capability rows are stored), `tick`, `validate` (no dependency
+  cycles, no forward-batch edges, no dependency on a dropped task, every task's batch has its row), with tests.
 
 Done when:
 - A blueprint and a backlog exist for ETC.V2 that the operator recognises as true and can work from.
 - `npm test` covers both scripts; the skills call the scripts instead of counting ids and regenerating views by hand.
 - Pages, index rows and README rows exist (already true; the structure test holds).
+
+## T19 — `/showcase` skill · `in progress`
+
+The design showcase the author has built by hand for several products (valere-poc `initialDemo`, AssistiaV2
+`Docs/design`, ETC.V2 `initialDocs/initialDemo`), as a skill: a static site in `docs/showcase/` that shows the
+customer the product before it exists and gives the team what every screen is drawn with. Reads the whole
+documentation folder; the color scheme is decided first, then the stack, then the frame is laid and the sections
+are made in dependency order with a gate each; variants (logo, sign-in, app layout, 404) are picked by the operator;
+flows take two approvals (the list, then each description) and get a step player; theme (light / dark / system) and
+interface languages (default English) switch the whole site.
+
+What was done (0.9.0):
+- `skills/showcase/SKILL.md` + `references/phases.md` (the 21 steps and the other modes), `references/sections.md`
+  (what every section contains), `references/site.md` (how the frame works, the audit checklist).
+- `skills/showcase/templates/frame/`: the frame, taken from the ETC.V2 demo site and generalised — `build.mjs` rewritten for
+  the new menu model (bands → root sections → sections or child pages, i18n keys on every label, fonts and language
+  scripts in `<head>`, the language switch), `open.mjs`, `assets/nav.js` (root-title clicks, presentation mode,
+  `pageswap` event), new `assets/i18n.js`, `assets/flow.js`, `assets/site.css`, `tools/lib/html.mjs` (page shell and
+  blocks: `renderPage`, `section`, `block`, `variant`, `flowPlayer`, `device`, `mail`), `tools/genPages.mjs`;
+  `assets/showcase.css`, `assets/showcase.js`, `base.css` copied as they were.
+- `skills/showcase/templates/`: `site.mjs`, the standard `pages.mjs` (20 root sections in customer order), neutral
+  `tokens.css`, starter `components.css`, `sample.mjs`, `i18n/lang.js`, `STATE.json`, `DECISIONS.md`, `README.md`,
+  `tools/gen.example.mjs`.
+- Smoke test by hand: scaffold with two languages, `genPages` for 19 pages, `build.mjs` idempotent, Playwright pass
+  (root-title click, language and theme switches, presentation mode, scroll-spy) with no console errors.
+- The menu keeps one root section open at a time: every root's `<details>` shares `name="sc-side"` (the browser's
+  exclusive accordion), `nav.js` folds the others where that is unsupported and no longer scrolls the menu to a link
+  inside a folded root. `tests/showcaseFrame.test.mjs` scaffolds the frame and checks the build. A browser check
+  (Chromium, ten scenarios and a control run without the scroll guard) confirmed it; what it found was fixed: a swap
+  to a page whose root is a plain link folds every root, as a reload does; keyboard focus stays in the menu when a fold
+  would hide it; a folded root still marks the page on show (`aria-current="true"` on a flow's root); the starter
+  `components.css` gained the brand tile and the navigation link the frame's menu uses. Two pre-existing accessibility
+  issues it found — the closed narrow-screen drawer stays in the tab order, and a root's chevron and title are two
+  focus stops with one name — were left for the review of `/showcase` (below).
+- Page `docs/skills/showcase.md`, rows in the index and the root README.
+- Review (2026-10-09): a fresh scaffold driven through Playwright, the procedure read for gaps. Frame fixes: presentation
+  mode (the page fell into the menu's 240 px column); the Flows index (laid once by genPages, it never listed a flow added
+  later — build.mjs now writes it from `children`); a flow's i18n key colliding with the root section of the same id
+  (`signIn`; a child is now `nav.<root>.<child>`, and build.mjs refuses two entries on one key); the empty
+  `data-go="end"` note; the breadcrumb falling back to the first section after a language round trip; frame words that
+  could not be translated (flow step titles, the starting pages, contrast and switch words); markup lost in translated
+  text; empty live values for `oklch()` and `color-mix()` tokens; `--lg-ground` undefined in the brand tile; the closed
+  narrow drawer in the Tab order (now inert); a malformed address stopping `open.mjs`. Procedure fixes: Microcopy is step
+  6, before Components, as the source of every string; approved plans and flow descriptions live in `plans/`;
+  `CHANGELOG.md` is the Changelog page's source; the overview is written in the Frame step; SC-001…008 are reserved rows;
+  the charts library is asked once (step 2); subagents never write a shared file; step 1's scheme page stands alone, as
+  the frame is not laid yet; `STATE.json` keys follow the steps and `pending` is documented. Four tests added.
+- Step highlights in flows (2026-10-09, the operator's idea): what the user acts on in a step carries
+  `data-flow-target="1"`, `"2"`, … — ringed and numbered while the step is on show, the emphasis walking through them in
+  order; the note names them with `flowMark(n)`; a Hints button turns it off. Flow descriptions name the controls of each
+  step in order, so the build knows what to mark.
+
+What is left:
+- Run `/showcase` end to end on a real project (ETC.V2, after its blueprint), adjust the procedure from what the run
+  shows: the scheme proposals, the plan-then-build rhythm, the generators' shape, the dictionaries.
+- `bin/showcase.mjs`: `scaffold` (the copy with placeholders filled, genPages, build), `check` (pages exist, build
+  idempotent, no values outside `tokens.css`, every `data-i18n` key in every dictionary), `screenshots` (Playwright,
+  every page × theme). Tests in `tests/showcase.test.mjs`.
+- `assets/illustrations.js` conventions and `--ill-*` tokens as a template once the first set is drawn.
+- A root's chevron and title in the menu are two focus stops with one name.
+- `check` should also compare the two dark blocks of `tokens.css` (media query and `[data-theme='dark']`), which the
+  audit now checks by eye.
+
+Done when:
+- A showcase exists for ETC.V2 that the operator would show a customer.
+- `npm test` covers the script; the skill calls it instead of copying and checking by hand.
+- Page, index row and README row exist (already true; the structure test holds).
 
 ## Draft of the next tasks
 

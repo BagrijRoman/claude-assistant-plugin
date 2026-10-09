@@ -26,13 +26,22 @@ How skills work in general, the rules every skill follows and how to add one: [d
 | Skill | Command | What it does | Page |
 |-------|---------|--------------|------|
 | `setup-permissions` | `/setup-permissions [dir]` | Writes the plugin's permission `deny` rules (secret files, irreversible git and publish commands) into the project's `.claude/settings.json` through an idempotent script; human-invoked only | [setupPermissions.md](docs/skills/setupPermissions.md) |
-| `blueprint` | `/blueprint [init \| continue \| status \| module <name> \| decide]` | Turns whatever the operator has — an idea, documents, requirements, similar products — into English product-design documents at three depths (brief and architecture, modules, capabilities) over eight gated phases; every structural fork is a question to the operator, every answer a logged decision; web research only with consent; resumable from its own files; human-invoked only | [blueprint.md](docs/skills/blueprint.md) |
-| `backlog` | `/backlog [init \| status \| next \| detail <batch> \| done <id> \| add \| resync]` | Cuts a finished blueprint into vertical batches — each leaves something working end to end — of tasks and subtasks with acceptance criteria, detailing lazily; then keeps the list true: next task, mark done, add manual work, resync after the blueprint changes; reads the blueprint, never writes it; human-invoked only | [backlog.md](docs/skills/backlog.md) |
+| `blueprint` | `/blueprint [init \| continue \| status \| module <name> \| decide \| restructure \| feedback [file] \| export]` | Turns whatever the operator has — an idea, documents, requirements, similar products — into English product-design documents at three depths (brief and architecture, modules, capabilities) over eight gated phases; every structural fork is a question to the operator, every answer a logged decision; web research only with consent, by the one agent that has web search; ids, timestamps and reference checks done by a script; takes a customer's feedback and exports one document to send; resumable from its own files; human-invoked only | [blueprint.md](docs/skills/blueprint.md) |
+| `backlog` | `/backlog [init [dir] \| continue \| status \| next \| detail <batch> \| done <id> [note] \| add [text] \| plan <action> \| resync]` | Cuts a finished blueprint into vertical batches — each leaves something working end to end — of tasks and subtasks with acceptance criteria, citing capabilities by id and skipping what the code already does, detailing lazily; then keeps the list true: next task, mark done, add manual work, re-plan, resync from the blueprint's changelog; reads the blueprint, never writes it; resumable from its own files; human-invoked only | [backlog.md](docs/skills/backlog.md) |
+| `showcase` | `/showcase [init [dir] \| continue \| status \| section <id> \| flow <id> \| pick <section> <variant> \| add \| audit \| open]` | Builds the project's design showcase in `docs/showcase/`: a static site that shows the customer the product before it exists — logo, sign-in and app layouts, key screens, flows with a step player, emails, illustrations, states, 404 — and gives the team what every screen is drawn with — color scheme and tokens, components, icons, microcopy, technology, decisions. Reads the whole documentation folder; color scheme and stack decided first; every fork a question, variants picked by the operator; light / dark / system theme and interface languages switch everywhere; human-invoked only | [showcase.md](docs/skills/showcase.md) |
 
 ### Agents — workers with their own context, delegated to by the model
 
-None yet. Planned: `security-reviewer` (task T14 in [docs/TASKS.md](docs/TASKS.md)); its pages will live in
-`docs/agents/`.
+How agents work in general, why their tool lists are the guarantee, and how to add one: [docs/agents/](docs/agents/README.md).
+
+| Agent | Used by | Tools | What it does | Page |
+|-------|---------|-------|--------------|------|
+| `blueprint-reader` | `/blueprint` — one per source | Read, Glob, Grep, WebFetch | Reads one source the operator gave and returns its extract under fixed labels; cannot write, run a command or search the web | [blueprintReader.md](docs/agents/blueprintReader.md) |
+| `blueprint-writer` | `/blueprint` — one per module | Read, Glob, Grep, Write, Edit | Writes one module file from the module's sources read in full, leaving its forks in the file as open points; has no web tools | [blueprintWriter.md](docs/agents/blueprintWriter.md) |
+| `blueprint-reviewer` | `/blueprint` — reviews | Read, Glob, Grep | Returns findings for the consistency checks and adequacy walks in its brief; cannot change a file | [blueprintReviewer.md](docs/agents/blueprintReviewer.md) |
+| `blueprint-researcher` | `/blueprint` — consented research | Read, Write, WebSearch, WebFetch | Researches one comparable product for named gaps, writes only its profile, returns the pages it used | [blueprintResearcher.md](docs/agents/blueprintResearcher.md) |
+
+Planned: `security-reviewer` (task T14 in [docs/TASKS.md](docs/TASKS.md)).
 
 ## Install
 

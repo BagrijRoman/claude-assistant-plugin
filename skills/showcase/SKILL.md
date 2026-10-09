@@ -1,0 +1,177 @@
+---
+name: showcase
+description: Builds the project's design showcase — a static site in docs/showcase/ that shows the customer the product before it exists (logo, sign-in and app layouts, key screens, flows with a step player, emails, illustrations, states, 404) and gives the team what every screen is drawn with (color scheme and tokens, components, icons, microcopy, technology, decisions). Reads the whole documentation folder; the operator decides every fork; theme and interface language switch everywhere. Human-invoked only.
+argument-hint: "[init [dir] | continue | status | section <id> | flow <id> | pick <section> <variant> | add | audit | open]"
+disable-model-invocation: true
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(node:*), Bash(ls:*), Bash(mkdir:*), Bash(cp:*), Bash(find:*), AskUserQuestion, Agent
+---
+
+# Showcase
+
+You build a static site that shows a product before it exists. Two readers look at it: the
+**customer**, who should recognise their product in the first minute — its mark, its first screen,
+its shell, its flows; and the **team**, who will build it and needs the pieces every screen is made
+of — tokens, components, icons, the words, the stack. One site serves both, in that order.
+
+The site is plain HTML and CSS served by a tiny Node script, with no dependencies, so it opens on
+any machine and from a zip. Its frame — menu, theme and language switches, presentation mode, the
+flow player — is a template you copy; what you make is the content, from the documentation and
+from decisions you take with the operator.
+
+## How to read the arguments
+
+`$ARGUMENTS` picks the mode. With no argument, look for an existing showcase (`STATE.json` with
+`"kind": "showcase"` under the project, skipping `node_modules`): found → `continue`; none → `init`.
+
+| Argument | What to do |
+|----------|------------|
+| *(none)* | `continue` when a showcase exists, `init` when none does |
+| `init [dir]` | choose the folder, read the documentation, decide languages, scheme and stack, lay the frame; then the steps in order |
+| `continue` | read `STATE.json`, resume the step it is in |
+| `status` | the steps and their state, the picks made, what waits for the operator; change nothing |
+| `section <id>` | make or remake one root section (`logo`, `components`, `emails`, …) by its id in `pages.mjs` |
+| `flow <id>` | make or remake one flow; `flow new` adds one through the two approvals |
+| `pick <section> <variant>` | record the operator's choice among variants: `Selected` mark, `site.mjs › selected`, its row in `DECISIONS.md`, the Decisions page |
+| `add` | a page or a section the standard list does not have |
+| `audit` | the checks in [references/site.md › Audit](references/site.md) on both themes and every language |
+| `open` | `node open.mjs` in the showcase folder, so the operator can look |
+
+The step-by-step procedure is in [references/phases.md](references/phases.md); what every section
+must contain, in [references/sections.md](references/sections.md); how the frame works and how pages
+are written, in [references/site.md](references/site.md). Read the part you need before acting —
+the site has conventions that are easy to break by improvising.
+
+## Rules that never bend
+
+**Everything is read from `tokens.css`.** No hex value, font name, radius or duration anywhere
+else — not in a page, not in a component, not in an illustration. A logo is `currentColor`; a
+picture is drawn in `--ill-*` tokens. This is what makes two themes and a color-scheme change a
+matter of one file, and the pages incapable of drifting from the tokens.
+
+**Nothing appears late.** The menu, the steps of a flow, the pictures are static markup; scripts
+only decide what is visible. A heavy page is written by a generator in `tools/` from data, never
+by hand: the texts can then carry their language keys, and a change is made once.
+
+**The operator decides.** The color scheme, the stack, which mark, which layout, which flows and
+what each shows — every one is a question with your recommendation first, and every answer a row in
+`DECISIONS.md`. Before a section is built, its plan (the list of marks, cases, components, flows)
+is shown and approved; a flow's description is approved before its screens are drawn.
+
+**State lives on disk.** `STATE.json` holds the step, the picks and the question waiting for an
+answer; `DECISIONS.md` the choices; `plans/` every approved plan and flow description; `CHANGELOG.md`
+what each gate changed; `sample.mjs` the fictional company and people every sample uses. Re-read
+them on `continue`; trust them over what you remember. The operator edits files between sessions;
+show what you change in a file they touched.
+
+**The site is in the interface language the operator chose** — English unless they say otherwise —
+and in every other language they named, switchable in the top bar. The skill's own files (README,
+generator comments) are English.
+
+## What goes in
+
+Read **the whole documentation folder** of the project — requirements, a blueprint if there is one,
+feature files, notes, earlier design work, whatever is there, all but the showcase folder itself —
+and the product's code when it
+exists (a token file, a component library). Use subagents for the reading, one per document group,
+returning what bears on design: what the product is and for whom; the actors and the surfaces they
+use; the categories of the domain that need telling apart (they become categorical colors); brand
+hints, an existing palette, a logo; the main flows and the screens they name; constraints; design
+decisions already taken. A blueprint shortens this: its brief gives the actors, surfaces and
+glossary; its architecture the flows; its modules the capabilities the components must serve.
+
+## The output folder
+
+Default `docs/showcase/`; the operator always gets to change it. Look at what exists, then ask
+(`AskUserQuestion`, header `Folder`): **`docs/showcase/` (Recommended)** — with a note if something
+is already there — plus one or two alternatives; any path may be typed. A directory given in the
+argument becomes the recommended option. Never scaffold into a non-empty folder without the
+operator confirming that folder.
+
+The frame comes from `templates/` next to this file (`${CLAUDE_PLUGIN_ROOT}/skills/showcase/templates/`):
+`frame/` is copied as it is;
+`site.mjs`, `pages.mjs`, `tokens.css`, `components.css`, `sample.mjs`, `i18n/lang.js`,
+`STATE.json`, `DECISIONS.md`, `CHANGELOG.md` and `README.md` are copied with their `{{placeholders}}`
+filled. Then `node tools/genPages.mjs` lays a starting page for every section and `node build.mjs`
+writes the navigation — the operator can open the whole site before any section has content. The
+scripts find the site by their own location, so `node docs/showcase/build.mjs` works from anywhere.
+
+## The site
+
+The menu: the project's name on top, then **bands** that do not fold, each holding **root
+sections**. A root section is one page; the items under it scroll to its parts and the menu marks
+the one on screen. A root with items folds, and only one is open at a time — opening one folds the
+one that was open; a root without items is a plain link. Flows is the exception: each flow is a page
+of its own with a step player. The order is the order of a customer's attention, not the order of making:
+
+| Band | Root sections, in order |
+|------|-------------------------|
+| **Product** | Overview · Principles · Logo · Sign-in layouts · App layout · Key screens · Flows · Emails |
+| **Design** | Illustrations · States · Not found page · Charts (when the product has figures) · Components · Icons · Foundations · Microcopy and tone |
+| **Project** | Technology · Decisions · Changelog · Next steps |
+
+Everywhere: a theme switch (light · dark · system) that every page follows, hex codes and contrast
+ratios included; a language switch when there is more than one language; presentation mode
+(**P**, or `?present=1`) that hides the frame and enlarges the page; `prefers-reduced-motion`
+honoured by every animation.
+
+## The order of making
+
+Dependencies decide it, not the menu. Each step ends with a gate: the operator looks at the site,
+and approves or sends it back. The key is the step's name in `STATE.json › steps`.
+
+| Step | Key | Makes | Needs |
+|------|-----|-------|-------|
+| 0 Intake | `intake` | folder, the reading, languages, name, the sample company and cast | — |
+| 1 Color scheme | `scheme` | the brand color and its companions — **first**, before anything is drawn; from the design when there is one, otherwise three proposals to look at | the reading |
+| 2 Technology | `stack` | the stack, chosen in a dialog from what the operator has (starter templates, code) and what the documentation implies | the reading |
+| 3 Frame | `frame` | the folder scaffolded, tokens from the scheme, starting pages, the overview, the site opens | 1 |
+| 4 Foundations | `foundations` | tokens finished, the Foundations page with live swatches and contrast | 3 |
+| 5 Logo | `logo` | marks from ideas in the product, at every size; one picked | 4 |
+| 6 Microcopy and tone | `microcopy` | voice and patterns in every language — the source of every string that follows, so it comes before the first step that writes words | 0 |
+| 7 Components | `components` | the standard set, the product's own, a reserve; styled to the project | 4, 6 |
+| 8 Icons | `icons` | the set on its grid | 7 |
+| 9 Illustrations | `illustrations` | pictures for every situation, some moving; a reserve | 4, 5 |
+| 10 States | `states` | picture + words + action for empty, loading, error, access, offline, done | 6, 9 |
+| 11 Sign-in layouts | `signIn` | several, with animated panels; one picked | 7, 9 |
+| 12 App layout | `appLayout` | several shells with a folding sidebar; one picked | 7 |
+| 13 Key screens | `screens` | the main screens in device frames per surface | 7, 10, 12 |
+| 14 Flows | `flows` | list approved → each description approved → built with the step player, the controls of each step highlighted in the order they are used | 13 |
+| 15 Emails | `emails` | the common letters and the product's own, illustrated | 6, 9 |
+| 16 Not found page | `notFound` | several, with moving pictures; one picked | 9 |
+| 17 Charts | `charts` | only when the product has figures, with the library chosen in step 2 | 4 |
+| 18 Technology page | `technology` | the architecture drawn, the stack with marks | 2 |
+| 19 Principles · Decisions · Changelog · Next | `principles`, `project` | the pages about the project | all |
+| 20 Audit | `audit` | both themes × every language; the checks in site.md | all |
+
+## Variants and picks
+
+Logo, sign-in layouts, app layout and the not-found page are made as **several variants**, because
+a customer chooses better between things than from a description. Each variant is a section with
+an id; `/showcase pick <section> <variant>` marks the chosen one `Selected`, moves it first, writes
+`site.mjs › selected`, fills the group's row in `DECISIONS.md` and regenerates the Decisions page
+once it exists (step 19). The others stay as alternatives — the Decisions page is where the
+customer sees what was considered.
+
+## What this skill does not do
+
+- **Write a value outside `tokens.css`**, or a page by hand that a generator should write.
+- **Choose for the operator** — the scheme, the stack, a mark, a layout, the flows and their steps
+  are theirs; you recommend.
+- **Pull from the network at view time.** Fonts may load from Google Fonts with a local copy as
+  fallback; technology marks and every other asset are files in the folder.
+- **Describe implementation** on the pages beyond the Technology section: a screen is a picture of
+  behaviour, not a component tree.
+- **Invent the product.** What a screen shows comes from the documentation and the decisions; a
+  gap is a question, not a guess — and goes into Next steps if the operator defers it.
+- **Skip a gate**, or draw a flow whose description was not approved.
+
+## Done when
+
+- `STATE.json` shows every step `done` or `skipped`, and `audit` done.
+- Every root section in `pages.mjs` has content; every flow in `children` has a page with a working
+  player and a tile on the Flows index; the overview catalog lists every root section.
+- `tokens.css` is the only file with values; `node build.mjs` changes nothing; every `data-i18n` key
+  has an entry in every dictionary.
+- Every variant group has a `Selected` mark and a row in `DECISIONS.md`; the Decisions page shows
+  them with their alternatives.
+- The operator has opened the site in both themes and every language and said it is theirs.

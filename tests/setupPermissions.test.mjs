@@ -8,7 +8,7 @@ import { buildDenyRules } from '../bin/lib/permissionRules.mjs';
 import { makeTempDir, removeTempDirs } from './helpers.mjs';
 
 const SCRIPT = fileURLToPath(new URL('../bin/setupPermissions.mjs', import.meta.url));
-const TEMPLATE = fileURLToPath(new URL('../templates/permissions.json', import.meta.url));
+const TEMPLATE = fileURLToPath(new URL('../skills/setupPermissions/templates/permissions.json', import.meta.url));
 const PLUGIN_VERSION = JSON.parse(readFileSync(new URL('../.claude-plugin/plugin.json', import.meta.url), 'utf8')).version;
 
 const run = (...args) => {
@@ -36,10 +36,10 @@ describe('setup-permissions', () => {
     assert.equal(new Set(rules).size, rules.length, 'no duplicate rules');
   });
 
-  it('keeps templates/permissions.json in sync with the rule builder', () => {
+  it('keeps the skill\'s permissions.json template in sync with the rule builder', () => {
     const template = JSON.parse(readFileSync(TEMPLATE, 'utf8'));
     assert.deepEqual(template, { permissions: { deny: buildDenyRules() } },
-      'regenerate it: node bin/setupPermissions.mjs --template > templates/permissions.json');
+      'regenerate it: node bin/setupPermissions.mjs --template > skills/setupPermissions/templates/permissions.json');
     assert.equal(run('--template').stdout, readFileSync(TEMPLATE, 'utf8'));
   });
 

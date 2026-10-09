@@ -6,7 +6,7 @@
 // Idempotent: adds the rules that are missing, keeps every other key and every foreign entry, never removes
 // anything, and records the plugin version it wrote. A second run changes nothing. A settings file that does
 // not parse is left alone and reported (exit 1) rather than overwritten.
-// `--template` prints the rules as JSON (the source of templates/permissions.json) and exits.
+// `--template` prints the rules as JSON (the source of skills/setupPermissions/templates/permissions.json) and exits.
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';

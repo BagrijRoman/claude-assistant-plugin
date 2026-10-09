@@ -15,7 +15,8 @@ carry it there. This skill does, through a script, so the result is the same on 
 The rules are built from the same secret-file list the hooks use
 ([bin/lib/permissionRules.mjs](../../bin/lib/permissionRules.mjs) over
 [bin/lib/secretPaths.mjs](../../bin/lib/secretPaths.mjs)), so the boundary and the hooks never disagree.
-[templates/permissions.json](../../templates/permissions.json) is the generated, readable copy of the list.
+[skills/setupPermissions/templates/permissions.json](../../skills/setupPermissions/templates/permissions.json) is
+the generated, readable copy of the list.
 
 ## What it does
 
@@ -53,7 +54,7 @@ node bin/setupPermissions.mjs [project-dir] [--dry-run] [--template]
 |----------|--------|
 | `project-dir` | the project to write into; the current directory when omitted |
 | `--dry-run` | report what would change, write nothing |
-| `--template` | print the rules as JSON and exit — the source of `templates/permissions.json` |
+| `--template` | print the rules as JSON and exit — the source of `skills/setupPermissions/templates/permissions.json` |
 
 Behaviour:
 
