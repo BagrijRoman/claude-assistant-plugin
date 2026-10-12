@@ -406,6 +406,50 @@ Done when:
 - `npm test` covers the script; the skill calls it instead of copying and checking by hand.
 - Page, index row and README row exist (already true; the structure test holds).
 
+## T20 — `/research` skill · `in progress`
+
+Market, competitor and domain research for a project, as a wrapper over Anthropic's `deep-research` skill rather than a
+search engine of our own. deep-research already plans subtopics, runs research agents in parallel and writes a report;
+what it lacks is what the plugin cares about — a scope the operator approves before anything is searched, a question
+each finding answers, dated sources, "not found" kept apart from "does not have", output `/blueprint` can take apart,
+and a way to work when deep-research is not installed. `/research` adds those at both ends and delegates the middle.
+
+What was done (0.10.0):
+- `skills/research/SKILL.md` + `references/phases.md` (Frame, Research, Curate, Review; `continue`, `status`,
+  `extend`) and `references/engines.md` (choosing the engine, the deep-research prompt and collecting its output from
+  the project root into `raw/round-<n>/`, the scouts' fallback, the curator's brief, failures).
+- `skills/research/templates/`: `STATE.json`, the runs index `README.md`, `brief.md`, `summary.md`, `sources.md`,
+  `competitors/competitor.md` (the blueprint's profile layout with `R-NN` ids).
+- Agents: `research-curator` (Read, Glob, Grep, Write — no web tools, so the curated files hold only what the research
+  brought back) and `research-scout` (Read, Write, WebSearch, WebFetch — the fallback engine, one per question group).
+- Pages `docs/skills/research.md`, `docs/agents/researchCurator.md`, `docs/agents/researchScout.md`; rows in the
+  skills and agents indexes and the root README.
+
+Decisions:
+- A wrapper, not a rewrite: the value is the brief before and the curation after; the search is deep-research's.
+- The approved brief is the consent, recorded in `STATE.json`; questions found along the way become a new round.
+- Run ids `RQ-NN` and `R-NN` are local and differ from the blueprint's `Q-NNN` and `S-NN`; a blueprint takes a run
+  through its own Intake (`summary.md` and `competitors/`, reliability `web`). Neither skill writes into the other.
+- Results always go to `docs/research/`, a folder of their own inside the project's `docs/`; the folder is not asked
+  (the operator's request, 2026-10-12). Only which repository's `docs/` is asked, when the project root holds several.
+- deep-research's report path is read from its own message, never assumed, since its layout is not ours.
+- Output file names are lower-case (`brief.md`, `summary.md`, `sources.md`) per the camelCase rule; `STATE.json` and
+  `README.md` keep the form the other skills use.
+
+What is left:
+- Run `/research` end to end on a real topic with deep-research, and once without it (scouts); adjust the prompt, the
+  question count and the curator's layout from what the runs show.
+- `bin/research.mjs`: `next` (RQ and R ids), `validate` (every question with a section and status, every `R-NN`
+  resolving, no `R-??`, every product with a profile, the index row current), `stamp`. Tests in
+  `tests/research.test.mjs`.
+- Consider a pointer from `/blueprint`'s research offer to `/research` for research wider than one product's gaps.
+- A `PreToolUse` hook that keeps the curator's and the scouts' `Write` inside their run folder.
+
+Done when:
+- Two real runs (deep-research and scouts) produce summaries the operator would hand to a blueprint.
+- `npm test` covers the script; the skill calls it instead of checking by hand.
+- Page, index rows and README rows exist (already true; the structure test holds).
+
 ## Draft of the next tasks
 
 Order and contents are still being refined.

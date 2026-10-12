@@ -23,6 +23,8 @@ enforced by a mechanism.
 | [blueprint-writer](blueprintWriter.md) | `/blueprint` — phases 4 and 5, one per module; `module` | Read, Glob, Grep, Write, Edit | Writes one module file — its L2 or its capabilities — from the module's sources read in full, leaving its forks in the file as open points; has no web tools | 0.9.0 |
 | [blueprint-reviewer](blueprintReviewer.md) | `/blueprint` — phase 6, per module and across modules; phase 7, one per walk | Read, Glob, Grep | Returns findings — file, heading, what is wrong, a suggested resolution — for the consistency checks and adequacy walks in its brief; cannot change a file | 0.9.0 |
 | [blueprint-researcher](blueprintResearcher.md) | `/blueprint` — research the operator consented to | Read, Write, WebSearch, WebFetch | Researches one comparable product for named gaps, writes only its profile, and returns the pages it used with the date it read each | 0.9.0 |
+| [research-curator](researchCurator.md) | `/research` — phase 2, one per round | Read, Glob, Grep, Write | Turns a round's raw material — deep-research's report and notes, or the scouts' notes — into the run's summary, source register and competitor profiles; has no web tools, so it cannot add a fact the research did not bring back | 0.10.0 |
+| [research-scout](researchScout.md) | `/research` — phase 1, only when deep-research is not available; one per question group | Read, Write, WebSearch, WebFetch | Researches one group of approved questions on public pages and writes only its notes file, every finding with its page and date | 0.10.0 |
 
 Every agent has its own page here; `npm test` fails if one is missing (`tests/structure.test.mjs`).
 
