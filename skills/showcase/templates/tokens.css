@@ -1,0 +1,212 @@
+/*
+ * Design tokens of {{NAME}} — the single source of every visual value on this site.
+ *
+ * Every color, font, radius, shadow, size and duration on the pages is read from here in the
+ * browser; no page and no component writes a value of its own. Two themes are two value sets of the
+ * same names: the light values are the default, the dark ones apply when the device asks for dark
+ * and the reader has not chosen, or when the reader chose dark (data-theme on <html>, nav.js).
+ *
+ * The names are semantic (what a color is for), so a token reads like a class in the code:
+ * --color-muted is the muted text, --color-primary the brand fill. When the product has a token file
+ * of its own (globals.css, a theme), the names here mirror it and the header says when it was last
+ * copied; a token the product lacks is marked "proposed" and listed on the Foundations page.
+ *
+ * STARTER VALUES: a neutral scheme. The Foundations phase replaces the brand block from the color
+ * scheme decision and re-checks every contrast; this comment goes with it.
+ */
+:root {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Surfaces */
+  --color-page: #fafafa;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f4f4f5;
+  --color-surface-inverted: #18181b;
+  --color-overlay: rgb(0 0 0 / 0.5);
+
+  /* Text */
+  --color-foreground: #18181b;
+  --color-muted: #52525b;
+  --color-subtle: #a1a1aa;
+  --color-inverted: #ffffff;
+
+  /* Borders and focus */
+  --color-default: #e4e4e7;
+  --color-emphasis: #d4d4d8;
+  --color-ring: #18181b;
+
+  /* Brand — replaced by the color scheme decision. The soft tint carries a selected row or a chip;
+     the strong text is the brand color dark enough to read on the soft tint. */
+  --color-primary: #18181b;
+  --color-primary-hover: #3f3f46;
+  --color-primary-foreground: #ffffff;
+  --color-primary-soft: #f4f4f5;
+  --color-primary-strong: #18181b;
+
+  /* A logo is drawn in currentColor with its knockouts in the color behind it. This is that color on
+     the page; whatever puts a mark on another color sets it again (the brand tile: --color-primary). */
+  --lg-ground: var(--color-surface);
+
+  /* Feedback: the solid color is for icons, bars and filled buttons; the soft tint carries text in
+     the -text color. Every -text on its -soft meets WCAG AA in both themes. */
+  --color-danger: #dc2626;
+  --color-danger-hover: #b91c1c;
+  --color-danger-foreground: #ffffff;
+  --color-danger-soft: #fef2f2;
+  --color-danger-text: #b91c1c;
+  --color-success: #16a34a;
+  --color-success-foreground: #ffffff;
+  --color-success-soft: #f0fdf4;
+  --color-success-text: #15803d;
+  --color-warning: #d97706;
+  --color-warning-foreground: #ffffff;
+  --color-warning-soft: #fffbeb;
+  --color-warning-text: #b45309;
+  --color-info: #2563eb;
+  --color-info-foreground: #ffffff;
+  --color-info-soft: #eff6ff;
+  --color-info-text: #1d4ed8;
+
+  /* Categorical colors of the domain go here when the product has categories to tell apart in
+     badges and charts (--color-category-1 … ), away from the brand and the feedback tones. */
+
+  /* Elevation */
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-overlay: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* Radii: controls (inputs, buttons), cards (cards, dialogs) */
+  --radius-control: 6px;
+  --radius-card: 8px;
+  --radius-full: 9999px;
+
+  /* Layout */
+  --size-sidebar: 240px;
+  --size-header: 56px;
+  --size-form: 384px;
+
+  /* Control heights: one height for buttons and fields reads better in a form row */
+  --size-control: 40px;
+  --size-control-sm: 32px;
+
+  /* Layering */
+  --z-header: 10;
+  --z-modal: 50;
+  --z-toast: 60;
+
+  /* Motion */
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 400ms;
+  --duration-spin: 800ms; /* one turn of a spinner */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* The 4 px spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  color-scheme: light;
+}
+
+/* ── Dark: the device asks for it and the reader has not chosen, or the reader chose it ── */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-page: #000000;
+    --color-surface: #09090b;
+    --color-surface-muted: #18181b;
+    --color-surface-inverted: #fafafa;
+    --color-overlay: rgb(0 0 0 / 0.7);
+
+    --color-foreground: #fafafa;
+    --color-muted: #a1a1aa;
+    --color-subtle: #71717a;
+    --color-inverted: #18181b;
+
+    --color-default: #27272a;
+    --color-emphasis: #3f3f46;
+    --color-ring: #fafafa;
+
+    --color-primary: #fafafa;
+    --color-primary-hover: #e4e4e7;
+    --color-primary-foreground: #18181b;
+    --color-primary-soft: #27272a;
+    --color-primary-strong: #fafafa;
+
+    --color-danger: #f87171;
+    --color-danger-hover: #ef4444;
+    --color-danger-foreground: #18181b;
+    --color-danger-soft: #450a0a;
+    --color-danger-text: #fca5a5;
+    --color-success: #4ade80;
+    --color-success-foreground: #052e16;
+    --color-success-soft: #052e16;
+    --color-success-text: #4ade80;
+    --color-warning: #fbbf24;
+    --color-warning-foreground: #451a03;
+    --color-warning-soft: #451a03;
+    --color-warning-text: #fbbf24;
+    --color-info: #60a5fa;
+    --color-info-foreground: #172554;
+    --color-info-soft: #172554;
+    --color-info-text: #93c5fd;
+
+    --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+    --shadow-overlay: 0 20px 25px -5px rgb(0 0 0 / 0.6), 0 8px 10px -6px rgb(0 0 0 / 0.6);
+
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --color-page: #000000;
+  --color-surface: #09090b;
+  --color-surface-muted: #18181b;
+  --color-surface-inverted: #fafafa;
+  --color-overlay: rgb(0 0 0 / 0.7);
+
+  --color-foreground: #fafafa;
+  --color-muted: #a1a1aa;
+  --color-subtle: #71717a;
+  --color-inverted: #18181b;
+
+  --color-default: #27272a;
+  --color-emphasis: #3f3f46;
+  --color-ring: #fafafa;
+
+  --color-primary: #fafafa;
+  --color-primary-hover: #e4e4e7;
+  --color-primary-foreground: #18181b;
+  --color-primary-soft: #27272a;
+  --color-primary-strong: #fafafa;
+
+  --color-danger: #f87171;
+  --color-danger-hover: #ef4444;
+  --color-danger-foreground: #18181b;
+  --color-danger-soft: #450a0a;
+  --color-danger-text: #fca5a5;
+  --color-success: #4ade80;
+  --color-success-foreground: #052e16;
+  --color-success-soft: #052e16;
+  --color-success-text: #4ade80;
+  --color-warning: #fbbf24;
+  --color-warning-foreground: #451a03;
+  --color-warning-soft: #451a03;
+  --color-warning-text: #fbbf24;
+  --color-info: #60a5fa;
+  --color-info-foreground: #172554;
+  --color-info-soft: #172554;
+  --color-info-text: #93c5fd;
+
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+  --shadow-overlay: 0 20px 25px -5px rgb(0 0 0 / 0.6), 0 8px 10px -6px rgb(0 0 0 / 0.6);
+
+  color-scheme: dark;
+}

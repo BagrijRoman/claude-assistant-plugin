@@ -1,0 +1,55 @@
+{
+  "kind": "backlog",
+  "version": 2,
+  "project": "{{project name}}",
+  "created": "{{YYYY-MM-DD}}",
+  "updated": "{{YYYY-MM-DDTHH:MM}}",
+  "blueprint": {
+    "path": "{{blueprint folder, relative to this backlog folder — e.g. ../blueprint}}",
+    "adequacyApprovedAtInit": "{{true / false}}",
+    "fingerprint": {
+      "updated": "{{the blueprint's STATE.json updated, verbatim — YYYY-MM-DDTHH:MM}}",
+      "phase": "{{the blueprint's phase}}",
+      "depth": "{{quick / standard / deep}}",
+      "counts": "{{the blueprint's counts object, copied whole}}",
+      "openQuestions": ["{{Q-nnn}}"],
+      "modules": [
+        {
+          "code": "{{ORG}}",
+          "slug": "{{organisations}}",
+          "file": "{{modules/organisations.md}}",
+          "stage": "{{MVP}}",
+          "surfaces": ["{{web}}"],
+          "lastCapability": 0,
+          "l3": "{{done / list-only / none}}",
+          "removed": null
+        }
+      ],
+      "takenAt": "{{YYYY-MM-DDTHH:MM}}"
+    }
+  },
+  "repositories": ["{{backend}}", "{{frontend}}"],
+  "strategy": {
+    "batchSize": "{{small / medium / large}}",
+    "firstFlow": "{{Flow 1 — name, from 02-architecture.md}}",
+    "firstRelease": "{{null / [flow ids] / all}}",
+    "crossCutting": "{{task-plus-criterion / criterion-only / later-batch}}",
+    "foundation": "{{walking-skeleton / full-skeleton}}",
+    "platformMap": { "{{web}}": ["web"], "{{mobile}}": ["{{web / mobile / ios, android}}"] },
+    "platformOrder": "{{null / one-first / together / by-flow}}"
+  },
+  "lastTask": 0,
+  "batches": [
+    {
+      "id": "01",
+      "slug": "{{what-it-delivers}}",
+      "stage": "{{MVP / in scope / next / later}}",
+      "flow": "{{Flow 1 / widening of 01 / null}}",
+      "detailed": false,
+      "closed": null
+    }
+  ],
+  "currentBatch": "01",
+  "currentPinned": null,
+  "pending": null
+}

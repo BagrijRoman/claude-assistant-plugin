@@ -1,0 +1,25 @@
+{
+  "kind": "research",
+  "version": 1,
+  "topic": "{{topic in English}}",
+  "created": "{{YYYY-MM-DD}}",
+  "updated": "{{YYYY-MM-DDTHH:MM}}",
+  "phase": "frame",
+  "focus": [],
+  "engine": null,
+  "consent": {
+    "grantedOn": null,
+    "scope": []
+  },
+  "rounds": [
+    {
+      "n": 1,
+      "questions": [],
+      "engine": null,
+      "status": "pending",
+      "raw": null,
+      "reason": null
+    }
+  ],
+  "questions": {}
+}

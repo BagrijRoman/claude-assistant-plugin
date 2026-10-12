@@ -1,0 +1,11 @@
+{
+  "name": "dev-assistant",
+  "private": true,
+  "description": "Personal Claude Code development assistant plugin",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}

@@ -1,0 +1,730 @@
+/*
+ * The showcase's own frame: sidebar, top bar, sections, swatches, spec tables.
+ * It is laid out like an app shell: a sidebar of --size-sidebar, a top bar of --size-header, a
+ * page-colored background with 32px padding. Colors and sizes come from tokens.css.
+ */
+
+/* ── Frame ── */
+
+/* The room for the scrollbar is always there, so a short page and a long one are equally wide */
+html {
+  scrollbar-gutter: stable;
+}
+
+body {
+  display: grid;
+  grid-template-columns: var(--size-sidebar) minmax(0, 1fr);
+  grid-template-rows: var(--size-header) 1fr;
+  min-height: 100vh;
+}
+
+.sc-side {
+  grid-row: 1 / 3;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border-right: 1px solid var(--color-default);
+  background: var(--color-surface);
+  overflow-y: auto;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.sc-side .brand {
+  margin-bottom: 8px;
+}
+
+/* This menu lists many more pages than the app's, so its rows are lower than the app's 36px items */
+.sc-side .navlink {
+  height: auto;
+  min-height: 32px;
+  padding: 6px 12px 6px 28px;
+  line-height: 20px;
+  font-weight: 400;
+}
+
+.sc-side .navlink[aria-current='page'] {
+  font-weight: 500;
+}
+
+/* A group is a <details>: its title is the <summary> that folds and unfolds its pages */
+.sc-side__title {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sc-side__title:hover {
+  background: var(--color-surface-muted);
+}
+
+.sc-side__chevron {
+  width: 6px;
+  height: 6px;
+  margin: 0 2px 2px 0;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform var(--duration-fast);
+}
+
+.sc-side__title::-webkit-details-marker {
+  display: none;
+}
+
+.sc-side__group:not([open]) .sc-side__chevron {
+  margin-bottom: 0;
+  transform: rotate(-45deg);
+}
+
+.sc-side__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 2px;
+}
+
+/* A link holds the size of its Medium label (the hidden copy drawn from data-label), so the
+   menu does not shift or re-wrap when the highlight moves to another page */
+.sc-side a.navlink {
+  display: grid;
+}
+
+.sc-side a.navlink > span,
+.sc-side a.navlink::after {
+  grid-area: 1 / 1;
+}
+
+.sc-side a.navlink::after {
+  content: attr(data-label);
+  visibility: hidden;
+  font-weight: 500;
+}
+
+.sc-side__planned {
+  cursor: default;
+  color: var(--color-subtle);
+}
+
+.sc-side__planned:hover {
+  background: transparent;
+  color: var(--color-subtle);
+}
+
+.sc-side__soon {
+  height: 20px;
+  margin-left: auto;
+  padding: 0 6px;
+}
+
+.sc-side__hint {
+  margin-top: auto;
+  padding: 0 12px;
+}
+
+.sc-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: var(--size-header);
+  padding: 0 32px;
+  border-bottom: 1px solid var(--color-default);
+  background: var(--color-surface);
+}
+
+.sc-menu {
+  display: none;
+  height: 36px;
+  padding: 0 12px;
+}
+
+.sc-crumb {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--color-muted);
+}
+
+.sc-crumb__page {
+  color: var(--color-foreground);
+  font-weight: 500;
+}
+
+.sc-top__right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+}
+
+.sc-main {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  width: 100%;
+  max-width: 1264px;
+  padding: 32px;
+}
+
+.sc-scrim {
+  display: none;
+}
+
+/* The theme and language switches in the top bar are the segmented control of components.css, so
+   they take the product's style when the Components phase restyles it */
+
+/* ── Page head and sections ── */
+
+/* A sample never widens the page: a table or a shell scrolls inside its own frame instead */
+.sc-main > *,
+.sc-section > *,
+.sc-block > *,
+.sc-stack > *,
+.sc-grid-2 > *,
+.sc-grid-3 > *,
+.sc-grid-4 > * {
+  min-width: 0;
+}
+
+.sc-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sc-hero__overline {
+  color: var(--color-primary);
+}
+
+.sc-hero p,
+.sc-section__head p {
+  max-width: 760px;
+  color: var(--color-muted);
+}
+
+.sc-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sc-section__head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-default);
+}
+
+.sc-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sc-row__items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.sc-row__items--tight {
+  gap: 8px;
+}
+
+.sc-row__items--center {
+  align-items: center;
+}
+
+.sc-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sc-grid-2,
+.sc-grid-3,
+.sc-grid-4 {
+  display: grid;
+  gap: 16px;
+}
+
+.sc-grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.sc-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.sc-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+.sc-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* Where a sample comes from in the app */
+.sc-source {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--color-muted);
+}
+
+.sc-source code,
+.sc-list code,
+.sc-hero code,
+.sc-section__head code,
+.t-caption code,
+.field__hint code,
+.table code,
+.sc-note code {
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: var(--color-surface-muted);
+  color: var(--color-foreground);
+}
+
+.sc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 20px 20px 40px;
+  list-style: disc;
+  max-width: 880px;
+}
+
+.sc-list strong {
+  font-weight: 600;
+}
+
+/* "Proposed": a sample that is not in the template or the app yet */
+.sc-proposed {
+  border-color: transparent;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-strong);
+}
+
+/* A sample that needs the page background behind it (the app shell parts) */
+.sc-stage {
+  padding: 16px;
+  border: 1px solid var(--color-default);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.sc-stage--page {
+  background: var(--color-page);
+}
+
+.sc-stage--narrow {
+  width: var(--size-sidebar);
+}
+
+.sc-stage--center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+}
+
+/* ── Swatches ── */
+
+.sc-swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.swatch {
+  overflow: hidden;
+  border: 1px solid var(--color-default);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.swatch__chip {
+  height: 72px;
+  border-bottom: 1px solid var(--color-default);
+}
+
+.swatch__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+}
+
+.swatch__name {
+  font-weight: 500;
+  color: var(--color-foreground);
+}
+
+.swatch__value {
+  color: var(--color-muted);
+}
+
+.swatch__use {
+  margin-top: 4px;
+}
+
+.swatch--small .swatch__chip {
+  height: 40px;
+}
+
+.sc-tone-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.sc-tone-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sc-tone-card .sc-swatches {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+/* ── Spec samples ── */
+
+.sc-sample {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 28px;
+  border: 1px solid var(--color-default);
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.sc-bar {
+  height: 16px;
+  border-radius: 2px;
+  background: var(--color-primary);
+}
+
+.sc-shape {
+  width: 88px;
+  height: 56px;
+  border: 1px solid var(--color-emphasis);
+  background: var(--color-surface);
+}
+
+.sc-shape--card { border-color: var(--color-default); border-radius: var(--radius-card); }
+
+.sc-typeface {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sc-typeface__name {
+  font-size: 40px;
+  line-height: 48px;
+  font-weight: 600;
+}
+
+.sc-typeface__sample {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.sc-uses {
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* A motion token replayed on demand */
+.sc-motion {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+}
+
+.sc-motion__box {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-card);
+  background: var(--color-primary);
+}
+
+/* ── Catalog tiles and the previous / next pager ── */
+
+.sc-catalog {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.sc-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.sc-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 20px;
+  color: var(--color-foreground);
+}
+
+a.sc-tile:hover {
+  border-color: var(--color-primary);
+  color: var(--color-foreground);
+}
+
+.sc-tile p {
+  color: var(--color-muted);
+}
+
+.sc-tile--planned {
+  box-shadow: none;
+  background: transparent;
+}
+
+.sc-pager {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-default);
+}
+
+.sc-pager__link {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sc-pager__link--next {
+  margin-left: auto;
+  text-align: right;
+}
+
+.sc-pager__title {
+  font-weight: 500;
+}
+
+/* ── A page in sections (all the components) ──
+   Each section opens with its own head, under a rule, like a page of its own. The menu marks the
+   one on screen as the page scrolls (nav.js). */
+
+.sc-block {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  padding-top: 48px;
+  border-top: 1px solid var(--color-emphasis);
+  scroll-margin-top: 24px;
+}
+
+/* ── Diagrams: inline SVG drawn with the same tokens ── */
+
+.sc-diagram {
+  padding: 24px;
+  overflow-x: auto;
+}
+
+.sc-diagram svg {
+  display: block;
+  width: 100%;
+  min-width: 720px;
+  height: auto;
+  font-family: var(--font-sans);
+}
+
+.dg-box {
+  fill: var(--color-surface);
+  stroke: var(--color-emphasis);
+  stroke-width: 1;
+}
+
+.dg-box--main {
+  fill: var(--color-primary-soft);
+  stroke: var(--color-primary);
+}
+
+.dg-box--data {
+  fill: var(--color-surface-muted);
+  stroke: var(--color-emphasis);
+}
+
+.dg-box--made {
+  fill: var(--color-surface);
+  stroke: var(--color-muted);
+  stroke-dasharray: 4 3;
+}
+
+.dg-title {
+  fill: var(--color-foreground);
+  font-size: 14px;
+  font-weight: 600;
+  text-anchor: middle;
+}
+
+.dg-sub {
+  fill: var(--color-muted);
+  font-size: 12px;
+  text-anchor: middle;
+}
+
+.dg-label {
+  fill: var(--color-muted);
+  font-size: 12px;
+  text-anchor: middle;
+}
+
+.dg-line {
+  fill: none;
+  stroke: var(--color-muted);
+  stroke-width: 1.5;
+}
+
+.dg-head {
+  fill: var(--color-muted);
+}
+
+/* A browser frame around a screen sample */
+.frame {
+  overflow: hidden;
+  border: 1px solid var(--color-emphasis);
+  border-radius: var(--radius-card);
+  background: var(--color-page);
+}
+
+.frame__chrome {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--color-default);
+  background: var(--color-surface);
+}
+
+.frame__url {
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--color-surface-muted);
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.frame__screen {
+  overflow-x: auto;
+}
+
+/* The shell sample: a sidebar and a top bar with a page under them, inside a frame */
+.shell-sample {
+  display: grid;
+  grid-template-columns: var(--size-sidebar) minmax(0, 1fr);
+  min-height: 360px;
+}
+
+.shell-sample--collapsed {
+  grid-template-columns: 64px minmax(0, 1fr);
+}
+
+.shell-sample__side {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border-right: 1px solid var(--color-default);
+  background: var(--color-surface);
+}
+
+.shell-sample__page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+}
+
+/* ── Narrow screens: the sidebar slides over the page ── */
+
+@media (max-width: 900px) {
+  body {
+    display: block;
+  }
+
+  .sc-side {
+    position: fixed;
+    z-index: 20;
+    left: 0;
+    width: var(--size-sidebar);
+    transform: translateX(-100%);
+  }
+
+  .nav-open .sc-side {
+    transform: none;
+    box-shadow: var(--shadow-overlay);
+  }
+
+  .nav-open .sc-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    background: var(--color-overlay);
+  }
+
+  .sc-menu {
+    display: inline-flex;
+  }
+
+  .sc-top,
+  .sc-main {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .sc-top__note {
+    display: none;
+  }
+
+  .segmented__item span {
+    display: none;
+  }
+
+  .sc-grid-2,
+  .sc-grid-3,
+  .sc-grid-4 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .shell-sample {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .shell-sample__side {
+    display: none;
+  }
+
+  .toolbar .field {
+    width: 100%;
+  }
+}

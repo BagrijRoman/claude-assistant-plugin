@@ -1,0 +1,173 @@
+/*
+ * The components of {{NAME}}, in plain CSS, on the tokens in tokens.css.
+ *
+ * Each block names where the component comes from: the file in the product's code, or "proposed"
+ * when the product does not have it yet. A value is never written here; every color, radius, size
+ * and duration is a token.
+ *
+ * STARTER: the few classes the showcase's own frame needs (brand tile, navigation link, buttons,
+ * segmented control, tag, badge, card, table, spinner, icon). The Components phase restyles them to
+ * the product and adds the rest, one block per section of components/index.html — the showcase's
+ * menu then looks like the product's own sidebar.
+ */
+
+/* ── Brand tile: the mark and the product's name at the top of the menu — starter ── */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 12px;
+  color: var(--color-foreground);
+  font-weight: 600;
+  text-decoration: none;
+}
+.brand:hover { color: var(--color-foreground); }
+.brand__mark {
+  /* A picked mark is drawn in currentColor with its knockouts in --lg-ground: here the tile's own fill */
+  --lg-ground: var(--color-primary);
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-control);
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+.brand__mark svg { width: 18px; height: 18px; }
+
+/* ── Navigation link: a menu item; the page on show carries aria-current — starter ── */
+.navlink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: var(--radius-control);
+  color: var(--color-muted);
+  text-decoration: none;
+}
+.navlink:hover,
+.navlink.is-hover {
+  background: var(--color-surface-muted);
+  color: var(--color-foreground);
+}
+.navlink[aria-current='page'] {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-strong);
+}
+
+/* ── Icon: a 16 px grid, drawn with the current color; the sprite is in assets/showcase.js ── */
+.icon { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.icon--18 { width: 18px; height: 18px; }
+.icon--20 { width: 20px; height: 20px; }
+.icon--24 { width: 24px; height: 24px; stroke-width: 1.5; }
+
+/* ── Button — starter ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: var(--size-control);
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  font: inherit;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color var(--duration-fast) var(--ease-standard), border-color var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard);
+}
+.btn:focus-visible, .is-focus { outline: 2px solid var(--color-ring); outline-offset: 2px; }
+.btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+.btn--sm { height: var(--size-control-sm); padding: 0 10px; font-size: 13px; }
+.btn--primary { background: var(--color-primary); color: var(--color-primary-foreground); }
+.btn--primary:hover, .btn--primary.is-hover { background: var(--color-primary-hover); }
+.btn--secondary { background: var(--color-surface); border-color: var(--color-emphasis); color: var(--color-foreground); }
+.btn--secondary:hover, .btn--secondary.is-hover { background: var(--color-surface-muted); }
+.btn--ghost { background: transparent; color: var(--color-foreground); }
+.btn--ghost:hover, .btn--ghost.is-hover { background: var(--color-surface-muted); }
+.btn--danger { background: var(--color-danger); color: var(--color-danger-foreground); }
+.btn--danger:hover, .btn--danger.is-hover { background: var(--color-danger-hover); }
+.btn--block { width: 100%; }
+.btn.is-loading { position: relative; color: transparent; }
+.btn.is-loading .spinner { position: absolute; }
+
+/* ── Spinner — starter ── */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--radius-full);
+  animation: spin var(--duration-spin) linear infinite;
+}
+.btn.is-loading .spinner { color: var(--color-primary-foreground); }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Segmented control: the theme and language switches of this site — starter ── */
+.segmented {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--color-default);
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-control);
+}
+.segmented__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: calc(var(--size-control-sm) - 4px);
+  padding: 0 10px;
+  border: 0;
+  border-radius: calc(var(--radius-control) - 2px);
+  background: transparent;
+  color: var(--color-muted);
+  font: inherit;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.segmented__item .icon { width: 14px; height: 14px; }
+.segmented__item:hover { color: var(--color-foreground); }
+.segmented__item[aria-pressed='true'] { background: var(--color-surface); color: var(--color-foreground); box-shadow: var(--shadow-card); }
+.segmented__item:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 1px; }
+
+/* ── Tag and badge — starter ── */
+.tag, .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 8px;
+  border: 1px solid var(--color-default);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+.badge--success { background: var(--color-success-soft); color: var(--color-success-text); border-color: transparent; }
+.badge--warning { background: var(--color-warning-soft); color: var(--color-warning-text); border-color: transparent; }
+.badge--danger { background: var(--color-danger-soft); color: var(--color-danger-text); border-color: transparent; }
+.badge--info { background: var(--color-info-soft); color: var(--color-info-text); border-color: transparent; }
+
+/* ── Card — starter ── */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-default);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+/* ── Table — starter ── */
+.table-wrap { overflow: auto; border: 1px solid var(--color-default); border-radius: var(--radius-card); background: var(--color-surface); }
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table th, .table td { padding: 10px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--color-default); }
+.table th { color: var(--color-muted); font-weight: 500; font-size: 12px; letter-spacing: 0.02em; background: var(--color-surface-muted); }
+.table tbody tr:last-child td { border-bottom: 0; }
+.table .num { text-align: right; font-variant-numeric: tabular-nums; }
