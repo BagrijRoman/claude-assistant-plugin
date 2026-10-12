@@ -12,6 +12,12 @@ judgement. The hooks [secret-files-guard](../hooks/secretFilesGuard.md) and
 But a `deny` list lives in the project's `.claude/settings.json`, not in the plugin, so something has to
 carry it there. This skill does, through a script, so the result is the same on every machine and every run.
 
+The same script writes a short `allow` list: the routine git commands that only read or change the local
+repository. Without it every `git status` or `git commit` asks for approval, and approvals pile up as one-off
+rules in `settings.local.json`; with it the project gets one reviewed list, committed for the whole team.
+Commits still pass through [main-branch-guard](../hooks/mainBranchGuard.md) and
+[secret-commit-guard](../hooks/secretCommitGuard.md).
+
 The rules are built from the same secret-file list the hooks use
 ([bin/lib/permissionRules.mjs](../../bin/lib/permissionRules.mjs) over
 [bin/lib/secretPaths.mjs](../../bin/lib/secretPaths.mjs)), so the boundary and the hooks never disagree.
@@ -21,8 +27,8 @@ the generated, readable copy of the list.
 ## What it does
 
 1. Runs `node "${CLAUDE_PLUGIN_ROOT}/bin/setupPermissions.mjs" [dir]` against the project.
-2. Shows the script's report unchanged: created / updated / already up to date, how many rules were added
-   and which ones.
+2. Shows the script's report unchanged: created / updated / already up to date, how many `allow` and `deny`
+   rules were added and which ones.
 3. On a JSON error in the existing settings file, shows the message and stops; the human fixes the file.
 4. Reminds the human to commit `.claude/settings.json` and to restart Claude Code, since permissions are read
    at session start.
@@ -30,7 +36,8 @@ the generated, readable copy of the list.
 ## What it will not do
 
 - Edit `.claude/settings.json` by hand; the script is the only writer.
-- Add `allow` rules or remove `deny` rules. Loosening the boundary is a human decision made outside the skill.
+- Add rules beyond the script's, or remove any rule. Loosening the boundary further is a human decision made
+  outside the skill.
 - Touch a directory the human did not name.
 
 ## The rules it writes
@@ -39,6 +46,7 @@ the generated, readable copy of the list.
 |-------|-------|
 | secret files in the project | `Read(./**/.env)`, `Read(./**/.env.*)`, `Read(./**/*.pem)`, `Read(./**/*.key)`, … and the same as `Edit(…)` — one pair per glob in the secret-file list |
 | secret files in the home directory | `Read(~/.ssh/**)`, `Read(~/.aws/credentials)`, `Read(~/.netrc)`, `Read(~/.pgpass)` and their `Edit(…)` pairs |
+| allow: routine git commands | `Bash(git status:*)`, `diff`, `log`, `show`, `branch`, `rev-parse`, `ls-files`, `ls-remote`, `blame`, `grep`, `describe`, `fetch`, `pull`, `add`, `commit`, `switch` — each as `Bash(git <command>:*)`. Not `push` (publishes), not `reset`, `restore`, `checkout`, `clean`, `stash` (can discard work), not `rebase` (rewrites history) |
 | irreversible commands | `Bash(git push --force:*)`, `Bash(git push -f:*)`, `Bash(gh pr merge:*)`, `Bash(gh release create:*)`, `Bash(npm publish:*)`, `Bash(pnpm publish:*)`, `Bash(yarn publish:*)`, `Bash(eas submit:*)` |
 
 `Read(…)` also covers `Grep` and `Glob`; `Edit(…)` also covers `Write`. `Bash(prefix:*)` matches every
@@ -60,12 +68,12 @@ Behaviour:
 
 - Reads `.claude/settings.json` if it exists. A file that does not parse is reported on stderr with exit
   `1` and left untouched.
-- Appends every rule from the list that is not already in `permissions.deny`. Existing entries, their
-  order, `allow`/`ask` lists and every other key (`model`, `hooks`, …) are kept as they are.
+- Appends every rule that is not already in `permissions.allow` or `permissions.deny` respectively. Existing
+  entries, their order, the `ask` list and every other key (`model`, `hooks`, …) are kept as they are.
 - Records `devAssistant.version` with the plugin version that wrote the file.
 - Writes with two-space indentation and a trailing newline, creating `.claude/` when needed.
-- Prints the report: the action, the counts (added / already present / other entries kept), each added rule,
-  and the reminder to commit and restart. Exit `0`.
+- Prints the report: the action, per list the counts (added / already present / other entries kept), each
+  added rule, and the reminder to commit and restart. Exit `0`.
 
 A second run adds nothing and reports "already up to date". After a plugin update that adds a rule, a run
 adds only that rule.
@@ -75,7 +83,7 @@ adds only that rule.
 - **It only adds.** A rule removed from the plugin stays in projects that already have it; removing it is a
   human edit. This is on purpose: the script never takes a boundary away.
 - **`Bash` rules match text, not meaning.** `Bash(git push --force:*)` also matches `git push
-  --force-with-lease …`; `Bash(cat .env)` would match nothing useful, so shell reads of secret files are
+  --force-with-lease …`; `Bash(git branch:*)` also allows `git branch -D` (the reflog still has the commits); `Bash(cat .env)` would match nothing useful, so shell reads of secret files are
   left to the hook.
 - **Example files are denied too.** Permissions have no exceptions, so `Read(./**/.env.*)` also denies
   `.env.example`. The hook allows it, but the permission wins. Keep variable names documented in a
@@ -86,6 +94,7 @@ adds only that rule.
 
 ## Tests
 
-- [tests/setupPermissions.test.mjs](../../tests/setupPermissions.test.mjs) — the rule builder, the template
+- [tests/setupPermissions.test.mjs](../../tests/setupPermissions.test.mjs) — the rule builders (no allowed
+  command publishes, discards work or rewrites history; no rule is both allowed and denied), the template
   in sync, a fresh project, a second run, foreign entries kept, `--dry-run`, an invalid file, the default
   directory.

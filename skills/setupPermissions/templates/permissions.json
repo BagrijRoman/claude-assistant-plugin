@@ -1,5 +1,23 @@
 {
   "permissions": {
+    "allow": [
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git ls-files:*)",
+      "Bash(git ls-remote:*)",
+      "Bash(git blame:*)",
+      "Bash(git grep:*)",
+      "Bash(git describe:*)",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git switch:*)"
+    ],
     "deny": [
       "Read(./**/.env)",
       "Read(./**/.env.*)",

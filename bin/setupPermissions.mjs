@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// setup-permissions — writes the plugin's permission `deny` rules into a project's .claude/settings.json.
+// setup-permissions — writes the plugin's permission `allow` and `deny` rules into a project's .claude/settings.json.
 //
 //   node bin/setupPermissions.mjs [project-dir] [--dry-run] [--template]
 //
@@ -11,7 +11,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildDenyRules } from './lib/permissionRules.mjs';
+import { buildAllowRules, buildDenyRules } from './lib/permissionRules.mjs';
 
 const PLUGIN_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const pluginVersion = () => JSON.parse(readFileSync(join(PLUGIN_ROOT, '.claude-plugin', 'plugin.json'), 'utf8')).version;
@@ -21,7 +21,7 @@ const flags = new Set(args.filter((arg) => arg.startsWith('--')));
 const projectDir = resolve(args.find((arg) => !arg.startsWith('--')) ?? process.cwd());
 
 if (flags.has('--template')) {
-  process.stdout.write(`${JSON.stringify({ permissions: { deny: buildDenyRules() } }, null, 2)}\n`);
+  process.stdout.write(`${JSON.stringify({ permissions: { allow: buildAllowRules(), deny: buildDenyRules() } }, null, 2)}\n`);
   process.exit(0);
 }
 
@@ -43,17 +43,24 @@ if (exists) {
 }
 
 const permissions = settings.permissions ?? {};
-const deny = Array.isArray(permissions.deny) ? [...permissions.deny] : [];
-const present = new Set(deny);
-const added = buildDenyRules().filter((rule) => !present.has(rule));
+
+// Appends the plugin's rules missing from one list; existing entries keep their place.
+const merge = (list, rules) => {
+  const existing = Array.isArray(permissions[list]) ? [...permissions[list]] : [];
+  const present = new Set(existing);
+  const added = rules.filter((rule) => !present.has(rule));
+  const alreadyPresent = rules.length - added.length;
+  return { list, entries: [...existing, ...added], added, alreadyPresent, foreign: existing.length - alreadyPresent };
+};
+const merged = [merge('allow', buildAllowRules()), merge('deny', buildDenyRules())];
 
 const next = {
   ...settings,
-  permissions: { ...permissions, deny: [...deny, ...added] },
+  permissions: { ...permissions, ...Object.fromEntries(merged.map(({ list, entries }) => [list, entries])) },
   devAssistant: { ...(settings.devAssistant ?? {}), version: pluginVersion() },
 };
 
-const changed = added.length > 0 || settings.devAssistant?.version !== next.devAssistant.version;
+const changed = merged.some(({ added }) => added.length > 0) || settings.devAssistant?.version !== next.devAssistant.version;
 const action = !exists ? 'create' : changed ? 'update' : 'keep';
 
 if (action !== 'keep' && !flags.has('--dry-run')) {
@@ -62,12 +69,14 @@ if (action !== 'keep' && !flags.has('--dry-run')) {
 }
 
 const verb = { create: 'created', update: 'updated', keep: 'already up to date' }[action];
-const lines = [
-  `[dev-assistant] ${settingsPath}: ${flags.has('--dry-run') && action !== 'keep' ? `would be ${verb}` : verb}`,
-  `  deny rules added: ${added.length}`,
-  `  deny rules already present: ${buildDenyRules().length - added.length}`,
-  `  other entries kept: ${deny.length - (buildDenyRules().length - added.length)}`,
-];
-for (const rule of added) lines.push(`  + ${rule}`);
+const lines = [`[dev-assistant] ${settingsPath}: ${flags.has('--dry-run') && action !== 'keep' ? `would be ${verb}` : verb}`];
+for (const { list, added, alreadyPresent, foreign } of merged) {
+  lines.push(
+    `  ${list} rules added: ${added.length}`,
+    `  ${list} rules already present: ${alreadyPresent}`,
+    `  other ${list} entries kept: ${foreign}`,
+  );
+  for (const rule of added) lines.push(`  + ${list} ${rule}`);
+}
 if (action !== 'keep') lines.push('Commit .claude/settings.json so the whole team gets the same boundary; restart Claude Code to apply it here.');
 process.stdout.write(`${lines.join('\n')}\n`);

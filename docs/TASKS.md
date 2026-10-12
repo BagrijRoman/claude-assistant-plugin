@@ -450,6 +450,30 @@ Done when:
 - `npm test` covers the script; the skill calls it instead of checking by hand.
 - Page, index rows and README rows exist (already true; the structure test holds).
 
+## T21 — `allow` rules for routine git commands in `/setup-permissions` · `done`
+
+Every `git status`, `git diff` or `git commit` asked for approval, and the approvals piled up as one-off rules in
+each machine's `settings.local.json`. The plugin now carries one reviewed `allow` list and `/setup-permissions`
+writes it next to the `deny` list, so a project gets it in the committed `.claude/settings.json`. This lifts T5's
+"deny only" limit by the human's decision (2026-10-12).
+
+What was done:
+- `bin/lib/permissionRules.mjs`: `buildAllowRules()` — `Bash(git <command>:*)` for `status`, `diff`, `log`,
+  `show`, `branch`, `rev-parse`, `ls-files`, `ls-remote`, `blame`, `grep`, `describe`, `fetch`, `pull`, `add`,
+  `commit`, `switch`. Left out: `push` (publishes), `reset`, `restore`, `checkout`, `clean`, `stash` (can discard
+  work), `rebase` and `filter-branch` (rewrite history). Commits still pass through `main-branch-guard` and
+  `secret-commit-guard`.
+- `bin/setupPermissions.mjs`: merges `allow` the same way as `deny` (adds what is missing, keeps foreign entries and
+  their order); the report has counts per list; `--template` prints both lists.
+- `skills/setupPermissions/templates/permissions.json` regenerated; `SKILL.md`, the skill page, both index rows
+  updated.
+
+Done when:
+- `npm test` proves the allow list holds no command that publishes, discards work or rewrites history, that no rule
+  is both allowed and denied, and that a project's own `allow` entries survive the merge.
+
+Result: 0.11.0; 224 tests pass. Not yet tried in a real project after a restart.
+
 ## Draft of the next tasks
 
 Order and contents are still being refined.
