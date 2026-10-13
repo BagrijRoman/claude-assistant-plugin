@@ -1,11 +1,11 @@
-# Research: apiko-agent v0.3.2 and a plan for our own workflows
+# Research: a reference plugin and a plan for our own workflows
 
-Source: `/Users/romanbagrij/Apiko/agent` (plugin `apiko-agent@apiko`, previously enabled globally in `~/.claude/settings.json`).
+Source: a third-party Claude Code plugin used as a reference, previously enabled globally in `~/.claude/settings.json`.
 Date: 2026-09-11.
 
 ## 1. In one paragraph
 
-apiko-agent is a Claude Code plugin that turns the agent's work into a pipeline:
+The reference plugin is a Claude Code plugin that turns the agent's work into a pipeline:
 **plan → human approval → plan check → implementation one requirement at a time → self-review → draft PR**.
 It uses all five layers from our README: a CLAUDE.md constitution with rule IDs, skills as procedures,
 subagents for noisy work, hooks for what is mandatory, and permissions for what is forbidden.
@@ -115,7 +115,7 @@ so the core knows nothing about npm or make.
 10. **Subagents return conclusions, not logs.** `build-validator` and `test-runner` return only errors with a likely cause;
     `code-reviewer` returns findings by severity with rule IDs. None of them has write tools.
 
-11. **A thin orchestrator.** `/feature` only invokes other skills and does not duplicate their content. The reason Apiko gives:
+11. **A thin orchestrator.** `/feature` only invokes other skills and does not duplicate their content. The reason its authors give:
     after compaction only the beginning of recently invoked skills is re-attached, so a fat wrapper loses detail.
     `disable-model-invocation: true` on `/feature` and `/setup`, so the model never starts them on its own.
 
@@ -176,8 +176,8 @@ so the core knows nothing about npm or make.
 
 ### Minimal hook set
 
-| Hook | Event | Changes compared to Apiko |
-|------|-------|---------------------------|
+| Hook | Event | Changes compared to the reference |
+|------|-------|-----------------------------------|
 | `brief` | SessionStart | the same, plus the status of the active feature from `plan.md` |
 | `guard-bash` | PreToolUse Bash | git + destructive in one file; quote and heredoc aware parsing |
 | `guard-files` | PreToolUse Edit/Write | protected paths + plan approval; reads `status:` from the frontmatter |
@@ -186,8 +186,8 @@ so the core knows nothing about npm or make.
 
 ### Subagents
 
-| Agent | Role | Difference from Apiko |
-|-------|------|-----------------------|
+| Agent | Role | Difference from the reference |
+|-------|------|-------------------------------|
 | `checker` | runs typecheck, lint and tests from the command map, returns only errors | merges `build-validator` and `test-runner` |
 | `plan-checker` | read-only plan gate, PASS/BLOCK | a separate agent instead of a skill, so a clean context is guaranteed |
 | `reviewer` | diff review by severity | the same, but with rule names instead of IDs |
@@ -202,8 +202,8 @@ so the core knows nothing about npm or make.
 
 ### Mapping
 
-| Apiko mechanism | Our version | What changes |
-|-----------------|-------------|--------------|
+| Reference mechanism | Our version | What changes |
+|---------------------|-------------|--------------|
 | Command map in CLAUDE.md | the same | exact prefix match instead of a substring |
 | `Approved-by:` in plan.md | `status: approved` + `approved-by:` in the frontmatter | one machine-readable status for the whole feature |
 | `/analyze` as a skill | `plan-checker` as a subagent | isolation guaranteed by mechanism, not by request |

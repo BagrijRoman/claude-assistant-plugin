@@ -1,7 +1,7 @@
 # Tasks
 
 Task list for our own Claude Code assistant plugin.
-Based on: [apikoAgentResearch.md](apikoAgentResearch.md).
+Based on: [referencePluginResearch.md](referencePluginResearch.md).
 
 Statuses: `todo` · `in progress` · `done`.
 
@@ -10,7 +10,7 @@ Statuses: `todo` · `in progress` · `done`.
 - Plugin name: **dev-assistant**. Commands look like `/dev-assistant:verify`, or just `/verify` when the name is not taken.
 - The repository is its own local marketplace, `bagrijroman`; the install id is `dev-assistant@bagrijroman`.
 - Every hook ships with its own page in [hooks/](hooks/README.md) and a row in its index; `npm test` fails otherwise.
-- apiko-agent is disabled (2026-09-11) so its hooks do not fire alongside ours. Re-enable with `claude plugin enable apiko-agent@apiko`.
+- The reference plugin is disabled (2026-09-11) so its hooks do not fire alongside ours.
 - Files are named in camelCase; a hook keeps its kebab-case name in messages and docs. `TASKS.md` and `README.md` stay upper-case.
 - Project config comes from the plugin through a script, not by hand: templates live in the skill's folder
   (`skills/setupPermissions/templates/`), `bin/setupPermissions.mjs` merges them into the project (idempotent, never deletes foreign entries, prints what it
