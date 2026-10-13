@@ -7,5 +7,8 @@
   },
   "scripts": {
     "test": "node --test"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.5"
   }
 }

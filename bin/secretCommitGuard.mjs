@@ -7,35 +7,12 @@
 // Fails open: a crashing guard must never lock a session.
 
 import { commitDiff } from './lib/git.mjs';
-import { gitCommands } from './lib/gitCommands.mjs';
+import { gitCommands, parseCommit } from './lib/gitCommands.mjs';
 import { block, pass, readPayload } from './lib/hookIo.mjs';
 import { isExampleFile, isSecretFile } from './lib/secretPaths.mjs';
 import { findSecret } from './lib/secretPatterns.mjs';
 
 const HOOK = 'secret-commit-guard';
-
-const COMMIT_OPTIONS_WITH_VALUE = new Set(['-m', '--message', '-F', '--file', '-C', '--reuse-message', '-c', '--reedit-message',
-  '-t', '--template', '--author', '--date', '--fixup', '--squash', '--cleanup', '--trailer', '--pathspec-from-file']);
-
-/** `-a`/`--all` widens the diff to every tracked file; pathspecs narrow it. */
-const parseCommit = (args) => {
-  let all = false;
-  const paths = [];
-  let afterDashes = false;
-  for (let k = 0; k < args.length; k += 1) {
-    const arg = args[k];
-    if (afterDashes) paths.push(arg);
-    else if (arg === '--') afterDashes = true;
-    else if (arg === '--all') all = true;
-    else if (/^-[a-zA-Z]+$/.test(arg)) {
-      // combined short flags: `-am x` is `-a` plus `-m x`, so a trailing value-taking letter eats the next word
-      if (arg.includes('a')) all = true;
-      if (COMMIT_OPTIONS_WITH_VALUE.has(`-${arg.at(-1)}`)) k += 1;
-    } else if (COMMIT_OPTIONS_WITH_VALUE.has(arg)) k += 1;
-    else if (!arg.startsWith('-')) paths.push(arg);
-  }
-  return { all, paths };
-};
 
 /** Walks a unified diff with no context and yields every added line with its file and line number. */
 const addedLines = function* (diff) {

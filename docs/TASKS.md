@@ -235,7 +235,7 @@ Done when:
 - Running `/derive-rules` on `template-backend` yields a `.claude/rules/backend.md` the human recognises as true.
 - A page `docs/skills/deriveRules.md`, a row in the index and a row in the root README.
 
-## T9 — `pattern-reviewer` agent · `todo`
+## T9 — `pattern-reviewer` agent · `done` (0.12.0, with T24)
 
 A read-only subagent that reviews a diff against `CLAUDE.md` and the `.claude/rules/*.md` files matching the
 touched paths, and reports what a linter cannot see: logic in a controller, a swallowed error, a second pattern
@@ -246,6 +246,8 @@ What to do:
   report shape — findings by severity, each with file, line, the rule it breaks (by name) and the concrete fix;
   a clean diff gets a one-line PASS.
 - Reviews the diff, not the files: findings about untouched code are out of scope.
+- Also reviews against the rules marked `review` in the installed standards packs (T24); every finding cites its rule
+  id, or says it fits no rule, and is recorded for T24's promotion.
 - `docs/agents/README.md` (how agents run, the rules, how to add one) and `docs/agents/patternReviewer.md`;
   `tests/structure.test.mjs` extended to require a page per agent, as for hooks and skills.
 - Feeds `/self-review` (T13) later; usable on its own as `@pattern-reviewer` meanwhile.
@@ -474,17 +476,250 @@ Done when:
 
 Result: 0.11.0; 224 tests pass. Not yet tried in a real project after a restart.
 
+## T22 — Test gate: tests planned before the code, checked before review and at commit · `todo`
+
+New functionality reaches the operator's review, and then a commit, only with the tests that matter, or with the
+operator's reason for going without. "Covered" is judged by risk, not by a percentage: the most important scenarios,
+each at the cheapest level that proves it, so the suite stays small and fast. A test is never deleted or weakened to
+get a green run: a failing test is investigated. Agreed with the operator on 2026-10-12.
+
+What to do:
+- Test plan before the code: each acceptance criterion → test level (unit, component, API, e2e) → file, or "no test,
+  because …". The operator approves it together with the plan of the code. A `/backlog` task keeps it in a
+  `## Test plan` section (the `TASK.md` template gains it).
+- `bin/testGate.mjs`: one check, two entry points.
+  - `Stop`: when code changed, blocks at most once per operator message with the gaps, so the operator reviews code
+    and tests together.
+  - `PreToolUse` on `Bash`, for `git commit` (the staged diff): blocks while a gap remains, and the message sends
+    Claude to `/test-plan gaps`. A hook cannot start a skill itself; a commit retried without the fix is blocked again.
+- Gaps the script finds on its own, with no model involved:
+  - a test-plan item without its test, or with a red one;
+  - new code that no test runs: the tests related to the changed files, with coverage, through the project's own
+    command (nothing hardcoded; e2e suites are not run here);
+  - a new endpoint without an API test: a new method + path in the diff of a committed `openapi.json`, the documented
+    statuses as candidate cases (`template-backend` gains the snapshot and a test that fails when it is stale);
+  - a new screen without an e2e spec;
+  - a weakened test: a deleted test or test file, a new `.skip`/`.only`/`.todo`, a test without an assertion, a
+    changed expected value in an existing test.
+- `/test-plan` skill, invocable by the model as well as the operator: `plan` writes the test plan; `gaps` proposes the
+  few most important missing tests, each with one line on what breaks without it, and asks the operator: write all ·
+  choose some · commit without tests (then asks the reason).
+- Priorities live in the project's `.claude/rules/testing.md`: always (business rules; access, money, data deletion;
+  each new endpoint's success and main error; a bug fix's reproducing test), when there is logic (branches, edge
+  cases), never (trivial code, markup without logic, types, config, what another test already covers). Playwright
+  only for key user flows.
+- Going without tests is the operator's choice only: the commit message carries `Tests-skipped: <reason>`, which the
+  commit hook accepts. A deleted test is refused even then, unless the code it tests goes in the same commit (a
+  feature removed on purpose, decided 2026-10-12) and the message carries `Tests-removed: <reason>`. A changed
+  assertion passes with `Tests-changed: <cause>`, written after the skill has found whether the code or the test was
+  wrong and the operator agreed.
+- Pages `docs/hooks/testGate.md` and `docs/skills/testPlan.md`, rows in both indexes and the root README.
+
+Done when:
+- `npm test` proves, on throwaway repositories: every kind of gap blocks; a clean change passes; `Tests-skipped:`
+  passes; a deleted test is refused even with it, and passes with `Tests-removed:` when the code it tests goes too;
+  the Stop hook blocks at most once per operator message.
+- On `template-backend`, a new endpoint without an API test blocks the commit, and `/test-plan gaps` proposes its
+  success and main error cases.
+
+Later (not in this task):
+- `/fix` (T15): the new test fails on the code before the fix and passes with it, checked by the script.
+- T10's `done-gate` takes over the Stop entry point and adds typecheck, lint and build.
+- The operator's own commits are not seen by Claude Code hooks; a husky `pre-commit` could run the mechanical part.
+
+Open:
+- Where the test plan lives for work that does not come from `/backlog`.
+- Whether the commit hook confirms from the session transcript that a skip reason came from the operator.
+
+## T23 — Design gate: UI planned from the design system, checked before review and at commit · `todo`
+
+Added UI is built from the project's design system and uses each token for what it means. The shape is T22's:
+scripts find what is certain and block, the `/design-review` skill judges the rest and proposes fixes, the operator
+decides. Agreed with the operator on 2026-10-12: variant B (the code is reviewed; screenshots come later), semantic
+tokens only, no raw HTML controls outside the UI kit.
+
+What to do:
+- UI plan before the code, in `/feature`'s plan (T14): the components and tokens a screen is built from, and what the
+  system lacks. A missing token or component is added to the design system first (raw value, light and dark, the
+  `@theme` mapping, shown on `/design-system`), then used.
+- Lint rules in the project, next to `eslint/noRawVisualValues.mjs`, so that CI runs them too and `lint-feedback`
+  relays them in the same turn; the plugin keeps them as templates for the setup script:
+  - semantic tokens only: no default Tailwind radius or shadow utility where the system has its own (`rounded-lg`
+    → `rounded-control`); `rounded-full` stays, as a shape;
+  - UI-kit components only: no raw `<button>`, `<input>`, `<a>`, `<select>`, `<textarea>`, `<table>` outside
+    `src/components/ui/` (none today); no `Button` whose `onClick` pushes a route (that is a `ButtonLink`).
+- `bin/designGate.mjs`, on T22's entry points (`Stop`, `git commit`):
+  - every token on `:root` has a dark value and a `@theme` mapping; every token and every UI-kit component is shown
+    on `/design-system`;
+  - every text-on-background token pair reaches 4.5:1 in both themes;
+  - when UI files changed, the message sends Claude to `/design-review`.
+- `design-reviewer` agent (read-only) behind the `/design-review` skill: reads the diff, the token guide and the UI
+  kit, and reports per finding the file, the line, the rule and the fix — a token used against its meaning
+  (`text-danger` as a red accent), a missing state (focus, disabled, loading, empty, error), the dark theme,
+  accessibility. The operator chooses: fix all · choose some · skip with `Design-skipped: <reason>` in the commit
+  message.
+- Token guide in the project, `.claude/rules/designSystem.md` with `paths:` on the UI sources, so that Claude reads it
+  whenever it edits UI: every semantic token, what it is for and where it must not be used; every UI-kit component and
+  when to use it. Derived from `globals.css`, `/design-system` and `CLAUDE.md`, confirmed by the operator line by line
+  (the `/derive-rules` mechanism, T8).
+- Pages for the hook, the skill and the agent, rows in the indexes and the root README.
+
+Done when:
+- `npm test` proves every rule and check on fixtures — a raw `<button>`, `rounded-lg`, a token without a dark value, a
+  token missing from `/design-system`, a low-contrast pair — and that a clean change passes.
+- On `template-next-admin`, a planted misuse (`text-danger` as decoration, a form without a loading state) is reported
+  by `/design-review` with the rule and the fix, and stays as a `claude plugin eval` case.
+
+Later (not in this task):
+- Variant C: screenshots in light and dark through the e2e setup (`mockApi`), visual comparison in CI, axe.
+- The mobile template: the same gate with React Native rules.
+
+Open:
+- Typography: the system has no type-scale tokens, and the code uses Tailwind's (`text-sm` ×36, `font-semibold` ×16,
+  `text-xs` ×12, …). Either semantic text tokens and a migration of about 80 places, or the default type scale stays.
+- Spacing stays on Tailwind's scale, which is a token scale already, unless decided otherwise.
+
+## T14 — `/feature` skill: one feature from plan to commit · `todo`
+
+The way a feature gets built: its code, tests and UI are planned before any code is written, the operator approves
+the plan, the work goes in small steps, the test and design gates hold, and the change is handed over for review.
+The home of T22's test plan and T23's UI plan. Asked for by the operator on 2026-10-12.
+
+What to do:
+- Input: a `/backlog` task (its acceptance criteria and *How to verify*) or a request in the operator's words; a thin
+  request gets questions first.
+- Plan, before any code: the steps (files, layer, order), the test plan (T22), the UI plan (T23). A `/backlog` task
+  keeps them in its file; other work keeps them where T22 decides.
+- The operator approves, changes or drops the plan; nothing is written before the approval.
+- Build one step at a time: the code, its tests, the related tests run; `lint-feedback` works on every edit.
+- Done means the T22 and T23 gates hold; `/test-plan gaps` and `/design-review` run when a gate sends Claude there.
+- The project's `WORKLOG.md` gets the feature row and its `Tests:` row in the same change.
+- Hand-over: what was done, how to verify it, what was left out and why.
+- A commit only on the operator's word, through the commit gates; a `/backlog` task is then closed with `/backlog done`.
+- Page `docs/skills/feature.md`, rows in the index and the root README.
+
+Done when:
+- One endpoint on `template-backend` and one screen on `template-next-admin` go through `/feature` from plan to
+  commit, and the operator recognises the plan, the tests and the UI as right.
+
+Open:
+- A draft pull request at the end, or commits on `dev` only.
+- Whether a plan-approval hook (T12) refuses edits before the plan is approved.
+
+## T24 — Standards: a practice written once, enforced at every stage · `done`
+
+A practice the operator wants in every project is written once, as a rule with an id, and reaches the code through
+every layer that can carry it: the rule text while the code is written, a lint rule or a script check when it is
+checked, the reviewer where only judgement can tell. A rule the review keeps catching moves to a stronger layer.
+Agreed with the operator on 2026-10-13; the first pack is React and React Native.
+
+What to do:
+- Rule packs in the plugin, `skills/standards/templates/packs/<pack>.md`, one source for generation, checks and
+  review, so they cannot drift apart. `paths:` frontmatter; per rule: an id (`RCT-01`), the rule, the reason, a good
+  and a bad example, web and native notes where they differ, and `Enforced by:` — `lint <rule>`, `check <name>`,
+  `review`, or several.
+- `/standards` skill, human-invoked:
+  - `install <pack>` writes the pack into the project as `.claude/rules/<pack>.md`, with the project's own paths
+    filled in (the shared components folder, the tokens file, a reference component), and the pack's lint rules into
+    the project's `eslint/` with their config entries, so that CI runs them and `lint-feedback` relays them in the
+    same turn. Through a script, idempotent, never overwriting the project's edits (T8's install mechanism).
+  - `status`: installed packs, their versions, the project's edits, findings per rule.
+  - `update`: merges a newer pack, keeping the project's edits.
+  - A rule the project does not want is switched off in its file with the reason, never deleted silently.
+- First pack, `react` (React web and React Native):
+  - **RCT-01 Shared components.** A component used in more than one feature, or meant to be, lives in the project's
+    shared folder (`src/components/`), not inside a feature. Lint: a feature never imports another feature's
+    `components/` (`import/no-restricted-paths` zones, or a rule of our own). Review: "meant to be reused", and a
+    near-copy of a shared component that already exists.
+  - **RCT-02 Component and screen layout.** A folder per component: `index.ts` (export only), `Name.tsx` (markup),
+    `useName.ts` (business logic: data, effects, handlers), `Name.styles.ts` when it has styles, `components/` for
+    the subcomponents of a complex component; a small subcomponent may be a single file. Check `componentLayout`:
+    the folder and the component file share a name, `index.ts` only re-exports, a `components/` subfolder holds
+    only subcomponents. Lint: no `useEffect`, data hooks (`useQuery`, `useMutation`, …), `fetch` or API calls in
+    `Name.tsx`. Review: a subcomponent that has outgrown its single file, a component complex enough to split.
+  - **RCT-03 Design tokens.** Every visual value comes from the project's tokens, kept in one place at the top of
+    the project: colors always, font families, font sizes and line heights, radii, shadows. Lint, web: the
+    `noRawVisualValues` rule of `template-next-admin`, generalised; native: no color literals in styles, no raw
+    `fontSize` or `fontFamily`, no inline style objects with raw values, outside the tokens file. Check: every token
+    has a light and a dark value (shared with T23). Review: a token used against its meaning (T23).
+- `bin/standardsCheck.mjs`: the `check` rules of the installed packs (first `componentLayout`), on T22's entry points
+  — `Stop` and `git commit` — not on every edit, because a component is created file by file and is incomplete in
+  between. Reports file, rule id and the fix. The operator may pass a commit with
+  `Standards-skipped: <rule id> <reason>`.
+- Generation: `.claude/rules/<pack>.md` loads when Claude touches a matching file; each rule names a reference in the
+  project to copy (`src/components/ui/Button/` and `features/users/components/UsersScreen/` on
+  `template-next-admin`). `bin/scaffold.mjs component <Name> [--shared | --feature <f>] [--hook] [--styles]`
+  creates the folder right by construction, and the rule tells Claude to use it.
+- Review: `pattern-reviewer` (T9) reviews the diff against the rules marked `review`; `/self-review` (T13) runs it
+  before a commit. Every finding cites its rule id, or says it fits no rule.
+- Promotion: every review finding is recorded in the project's `.claude/standards/findings.json` (rule id, file,
+  date, fixed or waived). When a rule collects its second finding, or a finding fits no rule, the review ends with
+  a proposal to the operator: a lint rule if the pattern is syntactic, a script check if it is structural, a sharper
+  rule text or a better example if it needs judgement, a new rule for a finding without one. The operator chooses;
+  the rule's `Enforced by:` moves up. A change meant for every project goes back into the plugin's pack.
+- Pages `docs/skills/standards.md` and `docs/hooks/standardsCheck.md`, rows in both indexes and the root README.
+
+Done when:
+- `npm test` proves on fixtures: each lint rule of the pack (a cross-feature import, `fetch` in `Name.tsx`, a hex
+  color and a raw `fontSize` in native styles, a raw palette class on web); `componentLayout` (no `index.ts`, logic
+  in `index.ts`, a folder and file name mismatch); a clean component passes; `Standards-skipped:` passes; a second
+  `install` changes nothing and keeps the project's edits; a second finding on one rule yields a promotion proposal.
+- On `template-next-admin`, `/standards install react` writes rules the operator recognises as true for the project,
+  and the existing code passes or its violations are real.
+
+Decided (2026-10-13):
+- Next.js App Router fixes the names `page.tsx` and `layout.tsx`: RCT-02 applies to the screen a route renders
+  (`features/<f>/components/<Name>Screen/`), and the route file only renders it. `src/app/` is not checked.
+- A subcomponent may stay one file while it has no logic and no parts of its own; the size is the review's call.
+- View-only `useState` (open, hovered, the active tab) may stay in `Name.tsx`; the lint does not report it.
+- Spacing has no tokens of its own: Tailwind's scale on web, plain numbers on native (the operator: not needed).
+- The plugin has one devDependency, `eslint` 9, for the lint rules' tests only (the operator's choice); hooks and
+  scripts stay dependency-free, and projects lint with their own ESLint.
+
+What was done (0.12.0):
+- Pack `react` in `skills/standards/templates/packs/react/`: `pack.json`, `rules.md` (RCT-01…03, platform blocks,
+  `{{settings}}`, references, good and bad examples, `Enforced by:` lines), `eslint.mjs` (four rules —
+  `no-cross-feature-imports`, `no-logic-in-component-file`, `no-raw-visual-values`, `no-raw-style-values` — and
+  `reactStandards`, which reads its settings from `standards.json` when ESLint loads it).
+- `bin/standards.mjs` (`packs`, `install`, `update`, `status`, `check`, `disable`, `enable`, `resolve`, `finding`,
+  `promote`, `review-context`) over `bin/lib/standards.mjs`; settings detected (platform, folders, token file,
+  `tsconfig.json` aliases, a lint rule the project already has, reference component and screen) and confirmed
+  through `--set`; an install keeps a project's edit and puts a conflicting new version in
+  `.claude/standards/incoming/`.
+- `bin/lib/componentLayout.mjs` (the `componentLayout` check) and the `standards-check` hook on `Stop` (files
+  written since the operator's last message, from the transcript; held once) and on `git commit` (blocks;
+  `Standards-skipped: <rule> <reason>` passes). `parseCommit` moved to `bin/lib/gitCommands.mjs`, `commitFiles`
+  added to `bin/lib/git.mjs`.
+- `bin/scaffold.mjs` and the model-invocable `/scaffold` skill: a component folder right by construction, web or
+  native.
+- `/standards` skill (`references/install.md`, `references/review.md` with the promotion procedure) and the
+  `pattern-reviewer` agent (T9).
+- Findings and promotions in `.claude/standards/findings.json`; a project's own rules in `.claude/rules/*.md`
+  (`## PRJ-01 …`) take part too.
+- Pages `docs/skills/standards.md`, `docs/skills/scaffold.md`, `docs/hooks/standardsCheck.md`,
+  `docs/agents/patternReviewer.md`; rows in the indexes and the root README.
+
+Result: 0.12.0; 297 tests pass (60 new). On a copy of `template-next-admin` the install detected the right settings,
+the real ESLint ran the pack's rules, and two real breaks were found — `components/ui/Toast/` (the component is
+`Toaster.tsx`, with `toast.store.ts` beside it) and `components/layout/Header/Header.tsx` (calls
+`useSignOutMutation`, no hook file). Not yet done: `/standards install react` in the real template, in a session
+after a restart, with the operator confirming the rules as true.
+
+Later:
+- `/derive-rules` (T8) derives a project's own rules from its code; `/standards` installs the portable ones. Both
+  write `.claude/rules/`; whether they become one skill.
+- A `react` pack check that every token has a light and a dark value (shared with T23).
+
 ## Draft of the next tasks
 
 Order and contents are still being refined.
 
 | # | Task | Essence |
 |---|------|---------|
-| T10 | "Done = verified" | `/verify` skill, `track` hook, `done-gate` Stop hook; needs the command map in `CLAUDE.md` |
+| T10 | "Done = verified" | `/verify` skill, `track` hook, `done-gate` Stop hook; needs the command map in `CLAUDE.md`; takes over T22's Stop entry point |
 | T11 | `guard-bash` | the other git rules and dangerous commands, on top of `bin/lib/shell.mjs` |
 | T12 | `guard-files` | protected paths and plan approval |
-| T13 | `/self-review` | diff review through `pattern-reviewer` and `security-reviewer`, plus scope, bypass and docs checks |
-| T14 | `/feature` | plan, check, approval, implementation, review, draft PR |
-| T15 | `/fix` | reproduce, root cause, minimal fix, test |
+| T13 | `/self-review` | diff review through `pattern-reviewer` and `security-reviewer`, plus scope, bypass and docs checks; ends with T24's promotion proposals |
+| T15 | `/fix` | reproduce, root cause, minimal fix, test; the new test must fail before the fix (from T22) |
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
