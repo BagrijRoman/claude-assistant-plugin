@@ -2,7 +2,7 @@
 
 | Command | Invoked by | Script | Since |
 |---------|------------|--------|-------|
-| `/backlog [init [dir] \| continue \| status \| next \| detail <batch> \| done <id> [note] \| add [text] \| plan <action> \| resync]` | a human only (`disable-model-invocation`) | none of its own yet — see [The script](#the-script); reads the blueprint's with `changed` | 0.8.0 |
+| `/backlog [init [dir] \| continue \| status \| next \| detail <batch> \| done <id> [note] \| add [text] \| plan <action> \| resync]` | a human only (`disable-model-invocation`) | [bin/backlog.mjs](../../bin/backlog.mjs) — see [The script](#the-script); reads the blueprint's with `changed` | 0.8.0 |
 
 Files: [skills/backlog/SKILL.md](../../skills/backlog/SKILL.md) (the entry point),
 [skills/backlog/references/mechanics.md](../../skills/backlog/references/mechanics.md) (state, ids,
@@ -156,6 +156,23 @@ the operator takes to `/blueprint feedback`; `resync` closes each row when the b
 Every mode lists what the operator edited by hand since the last run before it changes anything, and an
 interrupted `init`, `detail` or `resync` resumes where it stopped.
 
+### Tokens
+
+The daily loop — `next`, `done`, `status` — runs many times a day, so it is where the skill saves most,
+and it cuts only what the next step does not use:
+
+- **The daily modes read one report.** [The script](#the-script) reads every task file, computes what is
+  ready and blocked, ticks a subtask and regenerates the views; the model relays its report and reads
+  `mechanics.md › The script` and its mode's section only, not the whole of the mechanics.
+- **Readers and detailers on Sonnet.** The inventory readers and the detailers are most of `init`'s and
+  `detail`'s agents, and their work follows a fixed layout and `slicing.md`; the merge, the ids, every
+  question and the gates stay with the session's model.
+- **A fresh context after every gate.** `init` reads the whole blueprint before Gate 1, and the detail
+  that follows needs none of it; after Gate 1 the skill recommends `/clear`, then `/backlog`, with the
+  reason, and the [skill-resume](../hooks/skillResume.md) hook says where `init` stopped. After the
+  last gate of `init`, `detail` or `resync`, it recommends the same before the daily loop,
+  `/backlog next`.
+
 ## Progress
 
 The skill shows where it is at every step: a checklist of the mode's stages when it starts, at every
@@ -189,20 +206,39 @@ and how many; and, on `continue` or `status`, the checklist rebuilt from its sta
 
 ## The script
 
-None of its own yet; it calls the blueprint's `bin/blueprint.mjs changed` to see unrecorded edits in
-the blueprint. The mechanical parts the skill currently does by hand — scaffolding, the next `T-`/`P-`
-id from `lastTask`, regenerating the views, ticking a subtask, validating that `depends` has no cycles
-and no forward-batch edges — are what `bin/backlog.mjs` should take over once the procedure has been
-run on a real project (task T18 in [TASKS.md](../TASKS.md)). Its `render` follows
-`mechanics.md › Views`: the batch tables keep their stored rows and order (outline rows have no file),
-`COVERAGE.md` keeps its capability rows, and only the parts listed there as regenerated are rebuilt.
-The views are the first candidate: regenerating them by hand after every `done` is where a model is
-slowest and least reliable.
+[bin/backlog.mjs](../../bin/backlog.mjs) does the bookkeeping, so that the daily loop reads one short
+report instead of every task file — `/backlog next` and `/backlog done` run every working day, and
+before 0.15.0 each of them read the whole backlog and regenerated the views by hand (T31 in
+[TASKS.md](../TASKS.md)).
+
+```
+node bin/backlog.mjs status <dir> [--root <project root>]
+node bin/backlog.mjs next <dir> [--root <project root>]
+node bin/backlog.mjs next-id <dir> [--count N]
+node bin/backlog.mjs tick <dir> <T-NNN.n>
+node bin/backlog.mjs render <dir>
+node bin/backlog.mjs validate <dir>
+```
+
+| Command | Does | Writes |
+|---------|------|--------|
+| `status` | the report of `/backlog status`: a pending mode, the files edited since `STATE.json`, the blueprint checks (moved since the fingerprint, questions opened and closed, its unrecorded edits through `blueprint.mjs changed`), every batch with its state and counts, the current batch's *What works*, in progress, ready, blocked by question and from outside, needs attention, what the files break | nothing |
+| `next` | the answer of `/backlog next`, step by step: a pending `init` stops it; an undetailed current batch is offered for `detail` with the blueprint checks; the tasks in progress with their next subtask; up to five ready tasks of the current batch; what the batch waits for and up to three ready tasks ahead; a complete batch to close; what needs attention | nothing |
+| `next-id` | the next `T-NNN` past `lastTask` and every id in `tasks/` and the batch tables; `--count N` for N in a row | `lastTask` |
+| `tick` | ticks one subtask, turns a `todo` task `in-progress`, prints the next open subtask or — once every subtask is ticked or struck through — the acceptance criteria to confirm; refuses a done or dropped task and a struck subtask | the task file |
+| `render` | the regenerated parts of `mechanics.md › Views` and nothing else: `BACKLOG.md` whole, from the skill's template; each batch file's state line and the rows whose task has a file (an outline row stays as written); `COVERAGE.md`'s *Task(s)* cells, the `covered` / `done` status of a row whose tasks all have files (per platform when they differ), its count line; then `currentBatch` (a pin ends when its batch closes), `updated`, and `STATE.json` last | the views, `STATE.json` |
+| `validate` | a task whose batch has no row or whose row sits in another batch, an id its file name does not give, a status none of the four, a ticked subtask on a `todo` task, a dependency that is unknown, dropped, in a later batch or in a cycle (outline rows' dependencies included); warnings for a done task with open subtasks, a `blocked_by` entry that is neither `Q-` nor `ext:`, a `lastTask` below the highest id | nothing |
+
+A missing, broken or foreign `STATE.json` stops every command (exit 1) — rebuilding it is the
+operator's call; `validate` exits 1 on an error; usage errors exit 2. `BACKLOG_NOW` sets the stamp
+verbatim (for tests). Dates and numbers are computed; titles, statuses the files cannot tell
+(`exists`, `deferred`, `blueprint gap`, …) and the order of the rows stay where they are stored.
 
 ## Limitations
 
-- **Guidance, not enforcement.** Until the script exists, a wrong id or a stale view is possible;
-  the operator should glance at `BACKLOG.md` after `done`.
+- **Guidance, not enforcement.** The script computes and regenerates, but the model decides when to
+  run it: a mode that forgets `render` leaves the views stale until the next one. `status` and `next`
+  read the files themselves, so their answers are right even then.
 - **The views are only as fresh as the last regeneration.** Editing a task file by hand is welcome;
   the next mode lists the edit and the tables follow then.
 - **Vertical slicing is a judgement.** The rules steer it; a blueprint with weak main flows gives
@@ -220,4 +256,10 @@ slowest and least reliable.
 - [tests/backlogContract.test.mjs](../../tests/backlogContract.test.mjs) — the templates parse, every
   mode of the argument hint has its procedure, and the blueprint still has the fields and phases the
   backlog reads.
-- Script tests arrive with the script.
+- [tests/backlog.test.mjs](../../tests/backlog.test.mjs) — a backlog of three batches cut from a small
+  blueprint: `status` and `next` on the clean fixture and on every state their procedures branch on (a
+  hand edit, a moved blueprint with unrecorded edits, a pending mode, a batch that waits, is complete,
+  is not detailed, is pinned); `next-id` past `lastTask` and past a lost session's ids; `tick`, the
+  criteria once every subtask is closed, and its refusals; `render`'s overview, batch rows, coverage
+  cells and count line, the stamp and the pin, and a second run that changes nothing; `validate` once
+  per break.

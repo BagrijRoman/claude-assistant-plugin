@@ -1,14 +1,15 @@
 # Backlog modes — the procedures
 
-One section per mode. Read [mechanics.md](mechanics.md) first — state, ids, statuses, views, gates,
-questions and subagents are defined there once — and the slicing rules in [slicing.md](slicing.md)
-that the step names. Templates live in the skill's own folder,
+One section per mode. State, ids, statuses, views, gates, questions and subagents are defined once in
+[mechanics.md](mechanics.md): a mode that cuts or re-plans reads it first, and the slicing rules in
+[slicing.md](slicing.md) that the step names; `status`, `next` and `done` read only its
+`The script` section, since the script computes the rest. Templates live in the skill's own folder,
 `${CLAUDE_PLUGIN_ROOT}/skills/backlog/templates/`; a path like `templates/STATE.json` below is
 relative to the skill's folder.
 
 Every mode starts with the hand-edit check (`mechanics.md › Hand edits`). Every mode that writes ends
-by regenerating the views (`mechanics.md › Views`), recomputing `currentBatch`, stamping `updated` and
-writing `STATE.json` last.
+with the script's `render` (`mechanics.md › The script`), which regenerates the views, recomputes
+`currentBatch`, stamps `updated` and writes `STATE.json` last.
 
 ## Contents
 
@@ -72,15 +73,17 @@ writing `STATE.json` last.
    the foundation tasks and why each is needed, what was taken as already existing, the tasks that hang
    on open questions, capabilities left uncovered and why, feedback to the blueprint so far. The
    operator reorders, merges, splits; apply and gate again. **On approval, number every row** in batch
-   order from `lastTask` + 1, rewrite the depends and *goes to* references as ids, and write the ids
-   into `COVERAGE.md`.
+   order with the ids of `next-id --count <rows>`, rewrite the depends and *goes to* references as ids,
+   and write the ids into `COVERAGE.md`. Set `pending.step` to `detail`, `render`, and recommend a
+   fresh context before step 8 (`mechanics.md › A fresh context`).
 8. **Detail batches 1 and 2** — steps 1–4 of `detail` for each, one detailer per batch in parallel,
    each brief also listing the other batch's ids and titles.
 9. **Gate 2 — detail.** Summary: the tasks per batch with sizes, any task that had to be split, the
    tasks that are blocked or built on a provisional choice and their questions, the first three tasks
    `next` would offer. On approval `detailed: true` for 01 and 02, `pending: null`.
-10. Regenerate the views; `currentBatch = "01"`. Tell the operator the daily loop: `/backlog next` →
-    work → `/backlog done T-NNN.n` after each subtask.
+10. `render` (it sets `currentBatch` to `"01"`). Tell the operator the daily loop: `/backlog next` →
+    work → `/backlog done T-NNN.n` after each subtask — and recommend starting it in a fresh context
+    (`mechanics.md › A fresh context`).
 
 ## `continue`
 
@@ -90,8 +93,10 @@ are not written again. Not set → say there is nothing to resume and run what a
 
 ## `status`
 
-Read `STATE.json`, the batch tables and every task file's frontmatter and subtask checklist, and run
-the blueprint checks (`mechanics.md › The blueprint's state`). Report, in the operator's language:
+Run the script's `status` (`mechanics.md › The script`) — it reads `STATE.json`, the batch tables and
+every task file, and runs the blueprint checks — and report from it, in the operator's language; read a
+task file only when the operator asks about it. When the blueprint moved, read its `CHANGELOG.md` rows
+newer than the fingerprint for *what moved*. The report covers:
 
 - a `pending` mode first, if any;
 - the current batch and its *What works* paragraph;
@@ -108,7 +113,10 @@ Write nothing.
 
 ## `next`
 
-1. Read as in `status`. While `pending.mode` is `init`, stop (`mechanics.md › Gates and resuming`).
+Run the script's `next`, which answers by the steps below, and relay it; the steps say what each part
+of its report means and what to offer.
+
+1. While `pending.mode` is `init`, stop (`mechanics.md › Gates and resuming`).
 2. **The current batch is not detailed** → offer `detail <it>`, after the blueprint checks.
 3. **In progress first:** every `in-progress` task — show its next unchecked subtask with its *done
    when*. Usually that is the whole answer.
@@ -161,7 +169,7 @@ routine of `done`.
    - return per task: the file, the capability ids, the subtask count, a split or merge proposal, the
      rules / edge cases / transitions it could not place, and `QUESTIONS FOR OPERATOR`. A task it
      thinks is missing comes back as `NEW-n` text.
-3. **Merge.** Number any `NEW-n` and write it. Apply splits (a new id, both cite the capability) and
+3. **Merge.** Number any `NEW-n` with `next-id` and write it. Apply splits (a new id, both cite the capability) and
    merges (the lower id survives; the other is `dropped` — "merged into T-0xx" — and every `depends`
    and *goes to* that named it is repointed). Rewrite the *goes to* lines of earlier batches that point
    at this batch. Check every capability's Rules, Edge cases and States are traceable to a subtask or a
@@ -170,7 +178,8 @@ routine of `done`.
    whether a fat task splits, whether a question blocks a task or it is built on the provisional
    choice. Remove each `[?pending]` as it is answered.
 5. **Gate** — Gate 2's summary, for this batch. On approval: `detailed: true` on the entry whose `id`
-   is this batch, `pending: null`; add "detailed from blueprint <updated>" to the batch's *Notes*.
+   is this batch, `pending: null`; add "detailed from blueprint <updated>" to the batch's *Notes*;
+   `render`, and recommend a fresh context (`mechanics.md › A fresh context`).
 
 ## `done <id> [note]`
 
@@ -178,9 +187,10 @@ routine of `done`.
 conversation, run `done` for each; do not edit statuses in passing. A note given with the command goes
 to *Notes*; otherwise ask for none.
 
-**Subtask (`T-012.3`):** read the task file; tick the box; a `todo` task becomes `in-progress`. When
-every subtask is now closed, show the acceptance criteria and ask whether they hold: yes → *A task
-becomes done* below; no → it stays `in-progress`, and what is left goes to *Notes*.
+**Subtask (`T-012.3`):** the script's `tick T-012.3` ticks the box and turns a `todo` task
+`in-progress`; show the next subtask it names, then `render`. When it says every subtask is closed, show
+the acceptance criteria it lists and ask whether they hold: yes → *A task becomes done* below; no → it
+stays `in-progress`, and what is left goes to *Notes*.
 
 **Task (`T-012`):** already `done` → say so and show what it unblocked. Otherwise, for each subtask not
 closed, ask: **Done after all** / **Move to another task** / **Drop it**. Moved → strike it through
@@ -193,8 +203,9 @@ depending on this one — the same path splits a task mid-work. Dropped → stri
 run *A task becomes done*.
 
 **A task becomes done:** tick each criterion the operator confirmed; `status: done`; "done
-<YYYY-MM-DD>" in *Notes*, with the pull request link(s) when given; list the tasks that became ready;
-when the batch is now complete, the closing question (`mechanics.md › Batches`); regenerate the views.
+<YYYY-MM-DD>" in *Notes*, with the pull request link(s) when given; `render`; list the tasks that
+became ready (the script's `next` names them); when the batch is now complete, the closing question
+(`mechanics.md › Batches`).
 
 ## `add [text]`
 
@@ -216,13 +227,13 @@ building.
    its description — with `source: manual`, its subtasks if the operator can name them now, otherwise
    one placeholder subtask and `review: needs-detail`; in a batch not yet detailed it waits there for
    `detail`. A regression in a done task is a new `bug` task that cites it.
-4. Add the row to the batch table; regenerate the views. No gate.
+4. Take the id from `next-id`, add the row to the batch table, `render`. No gate.
 
 ## `plan`
 
 Re-planning, the operator's way to change the shape without hand-editing around the checks. Every
-action ends by regenerating the views; one that moves a task or a batch adds a line to the *Notes* of
-the batches it touches.
+action ends with `render`; one that moves a task or a batch adds a line to the *Notes* of the batches
+it touches, and `validate` confirms that no dependency points forward.
 
 | Action | What it does |
 |--------|--------------|
@@ -306,4 +317,5 @@ Run when the blueprint changed — the operator says so, or `status` showed it. 
 
    Fill each row's *Outcome* the moment its change is applied; a resumed `apply` skips the rows that
    have one.
-5. Update the fingerprint, `pending: null`, regenerate the views; `STATE.json` last.
+5. Update the fingerprint, `pending: null`, `render` — `STATE.json` last — and recommend a fresh
+   context (`mechanics.md › A fresh context`).

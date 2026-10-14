@@ -175,6 +175,15 @@ readers take them like any other document; `raw/` is left out, being the engine'
 summary already says. The review step tells the operator this at the end of every run. A blueprint
 that is already under way can take a later run the same way, through its own Intake or `feedback`.
 
+### Tokens
+
+A round leaves deep-research's coordination and the curator's reply in the conversation, and the brief
+is drafted on top of the project's documents and the question rounds; what follows reads none of it.
+So once the brief is approved, and once the run is done, the skill recommends `/clear`, then
+`/research` (or what comes next, such as `/blueprint`), and says why: what the conversation carries
+that the next phase does not read, that nothing is lost, and why not `/compact`. The
+[skill-resume](../hooks/skillResume.md) hook tells the new session where a run past its brief stands.
+
 ## Progress
 
 The skill shows where it is at every step: a checklist of the mode's stages when it starts, at every

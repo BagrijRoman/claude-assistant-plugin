@@ -47,9 +47,12 @@ with an explicit mode other than `init`, say so and stop. The blueprint is found
 The mechanics every mode shares — state, ids, statuses, views, gates, questions, subagents — are in
 [references/mechanics.md](references/mechanics.md); the procedure per mode in
 [references/modes.md](references/modes.md); the rules for cutting — stages, batches, tasks, subtasks,
-criteria, priorities — in [references/slicing.md](references/slicing.md). Read `mechanics.md` at the
-start of every session and the relevant sections of the other two before acting; do not slice from
-memory.
+criteria, priorities — in [references/slicing.md](references/slicing.md). The bookkeeping — what is
+ready and blocked, the next ids, a ticked subtask, the views, the checks — is a script,
+`bin/backlog.mjs` (`mechanics.md › The script`). The daily modes (`status`, `next`, `done`) run it and
+act on its report, reading only that section and their own in `modes.md`; the modes that cut or re-plan
+read `mechanics.md` whole at the start of the session and the relevant sections of the other two
+before acting. Do not slice from memory, and do not count or regenerate by hand what the script does.
 
 ## Three rules that never bend
 

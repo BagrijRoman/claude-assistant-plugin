@@ -186,11 +186,14 @@ buy quality, and cuts only what the next phase does not use:
   operator can keep full detail for the core modules and a list for the rest. The plan is each module's
   `l3Plan`, which `validate` holds `l3` to; `/blueprint module <name> full` deepens a module later, when
   `/backlog` needs it.
-- **A fresh context for every phase that runs agents.** Every turn sends the whole context again; a
-  phase started on top of the earlier ones pays for all of them at each step. After such a gate the skill
-  stops and asks for `/clear`, then `/blueprint`; the [blueprint-resume](../hooks/blueprintResume.md) hook
-  tells the new session where the blueprint stands, and `continue` reads only what the phase needs. A
-  plugin cannot clear the context itself, so the two commands stay the operator's.
+- **A fresh context recommended at every gate, with the reason.** Every turn sends the whole context
+  again; a phase started on top of the earlier ones pays for all of them at each step. After every
+  approved gate the skill stops and recommends `/clear`, then `/blueprint`, and says why: what the
+  conversation now carries that the next phase does not read, that nothing is lost, and why not
+  `/compact` — it costs one more request over the whole context and keeps a summary the next phase does
+  not read. The [skill-resume](../hooks/skillResume.md) hook tells the new session where the blueprint
+  stands, and `continue` reads only what the phase needs. A plugin cannot clear or compact the context
+  itself, so the two commands stay the operator's, and "go on here" stays possible.
 
 ## Progress
 
@@ -269,7 +272,7 @@ and filling the coverage table — the script only checks that the table is comp
 - [tests/blueprint.test.mjs](../../tests/blueprint.test.mjs) — the script on a small complete
   blueprint: every command, every `validate` error (the `l3Plan` ones included), the export, and
   `expand` on a folder of specs and a `/research` run.
-- [tests/blueprintResume.test.mjs](../../tests/blueprintResume.test.mjs) — the hook that tells a fresh
+- [tests/skillResume.test.mjs](../../tests/skillResume.test.mjs) — the hook that tells a fresh
   session where the blueprint stands.
 - [tests/structure.test.mjs](../../tests/structure.test.mjs) — the skill directory, `SKILL.md`
   frontmatter, this page and the index rows; every template and reference the skill names exists;

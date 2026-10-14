@@ -320,3 +320,29 @@ describe('progress is visible', () => {
     });
   }
 });
+
+// Every skill with gates recommends a fresh context at them and says why, and the skill-resume hook knows its
+// state, so that a /clear after the gate loses nothing (docs/hooks/skillResume.md).
+describe('a fresh context at the gates', () => {
+  const GATED = {
+    blueprint: { file: 'references/mechanics.md', command: '/blueprint' },
+    showcase: { file: 'references/phases.md', command: '/showcase' },
+    backlog: { file: 'references/mechanics.md', command: '/backlog' },
+    research: { file: 'references/phases.md', command: '/research' },
+  };
+  const hook = readFileSync(new URL('bin/skillResume.mjs', ROOT), 'utf8');
+
+  for (const [skill, { file, command }] of Object.entries(GATED)) {
+    it(`${skill} recommends /clear at its gates, with the reason, and the hook resumes it`, () => {
+      const text = readFileSync(new URL(`${skill}/${file}`, SKILLS), 'utf8');
+      const section = text.split(/^## A fresh context\n/m)[1]?.split(/^## /m)[0];
+      assert.ok(section, `skills/${skill}/${file} has no "## A fresh context" section`);
+      for (const line of ['Recommended: type /clear, then', 'Why: every message sends this whole conversation to the model again',
+        'Not /compact:', 'Or say "go on here"']) {
+        assert.ok(section.includes(line), `skills/${skill}/${file} › A fresh context lacks "${line}"`);
+      }
+      assert.ok(section.includes(command), `skills/${skill}/${file} › A fresh context does not name ${command}`);
+      assert.match(hook, new RegExp(`const KINDS = \\{[^}]*\\b${skill}\\b`), `bin/skillResume.mjs's KINDS lacks ${skill}`);
+    });
+  }
+});

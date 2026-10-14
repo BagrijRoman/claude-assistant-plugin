@@ -198,7 +198,16 @@ leaves. Keys: ← → step sections, then pages; in a flow they step the flow.
 
 ## Audit
 
-Run from the showcase folder; fix what is found before the gate.
+Run from the showcase folder; fix what is found before the gate. The rows that need no eyes — every
+page exists, the build is idempotent, no value outside tokens, the two dark sets agree, every key
+translated — are one command, which prints each finding with its file and line:
+
+```
+node "${CLAUDE_PLUGIN_ROOT}/bin/showcase.mjs" check <showcase dir>
+```
+
+Run it first and work from its list; the rows below say what each check means. The rest — both themes
+in every language, reduced motion, screenshots — is done by looking.
 
 | Check | How |
 |-------|-----|

@@ -124,11 +124,12 @@ Every phase ends the same way. Do not shortcut it when the phase felt small.
 5. On approval: every assumption of this phase that was not promoted is marked `accepted (gate
    <phase>)` in `ASSUMPTIONS.md`; `STATE.json` → phase `approved`, next phase `pending`, `phase`
    moves on. Whatever the answer — *Stop here* included — `stamp` is the last write.
-6. When the next phase runs agents — Reading the input, Modules, Capabilities, the two reviews — stop
-   after the stamp and hand the operator a fresh context (`mechanics.md › A fresh context`).
+6. On approval, stop after the stamp and recommend a fresh context, with the reason
+   (`mechanics.md › A fresh context`) — the next phase starts after it, not in this context.
 
 A gate that ends a mode (`module`, `restructure`, `feedback`) approves the run: its assumptions are
-marked `accepted (gate <mode>)`, and `phase` and `phases` do not change. A mode run inside another
+marked `accepted (gate <mode>)`, and `phase` and `phases` do not change; the same recommendation
+follows it, for whatever the operator does next. A mode run inside another
 run — `module` inside `restructure`, `restructure` inside `feedback` or phase 7 — does not gate on its
 own: the outer run gates once for everything.
 
@@ -139,12 +140,27 @@ phases before it pays for all of them on every step: their extracts, their quest
 agents' replies. Everything a phase needs is on disk, so it can start from the files instead. Nothing
 in the procedure is skipped for it; only what the next phase does not use is left behind.
 
-- **At the gate.** After the approval of a phase whose next phase runs agents
-  (`mechanics.md › The gate`, step 6), do not start that phase. Say, in the operator's language, that the phase is approved
-  and saved, and that the next one costs far fewer tokens in a fresh context: type `/clear`, then
-  `/blueprint`. A plugin cannot clear the context itself; the operator's two commands do it. If the
-  operator says to go on here, go on.
-- **After `/clear`.** The `blueprint-resume` hook tells the new session which blueprint is unfinished
+- **At the gate.** After every approved gate (`mechanics.md › The gate`, step 6), do not start the
+  next phase. Recommend a fresh context and say why, in the operator's language, so that they decide
+  knowing what it saves:
+
+  ```
+  ✓ <phase> approved and saved in <blueprint folder>.
+  ▸ Next: <next phase>. Recommended: type /clear, then /blueprint.
+  Why: every message sends this whole conversation to the model again, and it now carries <what this
+  phase piled up>, which <next phase> does not read — it starts from the files. In a fresh context
+  each of its steps costs a fraction of that, and nothing is lost: everything is saved, and after
+  /clear the plugin tells the new session where the blueprint stands.
+  Not /compact: it spends one more request on this whole conversation to keep a summary the next
+  phase does not need.
+  Or say "go on here" to continue in this context.
+  ```
+
+  Name what the phase really piled up — the sources' extracts, the question rounds, the writers'
+  replies, the review findings — not this list. After the last phase, or a mode's gate, *Next* is
+  whatever the operator does next. A plugin cannot clear or compact the context itself; the
+  operator's two commands do it. If the operator says to go on here, go on.
+- **After `/clear`.** The `skill-resume` hook tells the new session which blueprint is unfinished
   and where it stands; `/blueprint` then runs `continue`.
 - **What `continue` reads.** `STATE.json` first, then `changed`, this file, the reference of the phase
   or mode it resumes, and `README.md` for the list of files. After that, only what the phase's steps

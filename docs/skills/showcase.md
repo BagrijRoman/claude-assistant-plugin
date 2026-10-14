@@ -2,7 +2,7 @@
 
 | Command | Invoked by | Script | Since |
 |---------|------------|--------|-------|
-| `/showcase [init [dir] \| continue \| status \| section <id> \| flow <id> \| pick <section> <variant> \| add \| audit \| open]` | a human only (`disable-model-invocation`) | none in `bin/` yet; the site's own `build.mjs`, `open.mjs`, `tools/genPages.mjs` ship in the template — see [The script](#the-script) | 0.9.0 |
+| `/showcase [init [dir] \| continue \| status \| section <id> \| flow <id> \| pick <section> <variant> \| add \| audit \| open]` | a human only (`disable-model-invocation`) | [bin/showcase.mjs](../../bin/showcase.mjs) `check` for the audit; the site's own `build.mjs`, `open.mjs`, `tools/genPages.mjs` ship in the template — see [The script](#the-script) | 0.9.0 |
 
 Files: [skills/showcase/SKILL.md](../../skills/showcase/SKILL.md) (the entry point),
 [references/phases.md](../../skills/showcase/references/phases.md) (the procedure per step),
@@ -109,6 +109,27 @@ flow's description (actor, start, steps, end, alternative paths) before its scre
 sign-in layouts, app layout and the not-found page are made as variants; `pick` marks the chosen
 one `Selected` and keeps the others as alternatives for the Decisions page.
 
+### Tokens
+
+A showcase is twenty steps with a gate each, and every turn sends the whole context again; a step built
+on top of the ones before pays for their readings, plans, builders' replies and generated pages, none of
+which it reads. So the skill cuts only what the next step does not use:
+
+- **A fresh context for every step.** After a gate is approved the skill stops and recommends
+  `/clear`, then `/showcase`, and says why — what the conversation carries that the next step does not
+  read, that nothing is lost, and why not `/compact`; the [skill-resume](../hooks/skillResume.md) hook
+  tells the new session where the showcase stands, and `continue` reads `STATE.json`, the step's section and what it names — its plan,
+  `SOURCES.md` when it plans from the reading — never the pages already built. The operator may go on
+  in the same context instead.
+- **Builders on Sonnet where the plan decides.** The readers of Intake and the builders of components,
+  icons, states, key screens, flows, emails, charts and the technology page work from an approved plan
+  and the conventions of `site.md`, and every result is looked at before the gate, so they run on
+  Sonnet. The marks of the Logo, the pictures of Illustrations and the variants of the sign-in layouts,
+  the app layout and the not-found page — what the customer chooses between — stay on the session's
+  model.
+- **The audit's mechanical checks are a script.** `check` reads the site once and lists what is wrong;
+  the model no longer greps it and diffs the dictionaries by hand.
+
 ### What the frame gives for free
 
 In-place navigation between pages without reloading the menu; a menu that keeps one root section
@@ -154,14 +175,26 @@ and how many; and, on `continue` or `status`, the checklist rebuilt from its sta
 
 ## The script
 
-None in `bin/` yet. The template ships the site's own code — `build.mjs` (navigation, idempotent),
-`open.mjs` (the server), `tools/genPages.mjs` (starting pages), `tools/lib/html.mjs` (the page
-shell and blocks) — which the skill runs with `node` inside the showcase folder. The audit in
-`references/site.md` is a checklist the skill performs by hand (grep for values outside tokens,
-diff of `data-i18n` keys against the dictionaries, a look at both themes in every language). A
-`bin/showcase.mjs` with `scaffold` and `check` (and `screenshots` through Playwright) is the
-planned follow-up once the procedure has been run on a real project (task T19 in
-[TASKS.md](../TASKS.md)).
+The template ships the site's own code — `build.mjs` (navigation, idempotent), `open.mjs` (the
+server), `tools/genPages.mjs` (starting pages), `tools/lib/html.mjs` (the page shell and blocks) —
+which the skill runs with `node` inside the showcase folder.
+
+[bin/showcase.mjs](../../bin/showcase.mjs) `check <dir>` runs the rows of the audit that need no eyes,
+so that the model reads one list of findings instead of grepping the site and diffing dictionaries by
+hand (T31 in [TASKS.md](../TASKS.md)):
+
+| Check | Reported |
+|-------|----------|
+| every page `pages.mjs` gives a path, children included, is a file | `error: icons/index.html — pages.mjs gives page "icons" this path, and there is no such file …` |
+| the build is idempotent: `node build.mjs` twice, the second reporting the navigation up to date (the first may rewrite it, as the gate's build would) | `error: build.mjs — a second run still rewrites: …` |
+| no hex color in a `.css`, `.html` or `.js` file but `tokens.css` — anchors, entities, `url(#…)` and lines marked `allow-hex` are not colors; no `font-family` that is not a `var(--font…)`; no radius in px on a page | `error: components/index.html:42 — the color #ff0000 is a raw value; use a token from tokens.css` |
+| the dark set under `prefers-color-scheme: dark` and the one under `[data-theme='dark']` declare the same tokens with the same values | `error: tokens.css:181 — --color-danger is #ff0000 under [data-theme='dark'] but #f87171 in the media-query set` |
+| every language of `site.mjs` but the default has `i18n/<lang>.js`, holding every `data-i18n` and `data-i18n-attr` key of every page | `error: i18n/uk.js — no "nav.icons", which icons/index.html:12 uses` |
+| a dictionary key no page, script or generator names | `warning: i18n/uk.js:58 — "old.unused" is used by no page or script — remove it, or keep it knowingly` |
+
+Errors exit 1, warnings do not; a missing or foreign `STATE.json` stops it (exit 1); usage errors exit 2.
+`scaffold` (the copy with placeholders filled) and `screenshots` (Playwright, every page × theme) are
+still to come (T19).
 
 ## Limitations
 
@@ -203,4 +236,10 @@ planned follow-up once the procedure has been run on a real project (task T19 in
   stopping the server. A third pass checked the step highlights: rings and numbers on the step on
   show, the walk 1 → 2 → 3 and the pause, the marks in the note, Hints off and kept after a reload,
   a highlighted `data-go` button leading on, *All steps*, reduced motion still, a swap away and
-  back. Script tests arrive with the script.
+  back.
+- [tests/showcase.test.mjs](../../tests/showcase.test.mjs) — `check` on the site the Frame step lays,
+  with a complete second dictionary: clean, then broken once per check — a page gone, a raw color, font
+  and radius (and the anchors, entities and marked lines that are not), dark sets that disagree both
+  ways, a key missing and one unused, a dictionary missing, a build that keeps rewriting — and a folder
+  that is not a showcase. The scaffold is shared with the frame's tests
+  ([tests/showcaseFixture.mjs](../../tests/showcaseFixture.mjs)).

@@ -98,7 +98,9 @@ The step-by-step procedures are in `references/`: [phases.md](references/phases.
 phases and the modes other than a new run; [engines.md](references/engines.md) — how deep-research is
 called and its output collected, the scouts' fallback, the curator's brief, what to do when an agent
 fails. Read the file for the phase you are in before starting it; do not run a phase from memory. A
-reference such as `engines.md › Fallback — the scouts` names a file and a heading in it.
+reference such as `engines.md › Fallback — the scouts` names a file and a heading in it. Once the brief
+is approved, and once the run is done, a fresh context is recommended, with the reason
+(`phases.md › A fresh context`).
 
 ## The engines and the agents
 

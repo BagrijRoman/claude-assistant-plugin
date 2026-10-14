@@ -55,7 +55,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/bin/blueprintResume.mjs\"",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/bin/skillResume.mjs\"",
             "timeout": 10
           }
         ]

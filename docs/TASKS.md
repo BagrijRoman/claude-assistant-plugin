@@ -337,9 +337,8 @@ What is left:
 - Run `/blueprint` end to end on a real project (ETC.V2 with `initialDocs/` as sources), then `/backlog init` on the
   result; adjust the procedures from what the run shows (question rhythm, structural-vs-assumption boundary, gate
   friction on small phases, module drift between parallel subagents, the cost of regenerating views by hand).
-- `bin/backlog.mjs`: `init`, `next-id` (from `lastTask`), `render` (the regenerated parts of
-  `mechanics.md › Views` only — outline rows and capability rows are stored), `tick`, `validate` (no dependency
-  cycles, no forward-batch edges, no dependency on a dropped task, every task's batch has its row), with tests.
+- ~~`bin/backlog.mjs`: `next-id`, `render`, `tick`, `validate`~~ — done in T31 (0.15.0), with `status` and `next`
+  as well. Still open: `init` (the scaffold of the folder from the templates).
 
 Done when:
 - A blueprint and a backlog exist for ETC.V2 that the operator recognises as true and can work from.
@@ -400,13 +399,11 @@ What was done (0.9.0):
 What is left:
 - Run `/showcase` end to end on a real project (ETC.V2, after its blueprint), adjust the procedure from what the run
   shows: the scheme proposals, the plan-then-build rhythm, the generators' shape, the dictionaries.
-- `bin/showcase.mjs`: `scaffold` (the copy with placeholders filled, genPages, build), `check` (pages exist, build
-  idempotent, no values outside `tokens.css`, every `data-i18n` key in every dictionary), `screenshots` (Playwright,
-  every page × theme). Tests in `tests/showcase.test.mjs`.
+- `bin/showcase.mjs`: `scaffold` (the copy with placeholders filled, genPages, build) and `screenshots` (Playwright,
+  every page × theme). `check` is done in T31 (0.15.0).
 - `assets/illustrations.js` conventions and `--ill-*` tokens as a template once the first set is drawn.
 - A root's chevron and title in the menu are two focus stops with one name.
-- `check` should also compare the two dark blocks of `tokens.css` (media query and `[data-theme='dark']`), which the
-  audit now checks by eye.
+- ~~`check` should also compare the two dark blocks of `tokens.css`~~ — done in T31 (0.15.0).
 
 Done when:
 - A showcase exists for ETC.V2 that the operator would show a customer.
@@ -1122,6 +1119,59 @@ after a restart.
 Open:
 - `SessionStart` also takes an `initialUserMessage`; whether it could start `/blueprint` by itself after `/clear` is
   undocumented, so the operator still types it.
+
+## T31 — `/backlog`, `/showcase` that spend fewer tokens · `done` (0.15.0)
+
+After T30 cut `/blueprint`'s cost, the other skills were reviewed for the same waste. Asked for by the operator on
+2026-10-14. The rule is T30's: cut only what the next step does not use; a saving that costs quality is not taken.
+
+Where the tokens went:
+- `/backlog next`, `done` and `status` run many times a day, and each read every task file's frontmatter and
+  checklist, computed ready and blocked, and regenerated `BACKLOG.md`, the batch tables and `COVERAGE.md` by hand —
+  after reading the whole of `mechanics.md` at the start of every session.
+- `/backlog` and `/showcase` delegate to `general-purpose` agents without a model, so every inventory reader,
+  detailer, reader and builder ran on the session's model.
+- `/showcase` runs twenty steps with a gate each in one session, every step paying for the context of the ones
+  before; `init` of `/backlog` reads the whole blueprint before Gate 1 and then details in the same context.
+- The `/showcase` audit greps the site for raw values and diffs the dictionaries by hand.
+
+What was done (0.15.0):
+- `bin/backlog.mjs` — `status` and `next` (the reports of those modes, the blueprint checks with `changed`
+  included), `next-id`, `tick`, `render` (`BACKLOG.md` from the template; the batch rows with a file and the state
+  line; `COVERAGE.md`'s *Task(s)*, the statuses task files can tell, the count line; `currentBatch`; `STATE.json`
+  last), `validate` (the breaks of *Hand edits*). The procedures call it: the daily modes read only
+  `mechanics.md › The script` and their own section; every writing mode ends with `render`.
+- Models on the `Agent` call: `/backlog`'s inventory readers and detailers and `/showcase`'s readers and builders on
+  Sonnet; the code reader keeps `Explore`'s own; the Logo's marks, the Illustrations and the variants of the
+  sign-in, app-layout and not-found steps stay on the session's model, since the drawing is what the customer picks.
+- A fresh context recommended at every gate, with the reason — asked for by the operator once it was clear that no
+  plugin can run `/clear` or `/compact` itself: `/blueprint` at every gate (before, only before phases that run
+  agents), `/showcase` at every step's gate, `/backlog` after Gate 1, Gate 2 and the gates of `detail` and
+  `resync`, `/research` once the brief is approved and once the run is done. One message in each skill's
+  *A fresh context*: what was saved, what comes next, `/clear` then the command, why — what the conversation now
+  carries that the next step does not read, and that nothing is lost — and why not `/compact` (one more request
+  over the whole context, to keep a summary nobody reads). The `blueprint-resume` hook became `skill-resume` and
+  also reports an unfinished showcase (its step, a question waiting), a backlog mode left half-way and a research
+  run past its brief (its phase and last round). `tests/structure.test.mjs` holds every gated skill to the section
+  and the hook to its kind.
+- `bin/showcase.mjs check` — pages, an idempotent build, raw colors, fonts and page radii, the two dark sets,
+  the dictionaries; the audit runs it first.
+- Tests: `tests/backlog.test.mjs` (32 cases), `tests/showcase.test.mjs` (8), `tests/skillResume.test.mjs` (the
+  blueprint cases kept, showcase and backlog added, both stage tables checked); the frame's scaffold moved to
+  `tests/showcaseFixture.mjs` for both showcase test files. Pages: `docs/hooks/skillResume.md`, the backlog and
+  showcase pages (*The script*, *Tokens*), the indexes and the root README.
+
+Not taken:
+- `research-scout` and `blueprint-researcher` on Sonnet: T30 kept researchers on the session's model because they
+  judge pages nobody checks, and a scout's notes are all the curator gets.
+- `research-curator` and `pattern-reviewer` on Sonnet: one agent a round, and their output is the result or a gate.
+- A lower auto-compaction threshold (`CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`): a plugin cannot set it, and an automatic
+  compaction mid-phase keeps a summary instead of the files.
+
+Done when:
+- `npm test` passes.
+- A real run of `/backlog next` and `done` relays the script's report without reading the task files, and a real
+  `/showcase` run resumes a step after `/clear` from `STATE.json` and the step's plan.
 
 ## Draft of the next tasks
 

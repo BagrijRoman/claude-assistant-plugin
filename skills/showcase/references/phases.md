@@ -8,6 +8,7 @@ must have is in [sections.md](sections.md); how pages are written, in [site.md](
 ## Contents
 
 - [Common mechanics](#common-mechanics)
+- [A fresh context](#a-fresh-context)
 - [Step 0 — Intake](#step-0--intake)
 - [Step 1 — Color scheme](#step-1--color-scheme)
 - [Step 2 — Technology](#step-2--technology)
@@ -37,7 +38,8 @@ state; on `continue` read it first and resume exactly there.
 both themes, each language), list the decisions taken and what is still open, add a dated entry to
 `CHANGELOG.md` (the Changelog page is made from it in step 19), then ask (`AskUserQuestion`, header
 `Gate`): **Approve** (Recommended when nothing is pending) / **Revise** — they say what / **Stop
-here** — state saved. Never start the next step before approval.
+here** — state saved. Never start the next step before approval; after it, the next step starts in a
+fresh context (`phases.md › A fresh context`).
 
 **Decisions** go to `DECISIONS.md` as `SC-nnn` the moment they are taken: topic, options offered,
 choice, reason, a blueprint `D-` id when one applies. SC-001 to SC-008 are reserved in the template
@@ -55,7 +57,12 @@ resumes from it; the list of flows is `plans/flows.md`, each approved flow descr
 `plans/flows/<flow id>.md`.
 
 **Subagents** (`Agent`, `general-purpose`) for the reading in Intake and for building a section's
-pieces in parallel — one per component group, per flow, per letter. A brief names: the files to
+pieces in parallel — one per component group, per flow, per letter. Pass `model: "sonnet"` in the
+call for the readers and for the builders of components, icons, states, key screens, flows, emails,
+charts and the technology page: their work follows an approved plan and the conventions of `site.md`,
+and you look at every result before the gate. The marks of the Logo, the pictures of Illustrations and
+the variants of Sign-in layouts, App layout and the Not found page are built on the session's model:
+there the drawing is what the customer chooses between. A brief names: the files to
 read (`site.md`, `sections.md`, `sample.mjs`, `tokens.css`, the plan in `plans/`), the file to
 write (`tools/gen<Name>.mjs`, then run it — or, when several pieces make one page, a part
 `tools/parts/<page id>/<piece>.mjs` that the page's generator imports), the rules (tokens only,
@@ -72,6 +79,40 @@ per actor (the cast), the data of the domain, a `today`. Every generator imports
 `data-i18n`; every dictionary `i18n/<lang>.js` gets the key as soon as the text exists, with the
 translation from the Microcopy page — you add the keys a page introduced (a subagent returns
 them) right after its generator runs. `templates/i18n/lang.js` is the skeleton of a dictionary.
+
+## A fresh context
+
+Every turn of a session sends its whole context again, so a step that runs in the context of the steps
+before it pays for all of them on every turn: their readings, plans, builders' replies and generated
+pages. Everything a step needs is on disk — `STATE.json`, `plans/`, `SOURCES.md`, `DECISIONS.md`, the
+site itself — so it can start from the files instead. Nothing in the procedure is skipped for it.
+
+- **At the gate.** After a step's gate is approved, do not start the next step. Recommend a fresh
+  context and say why, in the operator's language, so that they decide knowing what it saves:
+
+  ```
+  ✓ <step> approved and saved in <showcase folder>.
+  ▸ Next: <next step>. Recommended: type /clear, then /showcase.
+  Why: every message sends this whole conversation to the model again, and it now carries <what this
+  step piled up>, which <next step> does not read — it starts from the files. In a fresh context
+  each of its steps costs a fraction of that, and nothing is lost: everything is saved, and after
+  /clear the plugin tells the new session where the showcase stands.
+  Not /compact: it spends one more request on this whole conversation to keep a summary the next
+  step does not need.
+  Or say "go on here" to continue in this context.
+  ```
+
+  Name what the step really piled up — the reading, the plan rounds, the builders' replies, the pages
+  generated and looked at — not this list. After the audit, *Next* is whatever the operator does next.
+  A plugin cannot clear or compact the context itself; the operator's two commands do it. If the
+  operator says to go on here, go on.
+- **After `/clear`.** The `skill-resume` hook tells the new session which showcase is unfinished and at
+  which step; `/showcase` then runs `continue`.
+- **What `continue` reads.** `STATE.json` first (its `pending` question is asked again), then
+  `phases.md › Common mechanics`, the section of the step it resumes, and what that step names: its
+  plan in `plans/`, the parts of `site.md` and `sections.md` it points to, `SOURCES.md` when the step
+  plans from the reading. Never the pages already built just to have them in mind: builders read the
+  files they need, you read their replies and the result.
 
 ---
 
@@ -283,10 +324,12 @@ Two approvals, by design.
 
 ## Step 20 — Audit
 
-The checks in [site.md › Audit](site.md#audit), run on both themes and every language: build
-idempotent, no values outside tokens, every `data-i18n` key in every dictionary, no overflow in
-device frames and flows in the longest language, contrast rows all pass, animations still under
-reduced motion, every page reachable from the menu and the catalog. With Playwright available,
+The checks in [site.md › Audit](site.md#audit), run on both themes and every language. The
+mechanical ones — every page there, build idempotent, no values outside tokens, the dark sets
+agreeing, every `data-i18n` key in every dictionary — are the script's `check`: run it and fix what it
+lists, without grepping the site by hand. Then by looking: no overflow in device frames and flows in
+the longest language, contrast rows all pass, animations still under reduced motion, every page
+reachable from the menu and the catalog. With Playwright available,
 screenshots of every page in both themes into `screenshots/`. Fix what is mechanical; the rest is
 a question or a Next steps entry. Final gate; `STATE.json.step = "done"`.
 

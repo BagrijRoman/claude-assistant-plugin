@@ -27,7 +27,7 @@ from decisions you take with the operator.
 |----------|------------|
 | *(none)* | `continue` when a showcase exists, `init` when none does |
 | `init [dir]` | choose the folder, read the documentation, decide languages, scheme and stack, lay the frame; then the steps in order |
-| `continue` | read `STATE.json`, resume the step it is in |
+| `continue` | read `STATE.json`, resume the step it is in — from the files, in a fresh context (`phases.md › A fresh context`) |
 | `status` | the steps and their state, the picks made, what waits for the operator; change nothing |
 | `section <id>` | make or remake one root section (`logo`, `components`, `emails`, …) by its id in `pages.mjs` |
 | `flow <id>` | make or remake one flow; `flow new` adds one through the two approvals |

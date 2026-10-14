@@ -13,7 +13,7 @@ to skills and CLAUDE.md.
 | [secret-commit-guard](secretCommitGuard.md) | `PreToolUse` · `Bash` (`git commit`) | Blocks a commit whose diff adds a token, a key, a password in a connection string, or a secret file | 0.4.0 |
 | [lint-feedback](lintFeedback.md) | `PostToolUse` · `Edit\|Write\|MultiEdit` | Formats the file just written, applies the project's lint fixes, and relays the lint errors that remain to the model in the same turn | 0.7.0 |
 | [standards-check](standardsCheck.md) | `Stop` · `PreToolUse` `Bash` (`git commit`) | Runs the script checks of the project's standards packs (RCT-02's component layout) on what the turn wrote — holding the turn once — and on what a commit records — blocking it — unless the operator wrote `Standards-skipped:` | 0.12.0 |
-| [blueprint-resume](blueprintResume.md) | `SessionStart` · `startup\|clear\|compact` | Tells a new, cleared or compacted session where every unfinished blueprint stands — one line to the operator, a note to the model — so `/blueprint` resumes from its state after a fresh start | 0.14.0 |
+| [skill-resume](skillResume.md) | `SessionStart` · `startup\|clear\|compact` | Tells a new, cleared or compacted session where every unfinished blueprint and showcase, every backlog mode left half-way and every research run past its brief stands — one line to the operator, a note to the model — so the skill resumes from its state after a fresh start | 0.14.0 (as `blueprint-resume`) |
 
 Every registered hook has its own page here; `npm test` fails if one is missing (`tests/structure.test.mjs`).
 
@@ -79,7 +79,7 @@ For the file tools the target is in `tool_input`: `file_path` for `Read`, `Edit`
 | exits `2`, message on stderr | `PreToolUse`: cancels the tool call and shows the message to the model. `PostToolUse`: the tool already ran, so nothing is cancelled — the message reaches the model as feedback |
 | exits with any other code (a crash) | reports a hook error and lets the tool call through |
 | prints `{"hookSpecificOutput": {"permissionDecision": "ask", …}}` and exits `0` | asks the user to decide (not used yet) |
-| `SessionStart`: prints `{"systemMessage": …, "hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": …}}` and exits `0` | shows `systemMessage` to the user and adds `additionalContext` to the model's context (`blueprint-resume`) |
+| `SessionStart`: prints `{"systemMessage": …, "hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": …}}` and exits `0` | shows `systemMessage` to the user and adds `additionalContext` to the model's context (`skill-resume`) |
 
 ## Shared building blocks (`bin/lib/`)
 

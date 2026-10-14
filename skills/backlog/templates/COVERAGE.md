@@ -16,7 +16,7 @@ counted once, under its least advanced platform.
 
 | Id | Capability | Module › Sub-module | Surfaces | Stage | R/E/S | Q | Task(s) | Status |
 |----|------------|---------------------|----------|-------|-------|---|---------|--------|
-| {{ACC-C03}} | [{{Invite a team member}}]({{blueprint path}}/modules/{{accounts}}.md) | {{ACC › Team}} | web | MVP | 4/3/2 | — | T-012 (core) · T-018 (rules) | covered |
+| {{ACC-C03}} | [{{Invite a team member}}]({{blueprint path}}/modules/{{accounts}}.md) | {{ACC › Team}} | web | MVP | 4/3/2 | — | T-012 · T-018 | covered |
 | {{DAT-C05}} | {{Record a reading}} | {{DAT › Capture}} | web, mobile | MVP / next | 3/2/0 | Q-004 | web: T-021 · mobile: T-040 | web covered · mobile outline — batch 05 |
 | {{…}} | {{…}} | | web | MVP | | | T-031 | planned — batch 03 |
 | {{…}} | {{…}} | | web | MVP | | | — | exists — {{backend}} |

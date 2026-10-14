@@ -116,16 +116,16 @@ whose agent fails is marked failed and retried, never silently redone or dropped
 Tokens are spent where they buy quality, and nowhere else: a source is read once (a `/research` run
 through its curated files, a copy not at all), a writer reads only the sections of the brief and the
 architecture its module needs, the operator chooses how many modules get full capabilities, and every
-phase that runs agents starts in a fresh context (`mechanics.md › A fresh context`). Nothing the next
-phase uses is cut.
+gate recommends a fresh context for the next phase and says why (`mechanics.md › A fresh context`).
+Nothing the next phase uses is cut.
 
 ## The phases
 
 Work proceeds through eight phases. Each ends with a **gate**: a short summary to the operator, the
 new assumptions and open questions listed, and an explicit approval before the next phase starts.
 Gates exist because every phase builds on the one before; a wrong brief makes every module wrong.
-After a gate whose next phase runs agents, the operator is handed a fresh context — `/clear`, then
-`/blueprint` — instead of the next phase starting on top of the old one.
+After every gate the operator is recommended a fresh context — `/clear`, then `/blueprint` — with
+the reason, instead of the next phase starting on top of the old one.
 
 | # | Phase | Produces | Detail |
 |---|-------|----------|--------|
