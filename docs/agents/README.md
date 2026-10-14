@@ -19,8 +19,8 @@ enforced by a mechanism.
 
 | Agent | Used by | Tools | What it does | Since |
 |-------|---------|-------|--------------|-------|
-| [blueprint-reader](blueprintReader.md) | `/blueprint` — phase 1, one per document or URL; again for a source that changed | Read, Glob, Grep, WebFetch | Reads one source the operator gave — a file, its converted copy, or a URL exactly as given — and returns its extract under fixed labels; cannot write, run a command or search the web | 0.9.0 |
-| [blueprint-writer](blueprintWriter.md) | `/blueprint` — phases 4 and 5, one per module; `module` | Read, Glob, Grep, Write, Edit | Writes one module file — its L2 or its capabilities — from the module's sources read in full, leaving its forks in the file as open points; has no web tools | 0.9.0 |
+| [blueprint-reader](blueprintReader.md) | `/blueprint` — phase 1, one per document or URL; again for a source that changed | Read, Glob, Grep, WebFetch | Reads one source the operator gave — a file, its converted copy, or a URL exactly as given — and returns its extract under fixed labels; cannot write, run a command or search the web; runs on Sonnet | 0.9.0 |
+| [blueprint-writer](blueprintWriter.md) | `/blueprint` — phases 4 and 5, one per module; `module` | Read, Glob, Grep, Write, Edit | Writes one module file — its L2 or its capabilities — from the module's sources read in full, leaving its forks in the file as open points; has no web tools; runs on Sonnet | 0.9.0 |
 | [blueprint-reviewer](blueprintReviewer.md) | `/blueprint` — phase 6, per module and across modules; phase 7, one per walk | Read, Glob, Grep | Returns findings — file, heading, what is wrong, a suggested resolution — for the consistency checks and adequacy walks in its brief; cannot change a file | 0.9.0 |
 | [blueprint-researcher](blueprintResearcher.md) | `/blueprint` — research the operator consented to | Read, Write, WebSearch, WebFetch | Researches one comparable product for named gaps, writes only its profile, and returns the pages it used with the date it read each | 0.9.0 |
 | [research-curator](researchCurator.md) | `/research` — phase 2, one per round | Read, Glob, Grep, Write | Turns a round's raw material — deep-research's report and notes, or the scouts' notes — into the run's summary, source register and competitor profiles; has no web tools, so it cannot add a fact the research did not bring back | 0.10.0 |
@@ -74,12 +74,14 @@ the main conversation.
 | `name` | kebab-case; with the plugin's prefix it is the agent's type, `dev-assistant:<name>` |
 | `description` | one or two sentences: whose worker it is, that the skill delegates to it, what it does. The model reads it when it chooses an agent |
 | `tools` | the tools the agent may call, comma-separated; no other tool exists for it. Names only: an argument pattern such as `Bash(textutil:*)` does not narrow a tool here — Claude Code grants the whole tool — so a pattern would claim a limit that nothing enforces |
+| `model` | only where a role is cheaper on a named model at no cost to what it returns: `blueprint-reader` and `blueprint-writer` set `sonnet` ([mechanics.md › Subagents](../../skills/blueprint/references/mechanics.md#subagents) says why); a `model` passed in the `Agent` call still overrides it |
 
 The body under the frontmatter is the agent's system prompt, written to the agent in the second person.
 
-The plugin's agents leave the other fields out. Without `model`, an agent runs on the default subagent
+The plugin's agents leave the other fields out, and the rest of them `model` too. Without `model`, an agent runs on the default subagent
 model when one is configured and otherwise on the main conversation's model, so the operator's choice
-holds. `maxTurns`, `effort` and `disallowedTools` are not needed yet. `permissionMode`, `hooks` and
+holds — which is why the reviewers and researchers name none. `maxTurns`, `effort` and `disallowedTools`
+are not needed yet. `permissionMode`, `hooks` and
 `mcpServers` are ignored in a plugin's agent — Claude Code warns and points to `.claude/agents/` — so a
 plugin's agent cannot set its own permission mode.
 
@@ -125,7 +127,8 @@ plugin's agent cannot set its own permission mode.
 ### Page layout
 
 - **Summary table** — the agent's type, who uses it, its tools, the version it shipped in.
-- **Why** — the job, and which of the caller's rules the tools turn into a mechanism.
+- **Why** — the job, which of the caller's rules the tools turn into a mechanism, and the model when
+  the agent names one.
 - **What it does** — the brief it gets, the steps, what it returns.
 - **What its tools guarantee, and what stays a rule** — each rule with what holds it, stated plainly.
 - **Limitations** — what it cannot do, and what it cannot be stopped from doing.

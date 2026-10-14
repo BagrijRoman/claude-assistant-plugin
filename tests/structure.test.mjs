@@ -124,6 +124,32 @@ describe('agent documentation', () => {
   });
 });
 
+// An agent without `model` runs on the session's model. One that names a model must name one Claude Code knows,
+// and /blueprint's agents run on the models its Subagents table promises — a reader moved to another model
+// changes what every blueprint is built from.
+describe('agent models', () => {
+  const ALIASES = ['sonnet', 'opus', 'haiku', 'fable', 'inherit'];
+  const modelOf = (agent) => frontmatter(readFileSync(new URL(`${agent}.md`, AGENTS), 'utf8')).model;
+
+  it('every model an agent names is an alias Claude Code knows', () => {
+    const unknown = agentFiles().map((file) => file.replace(/\.md$/, ''))
+      .filter((agent) => modelOf(agent) !== undefined && !ALIASES.includes(modelOf(agent)));
+    assert.deepEqual(unknown, []);
+  });
+
+  it('blueprint\'s agents run on the models of mechanics.md › Subagents', () => {
+    const mechanics = readFileSync(new URL('blueprint/references/mechanics.md', SKILLS), 'utf8');
+    const rows = mechanics.split('\n').filter((line) => line.includes(`\`${PLUGIN_NAME}:blueprint-`));
+    assert.equal(rows.length, 4, 'the Subagents table should list the four blueprint agents');
+    for (const row of rows) {
+      const [, , type, model] = row.split('|').map((cell) => cell.trim());
+      const agent = type.replace(/`/g, '').split(':')[1].replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+      const promised = /^`([a-z]+)`$/.exec(model)?.[1];
+      assert.equal(modelOf(agent), promised, `agents/${agent}.md runs on ${modelOf(agent) ?? "the session's model"}, mechanics.md says ${model}`);
+    }
+  });
+});
+
 // A skill reaches its files as `${CLAUDE_PLUGIN_ROOT}/…` (from the plugin root) or as a `templates/…` or
 // `references/…` path in backticks or a link (from its own folder). A file moved without its skill must fail
 // here, not in a session.

@@ -2,7 +2,7 @@
 
 | Command | Invoked by | Script | Since |
 |---------|------------|--------|-------|
-| `/blueprint [init [dir] \| continue \| status \| module <name> \| decide \| restructure \| feedback [file] \| export]` | a human only (`disable-model-invocation`) | [bin/blueprint.mjs](../../bin/blueprint.mjs) — see [The script](#the-script) | 0.8.0 |
+| `/blueprint [init [dir] \| continue \| status \| module <name> [full] \| decide \| restructure \| feedback [file] \| export]` | a human only (`disable-model-invocation`) | [bin/blueprint.mjs](../../bin/blueprint.mjs) — see [The script](#the-script) | 0.8.0 |
 
 Files: [skills/blueprint/SKILL.md](../../skills/blueprint/SKILL.md) (the entry point),
 [skills/blueprint/references/](../../skills/blueprint/references/) (the procedure, one file per stretch
@@ -39,9 +39,9 @@ project, or starts one when there is none — so `/blueprint` is both the first 
 |----------|--------|
 | *(none)* | `continue` when a blueprint exists, `init` when none does |
 | `init [dir]` | choose the output folder, scaffold it, run Intake |
-| `continue` | find the blueprint by its `STATE.json`, list what was edited by hand, resume the phase it is in — units whose agent failed last time first; on a finished blueprint, log the hand edits in `CHANGELOG.md` and offer the other modes |
+| `continue` | find the blueprint by its `STATE.json`, list what was edited by hand, resume the phase it is in — units whose agent failed last time first — reading only what that phase needs; on a finished blueprint, log the hand edits in `CHANGELOG.md` and offer the other modes |
 | `status` | report phase, counts, hand edits, failed units, what `validate` finds and what waits for the operator; change nothing |
-| `module <name>` | re-run the module and capability phases for one module, keeping its capability ids |
+| `module <name> [full]` | re-run the module and capability phases for one module, keeping its capability ids; `full` deepens a module whose capabilities were left as a list, turning each list entry into the full block under the same id |
 | `decide` | walk through the open questions only |
 | `restructure` | add, split, merge, rename or remove a module after the map is frozen: a decision, then the map, roadmap, state and files, then a consistency check |
 | `feedback [file]` | take a customer's or a colleague's comments: registered verbatim as a source, split into items; questions answered, every requested change put to the operator (accept / accept with a change / decline / defer) and recorded with who asked for it |
@@ -85,12 +85,12 @@ assumptions and open questions, and an explicit approval before the next phase s
 
 | # | Phase | Produces | How |
 |---|-------|----------|-----|
-| 0 | Intake | `00-sources.md`, `STATE.json`, depth (`quick` / `standard` / `deep`) | the operator lists files, folders, URLs, the idea in their words, similar products |
+| 0 | Intake | `00-sources.md`, `STATE.json`, depth (`quick` / `standard` / `deep`) | the operator lists files, folders, URLs, the idea in their words, similar products; the script expands the folders, takes a `/research` run as its summary, register and profiles, and leaves its raw notes out; a source another one carries is registered, not read |
 | 1 | Reading the input | an extract per source (facts, requirements, constraints, actors, terms, unclear points, not covered), the decisions it records, an index of its items when it is a catalogue; glossary seed; gap report | one reader agent per document, reading only that document; when the input is little more than an idea, an eight-question discovery interview (problem, today's workaround, why now, success, who pays, what is fixed, closest products, what it must never do); the gap report says which gaps the operator must answer and which research could close |
 | 2 | Brief | `01-brief.md` | idea, actors, surfaces, goals (`G-`), out of scope, non-functional requirements (`N-`), risks (`RK-`) — every statement referenced to a source, decision or assumption |
 | 3 | Architecture | `02-architecture.md`, `03-roadmap.md`, empty module files | module map (the sources' own when they have one; otherwise 5–12 areas of behaviour, not technical layers), relationships, 3–7 main flows, domain model with the personal data each entity holds, roles and access, the sources mapped to modules; most questions happen here, after the draft is on disk; frozen after the gate, changed later through `restructure` |
-| 4 | Modules (L2) | top half of each module file | purpose, users, sub-modules, key entities with states, receives/provides, integrations — one writer agent per module, in waves, each reading the module's sources in full |
-| 5 | Capabilities (L3) | bottom half of each module file | what actors and the system *do*, each with a stable id (`ORG-C03`) and the source items it delivers: who, what, rules, edge cases, states, dependencies, refs to goals and requirements; the module's access table; as deep as one depth × stage table says |
+| 4 | Modules (L2) | top half of each module file | purpose, users, sub-modules, key entities with states, receives/provides, integrations — one writer agent per module, in waves, each reading the module's sources in full and only the sections of the brief and architecture it needs; each foresees how many capabilities its module will have |
+| 5 | Capabilities (L3) | bottom half of each module file | what actors and the system *do*, each with a stable id (`ORG-C03`) and the source items it delivers: who, what, rules, edge cases, states, dependencies, refs to goals and requirements; the module's access table; as deep as one depth × stage table says, narrowed at the start by the operator — full capabilities for the core modules, a list for the rest, deepened later with `module <name> full` |
 | 6 | Consistency review | fixes, or open questions; coverage of the sources | `validate` for the mechanical half (references, ids, markers, counts, coverage); read-only reviewers per module and one across modules for contradictions, dangling relationships, unreferenced statements, glossary drift; every item of the sources traced to where the blueprint deals with it |
 | 7 | Adequacy review | `04-review.md`, improvements as decisions, modules updated | would the product work for the people in the brief? walks actors, goals, flows, lifecycles, non-functional requirements and personal data, the standard behaviours of this kind of product, and the risks nobody named; every finding ends with an outcome |
 
@@ -153,18 +153,44 @@ Noisy or parallel work goes to four agent types, defined in [agents/](../../agen
 in [docs/agents/](../agents/README.md); each has only the tools its role needs, so a rule its role
 must never break is a tool it does not have.
 
-| Role | Agent | Tools | What the tool list guarantees |
-|------|-------|-------|-------------------------------|
-| reader | [blueprint-reader](../agents/blueprintReader.md) | Read, Glob, Grep, WebFetch | cannot write, run a command or search the web |
-| writer | [blueprint-writer](../agents/blueprintWriter.md) | Read, Glob, Grep, Write, Edit | no web tools (that it writes only its one file is a rule) |
-| reviewer | [blueprint-reviewer](../agents/blueprintReviewer.md) | Read, Glob, Grep | cannot change a file |
-| researcher | [blueprint-researcher](../agents/blueprintResearcher.md) | Read, Write, WebSearch, WebFetch | the only role that can search the web |
+| Role | Agent | Model | Tools | What the tool list guarantees |
+|------|-------|-------|-------|-------------------------------|
+| reader | [blueprint-reader](../agents/blueprintReader.md) | Sonnet | Read, Glob, Grep, WebFetch | cannot write, run a command or search the web |
+| writer | [blueprint-writer](../agents/blueprintWriter.md) | Sonnet | Read, Glob, Grep, Write, Edit | no web tools (that it writes only its one file is a rule) |
+| reviewer | [blueprint-reviewer](../agents/blueprintReviewer.md) | the session's | Read, Glob, Grep | cannot change a file |
+| researcher | [blueprint-researcher](../agents/blueprintResearcher.md) | the session's | Read, Write, WebSearch, WebFetch | the only role that can search the web |
 
 The skill itself is not granted web tools: a web search from the main conversation stops at a
 permission prompt. When the plugin's agents are not available, the skill uses `general-purpose`
 with the same brief and says in the gate summary that the rules held by instruction only. Before
 each wave it tells the operator how many agents will run; an agent that fails leaves its unit marked
 `failed` — a source's *Read as*, a module's `l2` or `l3` — which the next `continue` retries first.
+
+Readers and writers are most of a run's agents and work to a fixed layout, so they run on Sonnet; the
+reviewers, whose findings decide the gates, and the researchers, who judge pages nobody checked, keep
+the session's model. A reader is not put on a smaller model: its extract feeds everything after it.
+
+### Tokens
+
+A real run spent most of its tokens where little was gained, so the skill spends them only where they
+buy quality, and cuts only what the next phase does not use:
+
+- **Each source read once.** A `/research` run is taken through its curated files — the summary and the
+  profiles read, the register registered for tracing, the raw notes left out (the curator already
+  turned them into the rest); a copy or an export of a source that is in the list is registered and
+  not read.
+- **Writers read what their module needs.** The module's sources in full, as always; of the brief and
+  the architecture, only the sections that concern the module.
+- **The operator chooses how many modules get full capabilities.** At the start of phase 5 the skill
+  shows, per module, what the depth table gives it and how many capabilities its writer foresaw; the
+  operator can keep full detail for the core modules and a list for the rest. The plan is each module's
+  `l3Plan`, which `validate` holds `l3` to; `/blueprint module <name> full` deepens a module later, when
+  `/backlog` needs it.
+- **A fresh context for every phase that runs agents.** Every turn sends the whole context again; a
+  phase started on top of the earlier ones pays for all of them at each step. After such a gate the skill
+  stops and asks for `/clear`, then `/blueprint`; the [blueprint-resume](../hooks/blueprintResume.md) hook
+  tells the new session where the blueprint stands, and `continue` reads only what the phase needs. A
+  plugin cannot clear the context itself, so the two commands stay the operator's.
 
 ## Progress
 
@@ -208,7 +234,8 @@ calls it as `node "${CLAUDE_PLUGIN_ROOT}/bin/blueprint.mjs" <command> <blueprint
 | `stamp` | sets `updated` to the local time (`YYYY-MM-DDTHH:MM`) and recounts `counts` — sources, decisions, assumptions, open questions, goals, non-functional requirements, risks, capabilities; every other key keeps its value and place. Ends every operation that wrote anything |
 | `next <kind> [code] [--count N]` | prints the next id of a kind (`source`, `decision`, `assumption`, `question`, `goal`, `nfr`, `risk`) from the highest in its file, or the next capability ids of a module (`capability ORG`), reserving them by raising the module's `lastCapability` — so ids never collide and are never reused |
 | `changed [--root <dir>]` | lists the folder's files and the document sources modified after `STATE.json` was last written — the operator's hand edits, read before anything else on `continue` — and the document sources it cannot find (moved, deleted, or a wrong `--root`) |
-| `validate` | errors (exit 1): a broken `STATE.json`, an id twice in a log, a reference no log defines, a capability named that no module has as a heading, a `[?Q-NNN]` marker of a closed question, a capability heading twice, a placeholder id (`ORG-C??`, `[A-??: …]`, a researcher's `S-??`) left, a module without its file or a file without its module, a `lastCapability` below an id in use, stale counts, and — once the consistency review has started — a source item nothing covers. Warnings: `[?pending]` markers, template placeholders, coverage rows for unknown items, an index that lists one item twice, a decision or question section without its index row |
+| `validate` | errors (exit 1): a broken `STATE.json`, an id twice in a log, a reference no log defines, a capability named that no module has as a heading, a `[?Q-NNN]` marker of a closed question, a capability heading twice, a placeholder id (`ORG-C??`, `[A-??: …]`, a researcher's `S-??`) left, a module without its file or a file without its module, a `lastCapability` below an id in use, an `l3Plan` other than `full` or `list` or one the module's `l3` contradicts, stale counts, and — once the consistency review has started — a source item nothing covers. Warnings: `[?pending]` markers, template placeholders, coverage rows for unknown items, an index that lists one item twice, a decision or question section without its index row |
+| `expand <path>… [--root <dir>]` | lists the files to register from the files and folders the operator named, grouped by folder, and counts what it left out by kind: dotfiles and dot-folders, build and dependency folders, the blueprint folder, assets (images, fonts, html, stylesheets, scripts — kept when named outright), and a `/research` run's brief, state and `raw/` notes; the run's `sources.md` is marked to register, not read |
 | `export [--out <file>] [--with-sources]` | writes one Markdown document — README (as *Contents*), brief, architecture, roadmap, modules, review, the logs, the glossary, the competitor profiles — with headings shifted, comments removed and links to local files turned into their text, so it reads the same wherever it is sent; default `export/blueprint.md`; an `--out` outside the blueprint folder is refused |
 
 What stays the model's: reading, judging, asking, writing the documents, regenerating `README.md`
@@ -225,7 +252,10 @@ and filling the coverage table — the script only checks that the table is comp
 - **Word files need macOS.** The skill converts a `.docx` once, with `textutil`, into a copy in
   `.sources/` that the agents read; elsewhere the operator is asked for a PDF or Markdown export.
 - **Long.** A real blueprint spans several sessions; the operator must expect to say `continue`
-  many times and to read the files between sessions.
+  many times and to read the files between sessions — and, to keep the tokens down, to type `/clear`
+  and `/blueprint` when a gate asks for it, since the skill cannot clear its own context.
+- **A writer may need a section it was not given.** The sections of the brief and architecture it
+  reads are fixed per phase; a writer that needs another one says so, and is run again with it.
 - **Question fatigue is real.** Batches of 2–4, the *how to take them* question, one assumption per
   capability and the sources' own decisions being cited instead of asked are mitigations, not a
   cure; a project with a thin brief will still produce many rounds in phase 3.
@@ -237,8 +267,11 @@ and filling the coverage table — the script only checks that the table is comp
 ## Tests
 
 - [tests/blueprint.test.mjs](../../tests/blueprint.test.mjs) — the script on a small complete
-  blueprint: every command, every `validate` error, the export.
+  blueprint: every command, every `validate` error (the `l3Plan` ones included), the export, and
+  `expand` on a folder of specs and a `/research` run.
+- [tests/blueprintResume.test.mjs](../../tests/blueprintResume.test.mjs) — the hook that tells a fresh
+  session where the blueprint stands.
 - [tests/structure.test.mjs](../../tests/structure.test.mjs) — the skill directory, `SKILL.md`
   frontmatter, this page and the index rows; every template and reference the skill names exists;
   every `file.md › Heading` it points to resolves; every agent it delegates to is defined and
-  documented.
+  documented, and runs on the model `mechanics.md › Subagents` names.

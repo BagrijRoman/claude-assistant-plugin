@@ -25,6 +25,11 @@ consent. And reading leaves no trace: the reader writes nothing and runs nothing
 both rules completely. A Word file, which needs a converter, is converted once by the skill itself, at
 intake, into a copy in the blueprint folder's `.sources/` — so the reader needs no shell.
 
+It runs on Sonnet (`model: sonnet`, since 0.14.0). Readers are many — one per source — and turning a
+source into a map under fixed labels is well within Sonnet. It is not put on a smaller model: its
+extract feeds the gaps, the brief and the split into modules, so a requirement it drops or attributes to
+the wrong actor travels through the whole blueprint, and the saving would be small next to the writers'.
+
 ## What it does
 
 1. Gets a brief naming one source — its `S-` id and a file path or URL — and the headings to return.

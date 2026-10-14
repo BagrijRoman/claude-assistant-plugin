@@ -332,8 +332,8 @@ What was done (0.8.0):
   renumbering. `tests/backlogContract.test.mjs` checks the fields, phases and modes the backlog reads.
 
 What is left:
-- A way to deepen one module of the blueprint to full L3 (an option of `/blueprint module`, say), so that
-  `/backlog detail` can send list-only capabilities somewhere better than `/blueprint feedback`.
+- ~~A way to deepen one module of the blueprint to full L3~~ — done in T30 (0.14.0): `/blueprint module <name>
+  full`, which `/backlog` now points to.
 - Run `/blueprint` end to end on a real project (ETC.V2 with `initialDocs/` as sources), then `/backlog init` on the
   result; adjust the procedures from what the run shows (question rhythm, structural-vs-assumption boundary, gate
   friction on small phases, module drift between parallel subagents, the cost of regenerating views by hand).
@@ -940,6 +940,188 @@ Later:
 - The current skill and stage in Claude Code's status line, read from the active `STATE.json`.
 - A `progress` command in `bin/blueprint.mjs` (and the other skills' scripts once they exist), if the model's
   checklist drifts from `STATE.json` in real runs.
+
+## T27 — `/blueprint` progress that shows without relying on the model · `todo`
+
+The first real run after 0.13.0 (`/blueprint init`, 2026-10-14) showed none of T26's progress: the skill was loaded
+with its `## Progress` section, yet through the whole Intake the operator saw no checklist, no `▸` line and no task
+list. The rule sits at the end of `SKILL.md`, while the model works step by step from `references/*.md`, which never
+mention progress; the session had no task-list tool; and nothing outside the model shows anything. Asked for by the
+operator on 2026-10-14.
+
+What to do:
+- `bin/blueprint.mjs progress <dir> [--mode <mode>] [--step <text>] [--units <k>/<m>]`: prints the checklist and the
+  line from `STATE.json` (`phases`, the modules' `l2` and `l3`, the failed units). The marks and the numbers are
+  computed by the script; the stage names come from the `| Mode | Stages |` table in `SKILL.md`. This reverses T26's
+  "no script" decision.
+- `progress-notice` hook (`bin/progressNotice.mjs`), `PostToolUse` on `Write|Edit|Bash`: when a blueprint's
+  `STATE.json` was written, or `blueprint.mjs stamp` ran, it renders the checklist and returns it as `systemMessage`,
+  shown to the operator whatever the model does. Silent when the marks did not change.
+- First, a spike: does the VS Code extension show a hook's `systemMessage`? If it does not, the hook returns
+  `additionalContext` that asks the model to show the checklist now.
+- The procedures carry the progress points. The rule moves to the top of `SKILL.md`, as the first thing a run does.
+  Each phase in `intake.md`, `design.md`, `modules.md`, `reviews.md` and each mode in `modes.md` gets explicit steps:
+  run `progress` and show its output when the phase starts; before a wave, the number of agents; as each returns, the
+  line with the count; every gate summary starts with the checklist.
+- `continue` and `status` run `progress` before anything else.
+- Tests: `tests/blueprint.test.mjs` covers `progress` on fixtures (fresh, mid-phase, a failed unit, finished); the
+  hook has its own tests; `tests/structure.test.mjs` checks that every phase in `references/` names `progress` at its
+  start and at its gate.
+- Page `docs/hooks/progressNotice.md`, rows in the index and the root README; `docs/skills/blueprint.md` and rule 8
+  in `docs/skills/README.md` updated; version bump.
+
+Done when:
+- `npm test` passes.
+- A real `/blueprint` run shows the checklist at the start, at every gate and after every `STATE.json` change, and a
+  wave of agents shows its count, without the operator asking.
+
+Open:
+- `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` in the operator's `~/.claude/settings.json`, so that the task list appears; a
+  plugin cannot set it.
+
+## T28 — Progress that shows, for the other skills · `todo`
+
+T27's mechanism for every other skill with stages. Asked for by the operator on 2026-10-14.
+
+What to do:
+- `bin/lib/progress.mjs`: the shared renderer. Stage names come from the skill's `| Mode | Stages |` table; the state
+  comes from the skill's state file through an adapter per `kind`: `/backlog` (`pending`), `/research` (`phase`),
+  `/showcase` (`steps`, `flows`), `/standards` (its state in `docs/standards/`). `blueprint.mjs progress` moves onto it.
+- `bin/progress.mjs <dir>`: one command for every skill, so that `/research` and `/backlog`, which have no script of
+  their own, get one too.
+- `progress-notice` recognises every `kind`.
+- The same progress points in each skill's `references/`: when a stage starts, around waves (research scouts, backlog
+  detailers, showcase builds), at gates.
+- `/scaffold` and `/setup-permissions` finish in seconds through one script: the script prints the final checklist in
+  its report, and no lines are asked for in between.
+- Tests per adapter; the structure check extends to every skill's `references/`; the skills' pages updated.
+
+Done when:
+- `npm test` passes.
+- Real runs of `/research` and `/showcase` show the checklist without the operator asking; a `/scaffold` report ends
+  with its checklist.
+
+## T29 — One approval per web domain · `todo`
+
+Claude Code keeps a `WebFetch` approval per host: "don't ask again" saves `WebFetch(domain:help.sweep.net)`, and the
+next subdomain asks again. Research for one project on 2026-10-13 and 2026-10-14 left 174 such rules in its
+`.claude/settings.local.json`, for 143 registrable domains; `sweep.net` alone was approved seven times (`www`, `www2`,
+`help`, `school`, `trust`, `status` and the bare domain). The operator wants one approval to cover a whole domain with
+its subdomains. Asked for by the operator on 2026-10-14.
+
+What to do:
+- First, a spike: does Claude Code accept a wildcard rule such as `WebFetch(domain:*.sweep.net)`? If it does, the hook
+  below writes such rules instead of keeping its own list.
+- `bin/lib/webDomain.mjs`: the registrable domain of a host (`help.sweep.net` → `sweep.net`, `zakon.rada.gov.ua` →
+  `rada.gov.ua`, `www.capterra.co.uk` → `capterra.co.uk`), with a built-in list of multi-level suffixes and no
+  dependency.
+- `web-domain-gate` hook (`bin/webDomainGate.mjs`):
+  - `PreToolUse` on `WebFetch`: an approved domain → `allow`, no prompt; any other → the usual prompt, its reason
+    saying that the answer covers the domain and all its subdomains;
+  - `PostToolUse` on `WebFetch`: the fetch ran, so it was approved, and the domain is recorded; a refusal records
+    nothing;
+  - a `deny` rule in the settings still wins.
+- Approval up front: `/research` and `/blueprint` put the products' domains to the operator in one question before
+  their researchers start, and record the approved ones at once.
+- The approved domains are kept per project (where: see *Open*).
+- Tests: the suffix cases; the hook's allow, ask and record; a `deny` rule wins. Page `docs/hooks/webDomainGate.md`,
+  rows in the index and the root README; version bump.
+
+Done when:
+- `npm test` passes.
+- In a real research run each domain is asked about at most once, whatever its subdomains.
+
+Open:
+- Whether the researcher agents (`blueprint-researcher`, `research-scout`) may fetch any domain while a research the
+  operator consented to is running: almost no prompts, at the cost of pages read unchecked; they write only into
+  their own folder.
+- Where the list lives: the plugin's data folder (`${CLAUDE_PLUGIN_DATA}`, proposed, nothing in the repository) or the
+  project's `.claude/` with a `.gitignore` entry.
+- Several agents reaching a new domain at the same moment each still ask: acceptable, or serialised.
+
+## T30 — `/blueprint` that spends fewer tokens · `done` (0.14.0)
+
+A real run on 2026-10-14 spent most of its tokens where little was gained. Every agent ran on the parent model,
+because none sets `model:`. The research's raw notes (`S-12`…`S-20`) were registered as sources next to the run's
+summary and the competitor profiles they had already fed, so nine readers brought back almost nothing new. Depth
+`standard` asks for full L3 on all ten MVP modules, about 130 capabilities. And the whole run lived in one session, so
+every phase paid for the context of the phases before it. Asked for by the operator on 2026-10-14.
+
+The rule for every change below: cut only what the next phase does not use. A saving that costs the quality of the
+blueprint is not taken.
+
+What to do:
+- Models per agent: `model: sonnet` in `blueprintReader.md` and `blueprintWriter.md`; `blueprintReviewer.md` keeps the
+  parent model, since its findings decide the gates. The reader is not put on Haiku: its extract feeds Intake, the gaps
+  and the split into modules, so a requirement it drops or misattributes travels through the whole blueprint, and the
+  saving on readers is small next to the writers'. `mechanics.md › Subagents` names the model, so that the
+  `general-purpose` fallback passes it on the call.
+- Narrow reading for writers: the brief names the sections of `01-brief.md` and `02-architecture.md` that concern the
+  module (its entities, roles and flows), not the whole files; the module's own sources stay in full.
+- No duplicated sources: a `/research` run given as a source is registered as its summary, source register and
+  profiles; its `raw/` notes are not read and get no `S-NN` of their own. More generally, Intake does not read a source
+  whose content another source already carries; it registers it with a pointer to that source.
+- Depth chosen per module: at the start of phase 5 the operator sees how many capabilities each depth means and picks
+  full L3 for the core modules only, with a capability list for the rest. The choice is kept in `STATE.json`, and T18's
+  open *deepen one module later* takes the rest to full L3 when they are needed.
+- A fresh context between phases:
+  - First, a spike: can a plugin clear the context or start a new session itself (`/clear` from a skill or a hook)?
+  - If it cannot: the gate of every heavy phase (Intake, phases 4 and 5) ends with "run `/clear`, then
+    `/blueprint continue`", and a `SessionStart` hook with matcher `clear` (and `startup`) finds an unfinished
+    blueprint's `STATE.json` and returns `additionalContext` that names the folder and the next phase, so that the new
+    session picks it up without a re-read of what is done.
+  - `continue` reads only `STATE.json`, the index and the files the next phase needs, never the whole blueprint.
+- Tests: `tests/structure.test.mjs` checks the `model:` lines; `tests/blueprint.test.mjs` covers the per-module depth
+  and a `raw/` note left out of the sources; the hook has its own tests. Page `docs/hooks/` for the hook, rows in the
+  index and the root README; `docs/skills/blueprint.md` updated; version bump.
+
+Done when:
+- `npm test` passes.
+- A real run reads each research run once, runs its readers and writers on Sonnet, starts every heavy phase in a fresh
+  context, and phase 5 writes full L3 only where the operator chose it.
+- Quality holds: the reviews of phases 6 and 7 on that run find nothing that traces back to a cut — no requirement
+  of a source missing, no module short of what a later phase needed.
+
+What was done (0.14.0):
+- Spike: Claude Code documents no way for a plugin to clear the context or start a session — no hook, skill or
+  command runs `/clear`. `SessionStart` fires with `source` `startup`, `resume`, `clear`, `compact` or `fork`, and
+  takes `additionalContext` for the model and `systemMessage` for the user. A plugin agent's `model:` is honoured, and
+  a `model` in the `Agent` call overrides it.
+- Models: `model: sonnet` in `blueprintReader.md` and `blueprintWriter.md`; the reviewer and the researcher name
+  none. `mechanics.md › Subagents` has a *Model* column, says why, and has the `general-purpose` fallback pass the
+  model on the call.
+- Narrow reading: `modules.md › What a writer reads` — per phase, the sections of `01-brief.md` and
+  `02-architecture.md` a writer reads (phase 5 drops the module map, relationships, boundaries and the idea, which the
+  L2 already carries); the writer finds them with `Grep` and reads the flows that name its module only. Its
+  sources stay in full.
+- No duplicated sources: `bin/blueprint.mjs expand <dir> <path>… [--root]` lists what Intake registers — dotfiles,
+  build folders, the blueprint folder and assets counted by kind; a `/research` run as its summary and profiles, its
+  `sources.md` as `register — not read`, its brief, state and `raw/` notes left out (a raw note too, when named
+  outright). A source another one carries is registered as `carried by S-NN` and not read.
+- Depth per module: the L2 writer returns the capabilities it foresees (`modules[].expected`); phase 5 starts with
+  an `L3 depth` question — full L3 for the core only, as the table says, or a list everywhere — written as
+  `modules[].l3Plan` (`full` / `list`), which `validate` holds `l3` to. `/blueprint module <name> full` deepens a
+  module later; `/backlog` points there instead of a hand edit of `depth`.
+- A fresh context: `mechanics.md › A fresh context`; the gate before every phase that runs agents (1, 4, 5, 6, 7 —
+  wider than the Intake, 4 and 5 first planned, since phases 6 and 7 run agents too) stops after the stamp and asks for
+  `/clear`, then `/blueprint`; `continue` reads `STATE.json`, `changed`, the phase's reference and the index, then
+  only what the phase's steps name. The `blueprint-resume` hook (`SessionStart` · `startup|clear|compact`) tells the
+  operator and the model where every unfinished blueprint stands; it skips the skill's own template.
+- Pages: `docs/hooks/blueprintResume.md` and rows in the hooks index and the root README; `docs/skills/blueprint.md`
+  (a *Tokens* section, the script's `expand`, the models), the reader's and the writer's pages, the agents index
+  (`model` in the frontmatter table).
+- Tests: `tests/blueprint.test.mjs` (`l3Plan` in `validate`; `expand` on a folder, a run, files named outright, the
+  blueprint folder inside a named one), `tests/blueprintResume.test.mjs` (eight cases, the stage names checked against
+  `SKILL.md`), `tests/structure.test.mjs` (every agent's model is an alias; the blueprint agents run on the models
+  `mechanics.md` names).
+
+Result: 0.14.0; 351 tests pass. The real-run criteria — readers and writers on Sonnet, phase 5 at the chosen depth,
+each heavy phase in a fresh context, reviews that find nothing traced to a cut — wait for the next `/blueprint` run
+after a restart.
+
+Open:
+- `SessionStart` also takes an `initialUserMessage`; whether it could start `/blueprint` by itself after `/clear` is
+  undocumented, so the operator still types it.
 
 ## Draft of the next tasks
 

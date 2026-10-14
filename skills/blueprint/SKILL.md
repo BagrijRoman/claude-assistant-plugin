@@ -1,7 +1,7 @@
 ---
 name: blueprint
 description: Turns raw project input (idea, documents, requirements, references, similar products) into a set of English product-design documents — brief, architecture, modules, capabilities — plus a log of every decision taken with the operator. Multi-session, phase-gated, resumable from the files it writes. Human-invoked only.
-argument-hint: "[init [dir] | continue | status | module <name> | decide | restructure | feedback [file] | export]"
+argument-hint: "[init [dir] | continue | status | module <name> [full] | decide | restructure | feedback [file] | export]"
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(node:*), Bash(ls:*), Bash(mkdir:*), Bash(mv:*), Bash(date:*), Bash(textutil:*), AskUserQuestion, Agent
 ---
@@ -26,9 +26,9 @@ is only needed to name the folder up front or to start a second blueprint.
 |----------|------------|
 | *(none)* | `continue` when a blueprint exists in the project, `init` when none does |
 | `init [dir]` | Start a new blueprint: choose the output folder, scaffold it, run phase 0 (Intake) |
-| `continue` | Find the existing blueprint, read `STATE.json`, resume the phase it is in — units that failed last time first; on a finished blueprint, log the hand edits and offer the modes below |
+| `continue` | Find the existing blueprint, read `STATE.json`, resume the phase it is in — units that failed last time first — reading only what that phase needs (`mechanics.md › A fresh context`); on a finished blueprint, log the hand edits and offer the modes below |
 | `status` | Report phase, counts, hand edits, failed units, what `validate` finds and what waits for the operator; change nothing |
-| `module <name>` | Re-run phases 4–5 for one module only (after a decision changed it, or the operator edited it) |
+| `module <name> [full]` | Re-run phases 4–5 for one module only (after a decision changed it, or the operator edited it); `full` deepens a module whose capabilities were left as a list |
 | `decide` | Walk through `OPEN-QUESTIONS.md` only; close what the operator is ready to close |
 | `restructure` | Add, split, merge, rename or remove a module after the map is frozen |
 | `feedback [file]` | Take a customer's or a colleague's comments on the blueprint: answer the questions, put every requested change to the operator, record the outcome |
@@ -102,20 +102,30 @@ Bookkeeping is a script's job, not yours:
 `node "${CLAUDE_PLUGIN_ROOT}/bin/blueprint.mjs" <command> <blueprint dir>`. `next` gives every id;
 `changed` lists what was edited by hand since the last write; `validate` checks references, ids,
 coverage and counts before every gate; `stamp` ends every operation that wrote anything; `export`
-writes the one-document copy (`mechanics.md › The helper script`).
+writes the one-document copy; `expand` turns the folders the operator names into the files to register
+(`mechanics.md › The helper script`).
 
 Noisy or parallel work goes to subagents of four types, each with only the tools its role needs:
 the **reader** reads one source and can neither write, run a command nor search the web, the
 **writer** writes one module file, the **reviewer** cannot write at all, and only the **researcher**
-searches the web (`mechanics.md › Subagents`). No agent has a shell, so a Word file is converted once,
+searches the web (`mechanics.md › Subagents`). Readers and writers run on Sonnet, reviewers and
+researchers on the session's model. No agent has a shell, so a Word file is converted once,
 by you, into a copy they read. Before a wave you tell the operator how many agents will run; a unit
 whose agent fails is marked failed and retried, never silently redone or dropped.
+
+Tokens are spent where they buy quality, and nowhere else: a source is read once (a `/research` run
+through its curated files, a copy not at all), a writer reads only the sections of the brief and the
+architecture its module needs, the operator chooses how many modules get full capabilities, and every
+phase that runs agents starts in a fresh context (`mechanics.md › A fresh context`). Nothing the next
+phase uses is cut.
 
 ## The phases
 
 Work proceeds through eight phases. Each ends with a **gate**: a short summary to the operator, the
 new assumptions and open questions listed, and an explicit approval before the next phase starts.
 Gates exist because every phase builds on the one before; a wrong brief makes every module wrong.
+After a gate whose next phase runs agents, the operator is handed a fresh context — `/clear`, then
+`/blueprint` — instead of the next phase starting on top of the old one.
 
 | # | Phase | Produces | Detail |
 |---|-------|----------|--------|
@@ -123,8 +133,8 @@ Gates exist because every phase builds on the one before; a wrong brief makes ev
 | 1 | Reading the input | per-source extracts in `00-sources.md` with the decisions the sources took and an index of their items, gaps list, `GLOSSARY.md` seed | one reader per document; a discovery interview when the input is little more than an idea; ends with a gap report and, when research could close gaps, an offer to research |
 | 2 | Brief | `01-brief.md` | idea, actors, surfaces, goals, out of scope, non-functional requirements, risks |
 | 3 | Architecture | `02-architecture.md`, `03-roadmap.md`, empty `modules/*.md` | module map (the sources' own when they have one), relationships, domain model with personal data marked, roles and access, sources mapped to modules; most decisions happen here; frozen after the gate, changed later only through `restructure` |
-| 4 | Modules (L2) | top half of each `modules/<slug>.md` | purpose, users, sub-modules, entities, what it gives/receives, integrations — writers in waves, each reading the module's sources in full |
-| 5 | Capabilities (L3) | bottom half of each `modules/<slug>.md` | what users and the system can do, with ids, rules, edge cases, states, access — as deep as the depth table says |
+| 4 | Modules (L2) | top half of each `modules/<slug>.md` | purpose, users, sub-modules, entities, what it gives/receives, integrations — writers in waves, each reading the module's sources in full and the sections of the brief and architecture it needs |
+| 5 | Capabilities (L3) | bottom half of each `modules/<slug>.md` | what users and the system can do, with ids, rules, edge cases, states, access — as deep as the depth table says, narrowed per module by the operator at the start |
 | 6 | Consistency review | findings → fixes or `OPEN-QUESTIONS.md`; coverage of the sources | `validate` for the mechanical half; read-only reviewers per module and across modules; every item of the sources traced to a capability, the out of scope, or a question |
 | 7 | Adequacy review | `04-review.md`, improvements as decisions, affected modules updated | does the whole thing work as a product? every actor reaches their goals, every goal has a capability, no dead ends, no unnamed risk; gaps closed, improvements offered |
 
@@ -166,7 +176,7 @@ its full name), and a free-text **Other** that the tool always adds — so never
 3. **Defer**, when a slot is left — the fork goes to `OPEN-QUESTIONS.md` as `Q-NNN`, the spot in the
    text is marked `[?Q-NNN]`, and work carries on. When no slot is left, the operator can still type
    "defer" as Other. Defer belongs to forks only: the procedural questions — Folder, Depth,
-   Surfaces, Research, Gate, *how to take them* — have their options fixed in the references.
+   Surfaces, Research, L3 depth, Gate, *how to take them* — have their options fixed in the references.
 
 A choice wider than four options (thirteen competitors to research, twenty modules to confirm) goes
 into the question text as a list; the options are ways of answering it ("all of them", "the three

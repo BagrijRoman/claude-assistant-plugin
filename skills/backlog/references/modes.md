@@ -33,8 +33,8 @@ writing `STATE.json` last.
    done, so the first `resync` has to compare everything — and ask whether to continue. When the
    first-stage capabilities are list-only by the blueprint's depth (`slicing.md › Stages`), batches 1
    and 2 cannot be detailed: ask (header `Depth`) **Deepen the blueprint first** (Recommended — the
-   operator raises `depth` in the blueprint's `STATE.json`, which no blueprint mode changes yet, then
-   runs `/blueprint module <name>` for each module) / **Cut them as an outline only** (a `P-` record
+   operator runs `/blueprint module <name> full` for each module whose first-stage capabilities are
+   list-only) / **Cut them as an outline only** (a `P-` record
    later; batches 1 and 2 then stay outline-only until the blueprint is deeper).
 2. **Choose the folder** — `SKILL.md › The output folder`. When the chosen folder already holds a
    backlog, ask: **Open it** (Recommended — run `/backlog` on it) / **Start another in a different
@@ -133,9 +133,9 @@ routine of `done`.
 1. **Check.** The batch exists. Run the blueprint checks; when the blueprint moved, ask (header
    `Blueprint`): **Resync first** (Recommended) / **Detail anyway**. `pending` names this batch →
    resume at its step. A capability on its rows that is list-only (`slicing.md › Stages`) cannot be
-   detailed: say so and point the operator at the blueprint — raise its `depth` (by hand in its
-   `STATE.json`) or the capability's stage (through `/blueprint feedback`), then `/blueprint module
-   <name>` — and detail the rest; the batch cannot complete until that row is detailed too. The batch
+   detailed: say so and point the operator at the blueprint — `/blueprint module <name> full` when the
+   module was left as a list, or the capability's stage through `/blueprint feedback` when its own
+   later stage keeps it one — and detail the rest; the batch cannot complete until that row is detailed too. The batch
    is far ahead (more than one beyond the next undetailed batch) → ask **Detail it now** / **Wait until
    it comes into view** (Recommended). The batch is already detailed → detail only the tasks with
    `review: needs-detail`, without asking; re-detailing a whole batch is a question, keeps every id and

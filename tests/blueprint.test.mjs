@@ -658,6 +658,25 @@ describe('blueprint script', () => {
       assertErrors(run(['validate', dir]), [`error: STATE.json:${line} — ORG lastCapability is 2, but ORG-C05 is in use; raise it to 5`]);
     });
 
+    it('reports an l3Plan that is neither "full" nor "list", or that the module\'s l3 contradicts', () => {
+      const { dir } = makeBlueprint();
+      const line = lineOf(dir, 'STATE.json', '"slug": "organization"');
+      for (const [plan, l3] of [['full', 'done'], ['list', 'list-only'], ['list', 'pending'], ['full', 'failed']]) {
+        changeState(dir, (state) => Object.assign(state.modules[0], { l3Plan: plan, l3 }));
+        assert.equal(run(['validate', dir]).status, 0, `${plan} with ${l3}`);
+      }
+      changeState(dir, (state) => Object.assign(state.modules[0], { l3Plan: 'deep', l3: 'done' }));
+      assertErrors(run(['validate', dir]), [`error: STATE.json:${line} — ORG l3Plan is "deep"; use "full" or "list"`]);
+      changeState(dir, (state) => Object.assign(state.modules[0], { l3Plan: 'list', l3: 'done' }));
+      assertErrors(run(['validate', dir]), [
+        `error: STATE.json:${line} — ORG l3 is "done", but its l3Plan "list" ends in "list-only"; write the capabilities as planned, or change the plan`,
+      ]);
+      changeState(dir, (state) => Object.assign(state.modules[0], { l3Plan: 'full', l3: 'none' }));
+      assertErrors(run(['validate', dir]), [
+        `error: STATE.json:${line} — ORG l3 is "none", but its l3Plan "full" ends in "done"; write the capabilities as planned, or change the plan`,
+      ]);
+    });
+
     it('reports counts that differ from a recount', () => {
       const { dir } = makeBlueprint();
       changeState(dir, (state) => {
@@ -830,6 +849,79 @@ describe('blueprint script', () => {
         assert.match(result.stderr, /is outside the blueprint folder .*; the export stays inside it/);
       }
       for (const path of [join(root, 'x.md'), join(root, 'share'), `${dir}-copy`]) assert.ok(!existsSync(path), `${path} was written`);
+    });
+  });
+
+  describe('expand', () => {
+    /** The fixture, a folder of specs and a /research run beside it: <root>/docs/specs and <root>/docs/research/esg. */
+    const makeInputs = () => {
+      const { root, dir } = makeBlueprint();
+      for (const file of ['a.md', 'b.pdf', 'img/logo.png', 'page.html', 'app.mjs', '.DS_Store', 'node_modules/x/index.md']) {
+        write(join(root, 'docs/specs', file), 'x\n');
+      }
+      const run = join(root, 'docs/research/esg');
+      write(join(run, 'STATE.json'), '{ "kind": "research" }\n');
+      for (const file of ['summary.md', 'sources.md', 'brief.md', 'competitors/acme.md', 'raw/round-1/report.md', 'raw/round-1/notes/n1.md', 'raw/round-1/notes/n2.md']) {
+        write(join(run, file), 'x\n');
+      }
+      return { root, dir };
+    };
+
+    it('lists the files of a folder by subfolder, and counts what it leaves out by kind', () => {
+      const { root, dir } = makeInputs();
+      const result = run(['expand', dir, join(root, 'docs/specs'), '--root', root]);
+      assert.equal(result.status, 0, result.stderr);
+      assert.equal(result.stdout, [
+        'docs/specs/ — 2 files',
+        '  docs/specs/a.md',
+        '  docs/specs/b.pdf',
+        'left out: 1 dotfile',
+        'left out: 1 script',
+        'left out: 1 image',
+        'left out: 1 build or dependency folder',
+        'left out: 1 html file',
+        '2 files to register, 5 left out',
+        '',
+      ].join('\n'));
+    });
+
+    it('takes a /research run as its summary, its register and its profiles, and leaves its raw notes out', () => {
+      const { root, dir } = makeInputs();
+      const result = run(['expand', dir, join(root, 'docs/research'), '--root', root]);
+      assert.equal(result.status, 0, result.stderr);
+      assert.deepEqual(listed(result), [
+        'docs/research/esg/competitors/acme.md',
+        'docs/research/esg/sources.md · register it, do not read it: the summary and the profiles cite it',
+        'docs/research/esg/summary.md',
+      ]);
+      assert.match(result.stdout, /^docs\/research\/esg\/ — a \/research run: its summary, its source register and its profiles$/m);
+      assert.match(result.stdout, /^left out: 3 raw research notes in docs\/research\/esg\/raw\/: the run's summary and profiles carry them$/m);
+      assert.match(result.stdout, /^left out: 2 research brief or state files — the summary answers the brief$/m);
+    });
+
+    it('keeps a file named outright, asset or not — but not a raw note of a run — and reports a path it cannot find', () => {
+      const { root, dir } = makeInputs();
+      const result = run(['expand', dir, 'docs/specs/page.html', 'docs/research/esg/raw/round-1/notes/n1.md', 'docs/gone.md'], { cwd: root });
+      assert.equal(result.status, 0, result.stderr);
+      assert.deepEqual(listed(result), ['docs/specs/page.html']);
+      assert.match(result.stdout, /^left out: 1 raw research note in docs\/research\/esg\/raw\/:/m);
+      assert.match(result.stdout, /^not found: docs\/gone\.md — ask the operator where it is$/m);
+    });
+
+    it('leaves out the blueprint folder itself when it sits inside a folder the operator named', () => {
+      const { root, dir } = makeInputs();
+      const result = run(['expand', dir, root, '--root', root]);
+      assert.equal(result.status, 0, result.stderr);
+      assert.ok(!listed(result).some((line) => line.startsWith('blueprint/')), result.stdout);
+      assert.match(result.stdout, /^left out: 1 blueprint folder — the one being written$/m);
+      assert.ok(listed(result).includes('docs/requirements.md'));
+    });
+
+    it('needs at least one path', () => {
+      const { dir } = makeBlueprint();
+      const result = run(['expand', dir]);
+      assert.equal(result.status, 2);
+      assert.match(result.stderr, /expand needs the files or folders the operator named/);
     });
   });
 

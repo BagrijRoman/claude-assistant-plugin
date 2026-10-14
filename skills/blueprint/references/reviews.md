@@ -16,7 +16,8 @@ findings with file and heading.
 1. **Per module** — one reviewer per module (two small modules may share one), reading the brief,
    the architecture, the glossary, `DECISIONS.md`, `OPEN-QUESTIONS.md`,
    `00-sources.md › Decided in the sources` and the module file, and told the depth, the module's
-   stage and the row of the depth table that applies:
+   stage, its `l3Plan` and the row of the depth table that applies — a module the operator kept as a
+   list is not thin for having no rules:
    - **Contradictions** — the module says X, the brief, a decision or a decision of the sources says
      not-X;
    - **Unreferenced statements** — a rule or requirement with no source, decision or assumption;
@@ -89,9 +90,9 @@ Run steps 1–6 in reviewers (`mechanics.md › Subagents`), split by what they 
 hold the whole blueprint: one per main flow (step 3), one per actor or small group of actors (step
 1), one for goals, lifecycles and non-functional requirements (steps 2, 4, 5), one for what is
 missing (step 6). Each reads the brief, the architecture and only the module files its walk passes
-through — the brief names them, and the sections of a large file it needs — and is told the depth: a
-capability the depth only lists has no rules yet and is judged by its Who, What and Source, never as
-an orphan for lacking Refs. Each returns findings tagged by kind, each with where it was found and a
+through — the brief names them, and the sections of a large file it needs — and is told the depth and
+the modules' `l3Plan`: a capability the depth or the plan only lists has no rules yet and is judged by
+its Who, What and Source, never as an orphan for lacking Refs. Each returns findings tagged by kind, each with where it was found and a
 suggested resolution. Step 7 you do yourself after reading the reports — you have the decisions and the
 operator's reasoning in context, the reviewers do not. Then:
 

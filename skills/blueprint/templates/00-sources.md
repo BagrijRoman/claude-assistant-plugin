@@ -3,14 +3,15 @@
 Everything the blueprint is built from. `primary` — written for this project; `secondary` —
 related but not about this project (a similar product, a standard, a generic requirement list);
 `web` — found during consented research, see [STATE.json](STATE.json) `research`. A folder the
-operator named is listed here file by file; a product's name is registered, and read only with
-consent. Feedback on the blueprint (`/blueprint feedback`) is a source too, kept verbatim. A
+operator named is listed here file by file, a `/research` run as its summary, its register and its
+profiles; a source another one carries is registered and not read; a product's name is registered,
+and read only with consent. Feedback on the blueprint (`/blueprint feedback`) is a source too, kept verbatim. A
 document's location is its path from the project root, in backticks. A source's own id written in a
 blueprint id's shape (`D-023`, `ORG-C05`) stays in backticks wherever it is written.
 
 | Id | Type | Location | Read as | Note from the operator | Reliability |
 |----|------|----------|---------|------------------------|-------------|
-| S-01 | {{document / url / idea / product / person / feedback}} | {{path, URL, or "conversation, YYYY-MM-DD"}} | {{direct / converted / fetched / part — which / export requested / unreadable / not read / failed — retried on continue}} | {{what the operator said this is}} | {{primary / secondary / web}} |
+| S-01 | {{document / url / idea / product / person / feedback}} | {{path, URL, or "conversation, YYYY-MM-DD"}} | {{direct / converted / fetched / part — which / export requested / unreadable / not read / register — not read / carried by S-nn / failed — retried on continue}} | {{what the operator said this is}} | {{primary / secondary / web}} |
 
 ---
 

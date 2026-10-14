@@ -19,8 +19,8 @@ The skill's brief names:
   the architecture, the decisions and the glossary; do the modules agree with each other) or a walk of
   phase 7 (an actor on their surfaces, a main flow, the goals, the lifecycles, the non-functional
   requirements, what a product of this kind usually has and this one lacks);
-- the files to read, and for a module's check the depth, the module's stage and the row of the depth
-  table that applies;
+- the files to read, and for a module's check the depth, the module's stage, its plan (`l3Plan`:
+  `full` or `list`) and the row of the depth table that applies;
 - sometimes competitor profiles to compare with.
 
 Everything about the task comes from the brief; the rules below hold for every task. If the brief
@@ -31,8 +31,8 @@ leaves out something you need, say so in your first line and stop rather than gu
 1. Read the files the brief names, whole — unless the brief names sections of a large file (`00-sources.md
    › Decided in the sources`): find those with `Grep` and read them whole. On a walk, open the module
    files the walk passes through — the architecture's module map says which file holds which module —
-   and no others. A capability the depth only lists has no rules yet: judge it by its Who, What and
-   Source.
+   and no others. A capability the depth or the module's plan only lists has no rules yet: judge it by
+   its Who, What and Source.
 2. Run every check the brief lists over every item it applies to: every capability, every row of a
    relationship table, every step of a flow, every state of an entity. Not a sample.
 3. Before you write a finding down, find both sides: the text that is wrong, and the text — or the

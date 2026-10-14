@@ -64,10 +64,10 @@ export const addBareRemote = (repo, { branches = [] } = {}) => {
   return remote;
 };
 
-/** Runs a hook with the JSON payload Claude Code would send and returns its exit code and stderr. */
+/** Runs a hook with the JSON payload Claude Code would send and returns its exit code, stdout and stderr. */
 export const runHook = (script, payload) => {
   const result = spawnSync('node', [script], { input: JSON.stringify(payload), env: GIT_ENV, encoding: 'utf8' });
-  return { status: result.status, stderr: result.stderr };
+  return { status: result.status, stdout: result.stdout, stderr: result.stderr };
 };
 
 /** Runs a Bash-matcher hook the way Claude Code does. */
