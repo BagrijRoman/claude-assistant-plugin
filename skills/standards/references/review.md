@@ -9,10 +9,11 @@ the lint and the script checks have already had their turn.
 node "${CLAUDE_PLUGIN_ROOT}/bin/standards.mjs" review-context --dir <project> [--staged | --base <ref>]
 ```
 
-It prints JSON: the diff file (the working tree against `HEAD` by default, the staged changes with `--staged`,
-or against a ref), the changed and the untracked files, the project's rules files, `CLAUDE.md`, and the rules
-to review with what the review looks for in each. No changed and no untracked file: say there is nothing to
-review, and stop.
+It prints JSON: the diff file, `docs/standards/review.diff` (the working tree against `HEAD` by default, the
+staged changes with `--staged`, or against a ref), the changed and the untracked files, the project's rules
+files, `CLAUDE.md`, the rules to review with what the review looks for in each, and `notes` — relay any, such as
+the move of an older install's folder. No changed and no untracked file: say there is nothing to review, run
+`review-done` (step 5), and stop.
 
 ## 2. Delegate the reading
 
@@ -51,7 +52,18 @@ EOF
 ```
 
 `status` is `fixed`, `waived` or `open`; put a waiver's reason into its `summary`. The script prints the ids it
-gave and the promotions now waiting.
+gave and the promotions now waiting, and removes the review diff.
+
+## 5. Remove the diff
+
+After the review, the diff goes. When step 4 recorded findings, `finding` has removed it already. When the
+review recorded nothing — the reviewer returned `PASS`, or the operator rejected every finding — remove it with:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/bin/standards.mjs" review-done --dir <project>
+```
+
+Never remove it by hand, and never leave it: `docs/standards/review.diff` exists only while a review runs.
 
 ## Promotion
 

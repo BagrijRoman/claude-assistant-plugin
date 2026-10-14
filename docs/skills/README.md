@@ -41,7 +41,7 @@ Skills are loaded when a session starts; a change to a `SKILL.md` reaches a sess
 | `description` | when the skill applies; the model reads it to decide whether to pick the skill on its own |
 | `argument-hint` | shown in the command palette; the text after the command arrives as `$ARGUMENTS` |
 | `disable-model-invocation: true` | only a human may start it; the model never picks it on its own |
-| `allowed-tools` | the tools the skill may use while it runs |
+| `allowed-tools` | the tools the skill may use without a permission prompt while it runs; it pre-approves them and takes no other tool away |
 | `context: fork` | runs the skill in a fresh context, so the conversation so far cannot bias it |
 
 `${CLAUDE_PLUGIN_ROOT}` inside a skill expands to the folder the plugin is loaded from, which is how a skill
@@ -62,6 +62,47 @@ reaches the plugin's own scripts in `bin/` and its own files in `skills/<dirName
    can check itself and the human can check the model.
 6. **Documented like a hook.** A page in `docs/skills/`, a row in the index above and a row in the root
    README's map — the structure test requires all three.
+7. **Writes stay in the working folder.** A skill that writes files has a working folder, and nothing
+   is created outside it, not even for a moment: results, state, raw material, intermediate and
+   temporary files all live there, and a temporary file is removed by the skill once it has served.
+   Never the project root, `docs/` above the folder, `/tmp` or `os.tmpdir()`, the session's scratchpad,
+   or an "outputs" folder. A folder the operator picked outside `docs/` follows the same rule.
+
+   | Skill | Working folder |
+   |-------|----------------|
+   | `/research` | `docs/research/` (the runs index); a run's material only in `docs/research/<YYYY-MM-DD>-<slug>/` |
+   | `/blueprint` | the folder chosen at Intake (default `docs/blueprint/`) |
+   | `/backlog` | the folder chosen at `init` (default `docs/backlog/`) |
+   | `/showcase` | the folder chosen at Intake (default `docs/showcase/`) |
+   | `/standards` | `docs/standards/` |
+
+   Exempt are the files that are the whole point of a skill and that tools read from a fixed place:
+   `/scaffold`'s components, `/setup-permissions`' `.claude/settings.json`, `/standards`'
+   `.claude/rules/*.md`, `eslint/standards/*.mjs` and the ESLint config wiring; none of these skills
+   creates a temporary file. Each `SKILL.md` above carries the sentence *Writes stay in the working
+   folder: nothing is created outside it, not even for a moment.* The structure test checks it, that no
+   script in `bin/` reaches for the system's temporary folder, and that no skill or agent names `/tmp`,
+   `mktemp`, `$TMPDIR` or the scratchpad except to forbid it.
+8. **Progress is visible.** The operator always sees which stage the run is in, what is done and what
+   comes next. Each `SKILL.md` has a `## Progress` section with the stages of every mode and the same
+   procedure:
+   - **the checklist** — the mode's stages, one per line, `✓` done, `▸` the current one, `·` still to
+     come, `–` skipped, `✗` failed; shown when a mode starts, at every gate, and at the end with where
+     the result is; mirrored into the session's task list (`TaskCreate`/`TaskUpdate`, or `TodoWrite`)
+     when the session has one;
+   - **the line** — at every change of stage or step, `▸ /<command> · <n>/<N> <stage> · <step>`, plus
+     `· <k>/<m>` while units are counted; the marks, numbers and command are fixed, the words are in the
+     operator's language;
+   - **waits** — before agents, an engine or a long script start, what runs and how many; a line as
+     each returns; at a gate or a question, that the run waits for the operator, and for what;
+   - **resume** — `continue` and `status` show the checklist rebuilt from `STATE.json` before anything
+     else.
+
+   The chat checklist is the guarantee and the task list a mirror: Claude Code gives the task-list
+   tools by default only on some models (on others they need `CLAUDE_CODE_ENABLE_TODO_TOOLS=1`), and
+   they need no permission, so no skill lists them in `allowed-tools`. Each skill's page repeats its
+   stage table under *Progress*. The structure test checks the section, that every mode of the
+   arguments table has a row, and that the page's table is the same as the skill's.
 
 ## Adding a skill
 
@@ -80,6 +121,7 @@ reaches the plugin's own scripts in `bin/` and its own files in `skills/<dirName
 - **Summary table** — command, who may invoke it, script, version it shipped in.
 - **Why** — the job and the reason it is a skill.
 - **What it does** — the steps, as the human will see them.
+- **Progress** — the skill's stage table, the same as in its `SKILL.md`.
 - **What it will not do** — the boundaries written into the skill.
 - **The script** — arguments, behaviour, report, exit codes (when there is one).
 - **Limitations** — what it cannot do, stated plainly.

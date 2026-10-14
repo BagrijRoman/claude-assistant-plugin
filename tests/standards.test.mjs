@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, renameSync, rmdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, describe, it } from 'node:test';
-import { detectSettings, loadPack, parseRules, renderRules } from '../bin/lib/standards.mjs';
+import { detectSettings, findProjectRoot, loadPack, parseRules, renderRules, sha256 } from '../bin/lib/standards.mjs';
 import { GIT_ENV, makeRepo, makeTempDir, removeTempDirs, writeFiles } from './helpers.mjs';
 
 const SCRIPT = new URL('../bin/standards.mjs', import.meta.url).pathname;
@@ -34,8 +35,29 @@ const webProject = (dir = makeTempDir(), extra = {}) => {
   return dir;
 };
 
-const state = (dir) => JSON.parse(readFileSync(join(dir, '.claude/standards/standards.json'), 'utf8'));
-const findings = (dir) => JSON.parse(readFileSync(join(dir, '.claude/standards/findings.json'), 'utf8'));
+const state = (dir) => JSON.parse(readFileSync(join(dir, 'docs/standards/standards.json'), 'utf8'));
+const findings = (dir) => JSON.parse(readFileSync(join(dir, 'docs/standards/findings.json'), 'utf8'));
+
+/**
+ * A project as an older version installed it: the standards files in .claude/standards/, and the installed files
+ * naming that folder, recorded as installed (so `update` may replace them).
+ */
+const legacyProject = (dir = makeTempDir()) => {
+  webProject(dir);
+  run(['install', 'react', '--dir', dir]);
+  const record = state(dir);
+  for (const to of Object.keys(record.packs.react.files)) {
+    const old = readFileSync(join(dir, to), 'utf8').replaceAll('docs/standards', '.claude/standards')
+      .replaceAll("'docs', 'standards'", "'.claude', 'standards'");
+    writeFileSync(join(dir, to), old);
+    record.packs.react.files[to] = sha256(old);
+  }
+  writeFileSync(join(dir, 'docs/standards/standards.json'), `${JSON.stringify(record, null, 2)}\n`);
+  rmSync(join(dir, 'docs/standards/.gitignore'));
+  renameSync(join(dir, 'docs/standards'), join(dir, '.claude/standards'));
+  rmdirSync(join(dir, 'docs'));
+  return dir;
+};
 
 after(removeTempDirs);
 
@@ -119,6 +141,7 @@ describe('install and update', () => {
     assert.equal(status, 0);
     assert.match(stdout, /would be installed/);
     assert.ok(!existsSync(join(dir, '.claude')));
+    assert.ok(!existsSync(join(dir, 'docs')));
   });
 
   it('writes the rules file, the lint file and the state, and says how to wire the lint', () => {
@@ -139,10 +162,10 @@ describe('install and update', () => {
   it('a second install changes nothing', () => {
     const dir = webProject();
     run(['install', 'react', '--dir', dir]);
-    const before = readFileSync(join(dir, '.claude/standards/standards.json'), 'utf8');
+    const before = readFileSync(join(dir, 'docs/standards/standards.json'), 'utf8');
     const { stdout } = run(['install', 'react', '--dir', dir]);
     assert.match(stdout, /already up to date/);
-    assert.equal(readFileSync(join(dir, '.claude/standards/standards.json'), 'utf8'), before);
+    assert.equal(readFileSync(join(dir, 'docs/standards/standards.json'), 'utf8'), before);
   });
 
   it('applies --set, keeps it on the next run, and refuses an unknown key', () => {
@@ -175,7 +198,7 @@ describe('install and update', () => {
     writeFileSync(file, `${readFileSync(file, 'utf8')}\nA note of this project.\n`);
     const { stdout } = run(['install', 'react', '--dir', dir, '--set', 'sharedDir=src/shared']);
     assert.match(stdout, /not replaced \.claude\/rules\/react\.md/);
-    const incoming = join(dir, '.claude/standards/incoming/.claude/rules/react.md');
+    const incoming = join(dir, 'docs/standards/incoming/.claude/rules/react.md');
     assert.match(readFileSync(incoming, 'utf8'), /src\/shared/);
     assert.match(readFileSync(file, 'utf8'), /A note of this project\./);
 
@@ -191,6 +214,20 @@ describe('install and update', () => {
     const bare = makeTempDir();
     writeFiles(bare, { 'package.json': WEB_PACKAGE }, { stage: false });
     assert.match(run(['install', 'react', '--dir', bare]).stdout, /no ESLint config/);
+  });
+
+  it("writes docs/standards/.gitignore with the review diff, keeps the project's lines, and a second run changes nothing", () => {
+    const dir = webProject();
+    const file = join(dir, 'docs/standards/.gitignore');
+    assert.match(run(['install', 'react', '--dir', dir]).stdout, /created docs\/standards\/\.gitignore/);
+    assert.equal(readFileSync(file, 'utf8'), 'review.diff\n');
+    assert.match(run(['install', 'react', '--dir', dir]).stdout, /up to date docs\/standards\/\.gitignore/);
+    assert.equal(readFileSync(file, 'utf8'), 'review.diff\n');
+    writeFileSync(file, '*.local');
+    assert.match(run(['install', 'react', '--dir', dir]).stdout, /updated docs\/standards\/\.gitignore/);
+    assert.equal(readFileSync(file, 'utf8'), '*.local\nreview.diff\n');
+    run(['install', 'react', '--dir', dir]);
+    assert.equal(readFileSync(file, 'utf8'), '*.local\nreview.diff\n');
   });
 
   it('refuses a pack the plugin does not have', () => {
@@ -302,14 +339,24 @@ describe('findings and promotion', () => {
 });
 
 describe('review-context', () => {
-  it('lists the change, writes the diff, and names the rules to review', () => {
-    const dir = makeRepo({ branch: 'dev' });
+  /** A committed project with an installed pack (or `prepare`'s), a changed component and an untracked file. */
+  const changedRepo = (prepare = (dir) => {
     webProject(dir);
     run(['install', 'react', '--dir', dir]);
+  }) => {
+    const dir = makeRepo({ branch: 'dev' });
+    prepare(dir);
     spawnSync('git', ['add', '.'], { cwd: dir, env: GIT_ENV });
     spawnSync('git', ['commit', '-qm', 'base'], { cwd: dir, env: GIT_ENV });
     writeFiles(dir, { 'src/components/ui/Button/Button.tsx': 'export const Button = () => <button type="button" />;\n' }, { stage: false });
     writeFiles(dir, { 'src/features/orders/x.ts': 'export {};\n' }, { stage: false });
+    return dir;
+  };
+  const leftInTmp = () => readdirSync(tmpdir()).filter((name) => name.startsWith('dev-assistant-review-'));
+
+  it('lists the change, writes the diff into docs/standards/, and names the rules to review', () => {
+    const before = new Set(leftInTmp());
+    const dir = changedRepo();
     const { status, stdout } = run(['review-context', '--dir', dir]);
     assert.equal(status, 0);
     const context = JSON.parse(stdout);
@@ -317,6 +364,102 @@ describe('review-context', () => {
     assert.deepEqual(context.untracked, ['src/features/orders/x.ts']);
     assert.deepEqual(context.rulesFiles, ['.claude/rules/react.md']);
     assert.deepEqual(context.reviewRules.map((rule) => rule.id), ['RCT-01', 'RCT-02', 'RCT-03']);
+    assert.deepEqual(context.notes, []);
+    assert.equal(context.diffFile, join(dir, 'docs/standards/review.diff'));
     assert.match(readFileSync(context.diffFile, 'utf8'), /type="button"/);
+    assert.deepEqual(leftInTmp().filter((name) => !before.has(name)), []);
+    // A diff an earlier review left is ignored by git, so it is never listed as part of the change.
+    assert.deepEqual(JSON.parse(run(['review-context', '--dir', dir]).stdout).untracked, ['src/features/orders/x.ts']);
+  });
+
+  it('`finding` and `review-done` remove the diff', () => {
+    const dir = changedRepo();
+    const diff = join(dir, 'docs/standards/review.diff');
+    run(['review-context', '--dir', dir]);
+    assert.ok(existsSync(diff));
+    const recorded = run(['finding', '--dir', dir, '--rule', 'RCT-03', '--file', 'src/a.tsx', '--summary', 'raw color']);
+    assert.equal(recorded.status, 0);
+    assert.match(recorded.stdout, /The review diff docs\/standards\/review\.diff is removed\./);
+    assert.ok(!existsSync(diff));
+
+    run(['review-context', '--dir', dir]);
+    assert.ok(existsSync(diff));
+    // A review cut off before its end: `status` names the diff it left behind
+    assert.match(run(['status', '--dir', dir]).stdout, /Review: docs\/standards\/review\.diff is left from a review that did not finish/);
+    const done = run(['review-done', '--dir', dir]);
+    assert.equal(done.status, 0);
+    assert.match(done.stdout, /review done; docs\/standards\/review\.diff is removed/);
+    assert.ok(!existsSync(diff));
+    assert.match(run(['review-done', '--dir', dir]).stdout, /no docs\/standards\/review\.diff to remove/);
+    assert.doesNotMatch(run(['status', '--dir', dir]).stdout, /^Review:/m);
+  });
+
+  it('moves a legacy folder first, and says so in `notes`', () => {
+    const dir = changedRepo(legacyProject);
+    const context = JSON.parse(run(['review-context', '--dir', dir]).stdout);
+    assert.match(context.notes[0], /moved \.claude\/standards\/ to docs\/standards\//);
+    assert.ok(!existsSync(join(dir, '.claude/standards')));
+    assert.equal(context.diffFile, join(dir, 'docs/standards/review.diff'));
+    assert.ok(existsSync(join(dir, 'docs/standards/.gitignore')));
+  });
+});
+
+describe('a legacy .claude/standards/', () => {
+  it('is found and read where it is, and the next write moves it to docs/standards/ and says so', () => {
+    const dir = legacyProject();
+    assert.equal(findProjectRoot(join(dir, 'src/components')), dir);
+    assert.match(run(['status', '--dir', dir]).stdout, /Folder: \.claude\/standards\/, from an older install; the next command that writes moves it/);
+    assert.equal(run(['check', '--dir', dir]).status, 0);
+    assert.ok(!existsSync(join(dir, 'docs')));
+
+    const { status, stdout } = run(['finding', '--dir', dir, '--rule', 'RCT-01', '--file', 'src/a.tsx', '--summary', 'borrowed']);
+    assert.equal(status, 0);
+    assert.match(stdout, /moved \.claude\/standards\/ to docs\/standards\/; the project's standards files live there now/);
+    assert.match(stdout, /\.claude\/rules\/react\.md, eslint\/standards\/react\.mjs still name \.claude\/standards\/: run `update`/);
+    assert.ok(!existsSync(join(dir, '.claude/standards')));
+    assert.ok(existsSync(join(dir, '.claude/rules/react.md')));
+    assert.ok(state(dir).packs.react);
+    assert.equal(findings(dir).findings[0].id, 'F-001');
+
+    assert.match(run(['update', '--dir', dir]).stdout, /updated eslint\/standards\/react\.mjs/);
+    assert.doesNotMatch(readFileSync(join(dir, 'eslint/standards/react.mjs'), 'utf8'), /\.claude', 'standards'/);
+    assert.doesNotMatch(run(['status', '--dir', dir]).stdout, /\.claude\/standards/);
+  });
+
+  it('a dry run only says it would move; an install moves it and rewrites the files in the same run', () => {
+    const dir = legacyProject();
+    assert.match(run(['install', 'react', '--dry-run', '--dir', dir]).stdout, /\.claude\/standards\/ would move to docs\/standards\//);
+    assert.ok(!existsSync(join(dir, 'docs')));
+    const { stdout } = run(['install', 'react', '--dir', dir]);
+    assert.match(stdout, /moved \.claude\/standards\/ to docs\/standards\//);
+    assert.doesNotMatch(stdout, /run `update`/);
+    assert.match(stdout, /updated eslint\/standards\/react\.mjs/);
+    assert.ok(!existsSync(join(dir, '.claude/standards')));
+    assert.equal(readFileSync(join(dir, 'docs/standards/.gitignore'), 'utf8'), 'review.diff\n');
+  });
+
+  it('leaves behind, and names, an entry docs/standards/ already has', () => {
+    const dir = legacyProject();
+    writeFiles(dir, {
+      '.claude/standards/findings.json': '{ "lastFinding": 0, "findings": [], "promotions": [] }\n',
+      'docs/standards/findings.json': '{ "lastFinding": 0, "findings": [], "promotions": [] }\n',
+    }, { stage: false });
+    const { stdout } = run(['finding', '--dir', dir, '--rule', 'RCT-01', '--file', 'src/a.tsx', '--summary', 'x']);
+    assert.match(stdout, /left in \.claude\/standards\/: findings\.json \(docs\/standards\/ already has them\)/);
+    assert.ok(existsSync(join(dir, 'docs/standards/standards.json')));
+    assert.deepEqual(readdirSync(join(dir, '.claude/standards')), ['findings.json']);
+  });
+
+  it('when docs/standards/ exists too, it wins, and the old folder is left untouched and reported', () => {
+    const dir = webProject();
+    run(['install', 'react', '--dir', dir]);
+    writeFiles(dir, { '.claude/standards/standards.json': '{ "packs": {} }\n' }, { stage: false });
+    assert.equal(findProjectRoot(dir), dir);
+    const { stdout } = run(['finding', '--dir', dir, '--rule', 'RCT-01', '--file', 'src/a.tsx', '--summary', 'x']);
+    assert.match(stdout, /\.claude\/standards\/ left as it is: docs\/standards\/ is the folder in use/);
+    assert.equal(findings(dir).findings.length, 1);
+    assert.equal(readFileSync(join(dir, '.claude/standards/standards.json'), 'utf8'), '{ "packs": {} }\n');
+    assert.deepEqual(readdirSync(join(dir, '.claude/standards')), ['standards.json']);
+    assert.match(run(['status', '--dir', dir]).stdout, /\.claude\/standards\/ left as it is/);
   });
 });

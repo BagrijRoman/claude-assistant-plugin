@@ -24,7 +24,8 @@
 // - validate prints errors (exit 1) and warnings, one per line: `error: <file>:<line> — <what>`.
 // - export writes one Markdown file, <dir>/export/blueprint.md by default: headings one level down, HTML
 //   comments gone, competitor profiles at the end, links to local files turned into their text (the document
-//   travels without the folder; web links and anchors stay). It prints the path.
+//   travels without the folder; web links and anchors stay). It prints the path. --out must stay inside the
+//   blueprint folder; a path outside it is refused (exit 1).
 // Not an id of this blueprint: one narrower than its kind (D-7, G-1 are a source's), anything after § (S-01
 // §D-23), inside {{…}}, in code, in a URL or a link target — so a word that only looks like an id (an N-95
 // mask) goes in backticks. A placeholder written before ids were given (ORG-C??, [A-??: …], S-??) is an
@@ -689,6 +690,11 @@ const exportBlueprint = (dir, out, withSources) => {
   const { state } = loadState(dir);
   let target = out ? resolve(out) : join(dir, 'export', 'blueprint.md');
   if (statOf(target)?.isDirectory()) target = join(target, 'blueprint.md');
+  // The skill writes only inside its working folder; sending the document anywhere else is the operator's step.
+  const inside = relative(dir, target);
+  if (inside === '..' || inside.startsWith(`..${sep}`) || isAbsolute(inside)) {
+    throw new Error(`--out ${out} is outside the blueprint folder ${dir}; the export stays inside it (export/ by default), and the operator copies it from there`);
+  }
   const modules = modulesOf(state).filter((entry) => !entry.removed).map(moduleFile);
   const files = [...new Set([
     'README.md', ...(withSources ? ['00-sources.md'] : []), '01-brief.md', '02-architecture.md', '03-roadmap.md',

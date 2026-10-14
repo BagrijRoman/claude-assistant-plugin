@@ -1,5 +1,5 @@
 // Lint rules of the `react` standards pack (RCT-01…RCT-03), installed by the dev-assistant plugin (/standards).
-// Settings — folders, platform, tokens, rules switched off — are read from .claude/standards/standards.json,
+// Settings — folders, platform, tokens, rules switched off — are read from docs/standards/standards.json,
 // so a change of settings needs no edit here. This file is replaced by `/standards update`; a hand edit is kept,
 // and the next update then asks to merge it.
 //
@@ -278,7 +278,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 const installed = () => {
   try {
-    return JSON.parse(readFileSync(resolve(ROOT, '.claude', 'standards', 'standards.json'), 'utf8')).packs?.[PACK] ?? null;
+    return JSON.parse(readFileSync(resolve(ROOT, 'docs', 'standards', 'standards.json'), 'utf8')).packs?.[PACK] ?? null;
   } catch {
     return null;
   }

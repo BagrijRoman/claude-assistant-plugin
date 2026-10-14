@@ -5,7 +5,8 @@
 // open and none on the overview; a flow's root open with its title marked; the language switch and the
 // dictionary wired in; a second build that changes nothing, and a second genPages run that writes nothing.
 // A second scaffold lays the frame with no flow, as the Frame step does, and adds one later, as the
-// Flows step does: the Flows index lists it after the next build, under a key of its own.
+// Flows step does: the Flows index lists it after the next build, under a key of its own. The Color
+// scheme step's scratch page survives a build until STATE.json records the scheme chosen, and not after.
 
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
@@ -174,6 +175,21 @@ describe('showcase frame, a flow added after the frame', () => {
     const list = flowsIndex().match(/<!-- children:start[^]*?<!-- children:end -->/)?.[0] ?? '';
     assert.match(list, /<a class="card sc-tile" href="\.\.\/flows\/signIn\.html"><h3 class="t-card-title" data-i18n="nav\.flows\.signIn">Sign in<\/h3>/);
     assert.match(run(dir, 'build.mjs').stdout, /Navigation is up to date/);
+  });
+
+  it('keeps the scheme scratch page while the scheme is open, and removes it once it is chosen', () => {
+    const scratch = join(dir, 'scheme.html');
+    const state = (scheme) => writeFileSync(join(dir, 'STATE.json'), JSON.stringify({ kind: 'showcase', steps: { scheme } }));
+    writeFileSync(scratch, '<!doctype html><title>Schemes</title>');
+    state('awaiting-approval');
+    assert.equal(run(dir, 'build.mjs').status, 0);
+    assert.ok(existsSync(scratch), 'removed before the scheme was chosen');
+    state('done');
+    const result = run(dir, 'build.mjs');
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /Removed scheme\.html/);
+    assert.ok(!existsSync(scratch), 'scheme.html outlived the choice');
+    assert.doesNotMatch(run(dir, 'build.mjs').stdout, /Removed/);
   });
 
   it('refuses two entries that would share an i18n key', () => {

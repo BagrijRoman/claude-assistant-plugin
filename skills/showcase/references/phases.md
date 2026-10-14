@@ -121,7 +121,9 @@ tones, and **categorical** colors if the domain has categories.
    one page allowed to, as it does not outlive the choice), and the operator opens it from disk.
    Offer *like competitor* when a profile exists.
 3. Ask (`AskUserQuestion`, header `Scheme`): A (Recommended) / B / C — the operator may type a hue or
-   a hex. Record SC-002. Delete the scratch page; the Foundations page will show the chosen scheme.
+   a hex. Record SC-002. Leave the scratch page to the build: once the step is approved and
+   `steps.scheme` is `done`, the first `node build.mjs` — when step 3 has laid the frame — removes
+   `scheme.html`. The Foundations page will show the chosen scheme.
 
 ## Step 2 — Technology
 

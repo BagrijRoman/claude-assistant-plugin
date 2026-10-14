@@ -24,6 +24,17 @@ purpose: its effect is a few new files in a new folder, never a change to existi
 The output passes `componentLayout`, the pack's lint rules and the project's Prettier (checked on
 `template-next-admin`).
 
+## Progress
+
+The skill shows where it is at every step: a checklist of the mode's stages when it starts, at every
+gate and at the end; a line `▸ /<command> · <n>/<N> <stage> · <step>` at every change; what it waits for
+and how many; and, on `continue` or `status`, the checklist rebuilt from its state first
+([rule 8](README.md#rules-every-skill-follows)). The stages per mode, as its `SKILL.md` lists them:
+
+| Mode | Stages |
+|------|--------|
+| `component <Name>` | Place → Script → Fill the files → Check |
+
 ## What it will not do
 
 - Overwrite anything: an existing folder or file is an error, and nothing is written.

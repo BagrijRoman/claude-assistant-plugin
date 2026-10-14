@@ -205,3 +205,92 @@ describe('files a skill names', () => {
     });
   }
 });
+
+const filesIn = (folder, extension) => {
+  if (!existsSync(folder)) return [];
+  return readdirSync(folder, { withFileTypes: true }).flatMap((entry) => {
+    if (entry.isDirectory()) return entry.name === 'node_modules' ? [] : filesIn(new URL(`${entry.name}/`, folder), extension);
+    return entry.name.endsWith(extension) ? [new URL(entry.name, folder)] : [];
+  });
+};
+const relativeName = (file) => file.pathname.slice(ROOT.pathname.length);
+
+// Rule 7 of docs/skills/README.md: everything a skill creates stays in its working folder, temporary files too.
+describe('writes stay in the working folder', () => {
+  const INVARIANT = 'Writes stay in the working folder: nothing is created outside it, not even for a moment.';
+  const WITH_WORKING_FOLDER = ['research', 'blueprint', 'backlog', 'showcase', 'standards'];
+
+  it('no script reaches for the system temporary folder', () => {
+    const scripts = [...filesIn(new URL('bin/', ROOT), '.mjs'), ...filesIn(SKILLS, '.mjs')];
+    const found = scripts.filter((file) => /\btmpdir\s*\(|os\.tmpdir/.test(readFileSync(file, 'utf8'))).map(relativeName);
+    assert.deepEqual(found, []);
+  });
+
+  it('no skill or agent names a temporary folder or the scratchpad except to forbid it', () => {
+    const texts = [...filesIn(SKILLS, '.md'), ...filesIn(AGENTS, '.md')];
+    const found = [];
+    // Judged per sentence, since a sentence that forbids it may wrap before it names the place
+    for (const file of texts) {
+      const sentences = readFileSync(file, 'utf8').replace(/\s*\n\s*/g, ' ').split(/(?<=[.:;])\s+/);
+      for (const sentence of sentences) {
+        if (/\/tmp\b|mktemp|\$TMPDIR|tmpdir|scratchpad/i.test(sentence) && !/\b(never|not|nor|nothing|no)\b/i.test(sentence)) {
+          found.push(`${relativeName(file)}: ${sentence.slice(0, 80)}`);
+        }
+      }
+    }
+    assert.deepEqual(found, []);
+  });
+
+  for (const skill of WITH_WORKING_FOLDER) {
+    it(`${skill} states the invariant in its SKILL.md`, () => {
+      const text = readFileSync(new URL(`${skill}/SKILL.md`, SKILLS), 'utf8');
+      assert.ok(text.includes(INVARIANT), `skills/${skill}/SKILL.md lacks "${INVARIANT}"`);
+    });
+  }
+});
+
+// Rule 8 of docs/skills/README.md: every skill shows the operator where it is, from a stage table per mode.
+describe('progress is visible', () => {
+  const SENTENCE = 'The operator always sees which stage the run is in, what is done and what comes next.';
+  const skills = readdirSync(SKILLS).filter((entry) => !entry.startsWith('.'));
+  const section = (text, level) => {
+    const start = text.search(new RegExp(`^${level} Progress\\n`, 'm'));
+    if (start < 0) return null;
+    const rest = text.slice(start).split('\n').slice(1).join('\n');
+    const end = rest.search(new RegExp(`^${level} `, 'm'));
+    return end < 0 ? rest : rest.slice(0, end);
+  };
+  const tableRows = (text) => text.split('\n').filter((line) => line.startsWith('|'));
+  // The modes of `How to read the arguments` (or `Modes`): the first word of each backticked argument, a
+  // placeholder left out
+  const modesOf = (text) => {
+    const table = text.split(/^## (?:How to read the arguments|Modes)\n/m)[1]?.split(/^## /m)[0] ?? '';
+    return [...new Set(tableRows(table).slice(2).map((row) => row.split('|')[1].trim().match(/^`([a-z][\w-]*)/)?.[1]).filter(Boolean))];
+  };
+
+  for (const skill of skills) {
+    const text = readFileSync(new URL(`${skill}/SKILL.md`, SKILLS), 'utf8');
+    const progress = section(text, '##');
+
+    it(`${skill} has a Progress section with its stage table`, () => {
+      assert.ok(progress, `skills/${skill}/SKILL.md has no "## Progress" section`);
+      assert.ok(progress.includes(SENTENCE), `skills/${skill}/SKILL.md: Progress lacks "${SENTENCE}"`);
+      const rows = tableRows(progress);
+      assert.match(rows[0] ?? '', /^\| Mode \| Stages \|$/, `skills/${skill}/SKILL.md: Progress has no "| Mode | Stages |" table`);
+      assert.ok(rows.length >= 3, `skills/${skill}/SKILL.md: the stage table has no row`);
+      for (const row of rows.slice(2)) assert.ok(row.split('|')[2]?.trim(), `skills/${skill}/SKILL.md: a mode without stages: ${row}`);
+    });
+
+    it(`${skill} lists the stages of every mode it documents`, () => {
+      const cells = tableRows(progress ?? '').slice(2).map((row) => row.split('|')[1]).join(' ');
+      const missing = modesOf(text).filter((mode) => !new RegExp(`\`${mode}[\` ]`).test(cells));
+      assert.deepEqual(missing, [], `skills/${skill}/SKILL.md: modes without a row in the stage table`);
+    });
+
+    it(`${skill}'s page repeats the stage table`, () => {
+      const page = section(readFileSync(new URL(`${skill}.md`, SKILL_DOCS), 'utf8'), '##');
+      assert.ok(page, `docs/skills/${skill}.md has no "## Progress" section`);
+      assert.deepEqual(tableRows(page), tableRows(progress ?? ''), `docs/skills/${skill}.md: the stage table differs from SKILL.md`);
+    });
+  }
+});

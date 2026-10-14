@@ -87,6 +87,13 @@ is already there — plus one or two alternatives; any path may be typed. A dire
 argument becomes the recommended option. Never scaffold into a non-empty folder without the
 operator confirming that folder.
 
+Writes stay in the working folder: nothing is created outside it, not even for a moment.
+The working folder is the showcase folder chosen at Intake, wherever it is. The site, `STATE.json`,
+`plans/`, screenshots and any file needed only for a while are created inside it; the scratch page of
+the Color scheme step is removed by `build.mjs` once the scheme is chosen. Nothing goes into the
+project root, `docs/` above the folder, `/tmp` or the session's scratchpad — never, by you or by an
+agent; a subagent's brief names files inside the folder.
+
 The frame comes from `templates/` next to this file (`${CLAUDE_PLUGIN_ROOT}/skills/showcase/templates/`):
 `frame/` is copied as it is;
 `site.mjs`, `pages.mjs`, `tokens.css`, `components.css`, `sample.mjs`, `i18n/lang.js`,
@@ -151,6 +158,41 @@ an id; `/showcase pick <section> <variant>` marks the chosen one `Selected`, mov
 `site.mjs › selected`, fills the group's row in `DECISIONS.md` and regenerates the Decisions page
 once it exists (step 19). The others stay as alternatives — the Decisions page is where the
 customer sees what was considered.
+
+## Progress
+
+The operator always sees which stage the run is in, what is done and what comes next.
+
+- **The checklist.** When a mode starts, show its stages from the table below, one per line: `✓`
+  done, `▸` the current one, `·` still to come, `–` skipped (a step `STATE.json` marks `skipped`, a
+  section the depth planned away), `✗` failed. Show it again at every gate and at the end, with the
+  marks brought up to date and where the result is. When the session has a task-list tool
+  (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), mirror the stages there, one item per stage, and
+  keep the items current; without one, the checklist in the chat is enough.
+- **The line.** At every change of stage or step, one line:
+  `▸ /showcase · <n>/<N> <stage> · <step>`, plus `· <k>/<m>` while units are counted —
+  `▸ /showcase · 8/21 Components · building · 3/5`. The marks, the numbers and the command are fixed;
+  the stage and the step are in the operator's language.
+- **Units.** A stage that works through units — document groups read, component groups, marks,
+  flows, letters, pages audited per theme and language — counts them in the line, and the task list
+  gets an item per unit while there are twelve or fewer.
+- **Waits.** Before subagents start, say what they build, how many, and that you wait for them; as
+  each returns, the line with the count, and a failure by name. At a gate, a plan or a question, the
+  line says the run waits for the operator, and for what — and which page to open.
+- **Resume.** `continue` and `status` show the checklist rebuilt from `STATE.json` (`steps`, `flows`,
+  `pending`) before anything else, so the operator sees where the last session stopped.
+
+| Mode | Stages |
+|------|--------|
+| `init [dir]`, `continue` | Intake → Color scheme → Technology → Frame → Foundations → Logo → Microcopy and tone → Components → Icons → Illustrations → States → Sign-in layouts → App layout → Key screens → Flows → Emails → Not found page → Charts → Technology page → Principles, Decisions, Changelog, Next steps → Audit |
+| `status` | Read the state → Report |
+| `section <id>` | Plan → Approval → Build → Gate |
+| `flow <id>` | Description → Approval → Build → Gate |
+| `flow new` | List → Description → Approval → Build → Gate |
+| `pick <section> <variant>` | Check the variant → Mark it → Decisions → Build |
+| `add` | What and where → Page → Build |
+| `audit` | Checks per theme and language → Fixes → Final gate |
+| `open` | Build → Serve → The address |
 
 ## What this skill does not do
 

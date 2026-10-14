@@ -67,10 +67,19 @@ docs/research/
     ├── summary.md                an answer per question with its status and evidence; landscape; what it means for the project; open questions
     ├── sources.md                every page used as R-NN: title, address, date read, kind, questions it served
     ├── competitors/<slug>.md     a profile per product in scope
-    └── raw/round-<n>/            what the engine brought back, moved here and never edited
+    └── raw/round-<n>/            what the engine brought back, written here and never edited
         ├── report.md             deep-research's report (absent when scouts ran)
         └── notes/                the researchers' or scouts' notes
 ```
+
+Writes stay in the working folder: nothing is created outside it, not even for a moment.
+The working folder is `docs/research/`: a run's material — the brief, the curated files, the engine's
+raw output, anything needed only for a while — is created only inside the run's own folder, and the
+runs index is the one file beside it. deep-research is told to use the round's `raw/round-<n>/` as its
+research directory, so its `reports/` and `research_notes/` never appear in the project root
+(`engines.md › Calling deep-research`). Nothing goes into the project root, `docs/` above
+`docs/research/`, `/tmp`, the session's scratchpad or an outputs folder — never, by you, the engine or
+an agent.
 
 Identifiers: `RQ-NN` for research questions, `R-NN` for sources. They are local to the run and never
 reused; a later round continues the numbering. They are deliberately not the blueprint's `Q-NNN` and
@@ -106,6 +115,35 @@ When the plugin's agents are listed without the prefix, use that name; when neit
 `general-purpose` with the same brief and say at the review that the rules held by instruction only.
 Before every wave, tell the operator what will run: the engine and roughly how many agents.
 
+## Progress
+
+The operator always sees which stage the run is in, what is done and what comes next.
+
+- **The checklist.** When a mode starts, show its stages from the table below, one per line: `✓`
+  done, `▸` the current one, `·` still to come, `–` skipped by this run, `✗` failed. Show it again at every
+  approval and at the end, with the marks brought up to date and where the result is. When the session
+  has a task-list tool (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), mirror the stages there, one
+  item per stage, and keep the items current; without one, the checklist in the chat is enough.
+- **The line.** At every change of stage or step, one line:
+  `▸ /research · <n>/<N> <stage> · <step>`, plus `· <k>/<m>` while units are counted —
+  `▸ /research · 2/4 Research · scouts · 3/5`. The marks, the numbers and the command are fixed; the
+  stage and the step are in the operator's language.
+- **Units.** A stage that works through units — question groups, scouts, deep-research's agents,
+  questions checked at the review — counts them in the line, and the task list gets an item per unit
+  while there are twelve or fewer.
+- **Waits.** Before the engine or the curator starts, say what runs, how many agents, and that you
+  wait for them; as each returns, the line with the count, and a failure by name. deep-research runs
+  long without a word of its own: say so before it starts, and give a line whenever its agents return.
+  At an approval or a question, the line says the run waits for the operator, and for what.
+- **Resume.** `continue` and `status` show the checklist rebuilt from `STATE.json` (`phase`, the
+  rounds and their state) before anything else, so the operator sees where the last session stopped.
+
+| Mode | Stages |
+|------|--------|
+| `<topic>`, `continue [run]` | Frame → Research → Curate → Review |
+| `status` | Read the runs → Report |
+| `extend <run>` | Questions → Approval → Research → Curate → Review |
+
 ## What this skill does not do
 
 - **Search before the brief is approved**, or beyond it — another product, another question, another
@@ -120,8 +158,9 @@ Before every wave, tell the operator what will run: the engine and roughly how m
   not have".
 - **Present its reading as fact.** *What this means for the project* is marked as the skill's
   reading; decisions are the operator's, and in a blueprint they are taken there.
-- **Write into a blueprint, a backlog or any file outside the run folder and the runs index.** The
-  only other change is moving deep-research's own output out of the project root into the run.
+- **Create anything outside `docs/research/`**, or write into a blueprint, a backlog or any file
+  outside the run folder and the runs index — not even a temporary file. Should deep-research leave
+  something outside the run anyway, it is moved into the round's folder and the operator is told.
 - **Sign up, log in, start a trial, fill a form or read behind a paywall** — the engine's prompt and
   the scouts' instructions say so.
 
@@ -134,8 +173,9 @@ Before every wave, tell the operator what will run: the engine and roughly how m
 - Every `R-NN` cited anywhere in the run is in `sources.md` with its address and the date it was read;
   no `R-??` is left.
 - Every product in scope has a profile in `competitors/`.
-- `raw/round-<n>/` holds what the engine returned for every round; nothing of the run is left in the
-  project root.
+- `raw/round-<n>/` holds what the engine returned for every round, as `report.md` and `notes/`.
+- Nothing was created outside the run folder and the runs index: no `reports/` or `research_notes/`
+  in the project root, nothing in `/tmp` or an outputs folder.
 - The runs index `README.md` has the run's row, current.
 - The operator has seen the answers and knows how to hand the run to `/blueprint` (its `summary.md`
   and `competitors/` as sources in Intake) and that `/research extend <run>` adds a round.

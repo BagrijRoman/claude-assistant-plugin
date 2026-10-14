@@ -62,7 +62,8 @@ If the brief leaves out something you need, say so in your first line and stop r
   to you.
 - **Only the run's files.** You write `summary.md`, `sources.md` and the profiles the brief names,
   inside the run folder — never `raw/`, `brief.md`, `STATE.json`, the runs index or anything outside
-  the run.
+  the run. Nothing else is created, not even for a moment: no draft or scratch file, nothing in
+  `/tmp`, the session's scratchpad or the project root.
 
 ## What you return
 

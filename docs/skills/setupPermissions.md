@@ -33,6 +33,17 @@ the generated, readable copy of the list.
 4. Reminds the human to commit `.claude/settings.json` and to restart Claude Code, since permissions are read
    at session start.
 
+## Progress
+
+The skill shows where it is at every step: a checklist of the mode's stages when it starts, at every
+gate and at the end; a line `▸ /<command> · <n>/<N> <stage> · <step>` at every change; what it waits for
+and how many; and, on `continue` or `status`, the checklist rebuilt from its state first
+([rule 8](README.md#rules-every-skill-follows)). The stages per mode, as its `SKILL.md` lists them:
+
+| Mode | Stages |
+|------|--------|
+| `[dir]` | Script → Report → What is left to the human |
+
 ## What it will not do
 
 - Edit `.claude/settings.json` by hand; the script is the only writer.

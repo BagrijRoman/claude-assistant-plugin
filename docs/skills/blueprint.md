@@ -56,6 +56,12 @@ repository — a project root that only holds repositories — it recommends a f
 repository that keeps the documentation instead. It never scaffolds into a non-empty folder without
 the operator confirming that folder.
 
+Whatever folder is chosen, it is the skill's working folder, and writes stay in it: nothing is
+created outside it, not even for a moment. The documents, `STATE.json`, the converted copies of Word
+files in `.sources/` and the export all live there; nothing goes into the project root, `docs/` above
+the folder, `/tmp` or the session's scratchpad. `export --out` refuses a path outside the folder, so
+sending the document elsewhere stays the operator's step.
+
 ```
 docs/blueprint/
 ├── STATE.json          phase, modules, depth, research consent — the resume point
@@ -160,6 +166,24 @@ with the same brief and says in the gate summary that the rules held by instruct
 each wave it tells the operator how many agents will run; an agent that fails leaves its unit marked
 `failed` — a source's *Read as*, a module's `l2` or `l3` — which the next `continue` retries first.
 
+## Progress
+
+The skill shows where it is at every step: a checklist of the mode's stages when it starts, at every
+gate and at the end; a line `▸ /<command> · <n>/<N> <stage> · <step>` at every change; what it waits for
+and how many; and, on `continue` or `status`, the checklist rebuilt from its state first
+([rule 8](README.md#rules-every-skill-follows)). The stages per mode, as its `SKILL.md` lists them:
+
+| Mode | Stages |
+|------|--------|
+| `init`, `continue` | Intake → Reading the input → Brief → Architecture → Modules (L2) → Capabilities (L3) → Consistency review → Adequacy review |
+| `continue` on a finished blueprint | Hand edits → Changelog → Status → What can follow |
+| `status` | Hand edits → State and counts → Validate → Report |
+| `module <name>` | Find the module → Modules (L2) → Capabilities (L3) → Gate → Stamp |
+| `decide` | Open questions (counted) → Apply the decisions → README → Report and stamp |
+| `restructure` | The change and its decision → Architecture and roadmap → Module files → Modules re-run → Gate → Stamp |
+| `feedback [file]` | Register → Items → Questions to the operator → Apply → Gate → Stamp |
+| `export` | Validate → Export → Report |
+
 ## What it will not do
 
 - Invent facts: no source, decision or assumption behind a statement → a question or an assumption
@@ -185,7 +209,7 @@ calls it as `node "${CLAUDE_PLUGIN_ROOT}/bin/blueprint.mjs" <command> <blueprint
 | `next <kind> [code] [--count N]` | prints the next id of a kind (`source`, `decision`, `assumption`, `question`, `goal`, `nfr`, `risk`) from the highest in its file, or the next capability ids of a module (`capability ORG`), reserving them by raising the module's `lastCapability` — so ids never collide and are never reused |
 | `changed [--root <dir>]` | lists the folder's files and the document sources modified after `STATE.json` was last written — the operator's hand edits, read before anything else on `continue` — and the document sources it cannot find (moved, deleted, or a wrong `--root`) |
 | `validate` | errors (exit 1): a broken `STATE.json`, an id twice in a log, a reference no log defines, a capability named that no module has as a heading, a `[?Q-NNN]` marker of a closed question, a capability heading twice, a placeholder id (`ORG-C??`, `[A-??: …]`, a researcher's `S-??`) left, a module without its file or a file without its module, a `lastCapability` below an id in use, stale counts, and — once the consistency review has started — a source item nothing covers. Warnings: `[?pending]` markers, template placeholders, coverage rows for unknown items, an index that lists one item twice, a decision or question section without its index row |
-| `export [--out <file>] [--with-sources]` | writes one Markdown document — README (as *Contents*), brief, architecture, roadmap, modules, review, the logs, the glossary, the competitor profiles — with headings shifted, comments removed and links to local files turned into their text, so it reads the same wherever it is sent; default `export/blueprint.md` |
+| `export [--out <file>] [--with-sources]` | writes one Markdown document — README (as *Contents*), brief, architecture, roadmap, modules, review, the logs, the glossary, the competitor profiles — with headings shifted, comments removed and links to local files turned into their text, so it reads the same wherever it is sent; default `export/blueprint.md`; an `--out` outside the blueprint folder is refused |
 
 What stays the model's: reading, judging, asking, writing the documents, regenerating `README.md`
 and filling the coverage table — the script only checks that the table is complete.

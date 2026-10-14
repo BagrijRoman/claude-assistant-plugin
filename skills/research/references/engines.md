@@ -17,10 +17,16 @@ another round may use the other.
 
 ## Calling deep-research
 
-1. **Note what exists** in the project root: whether `reports/` and `research_notes/` are already
-   there, and what they hold (`ls`). deep-research writes into the current directory, and you must
-   not take anything away that it did not write in this round.
-2. **Build the prompt** from the approved brief — only the round's questions — in this shape:
+deep-research writes its notes and its report into a research directory, by default the current
+one — the project root. Everything of a round goes into the round's own folder instead, so nothing is
+created outside the run, even for a moment, and a failed round leaves nothing behind in the root.
+
+1. **The round's folder.** `mkdir -p "<run>/raw/round-<n>"`: it is deep-research's research
+   directory for this round. Its absolute path — the project root from the session's environment
+   joined with the run's path — goes into the prompt.
+2. **The safeguard.** `ls -A` the project root and `docs/research/`, and write both listings into the
+   round's `before` in `STATE.json`, so the comparison at delivery survives a summarised context.
+3. **Build the prompt** from the approved brief — only the round's questions — in this shape:
 
    ```
    Research for a product project. Topic: <the topic in one sentence>.
@@ -46,18 +52,32 @@ another round may use the other.
 
    Out of scope: <brief › Out of scope>
 
+   Files:
+   - Use <absolute path of raw/round-<n>/> as the research directory.
+   - Create research_notes/ and reports/ inside it — not in the current directory, and not in a
+     directory used earlier in this conversation.
+   - Give every research agent absolute paths inside it.
+   - Do not copy the report to an outputs folder and do not send it as a file.
+
    The scope above was agreed with the operator: do not ask follow-up questions.
    Report in English, with a section per RQ id.
    ```
-3. **Invoke it** with the `Skill` tool: the skill's name as the session lists it, the prompt as its
-   arguments. From here you are deep-research's coordinator and follow its instructions as written.
-4. **When it delivers**, it names where the report is. Take that path from its words — its folders may
-   change between versions; do not assume them — and the notes folder beside it. Then, in the same
-   turn:
-   - `mkdir -p "<run>/raw/round-<n>"`; `mv` the report to `raw/round-<n>/report.md` and the notes
-     folder to `raw/round-<n>/notes`;
-   - `rmdir` `reports/` and `research_notes/` in the project root only when they were not there
-     before step 1 and are now empty — `rmdir` fails on a folder that is not, which is the point;
+4. **Invoke it** with the `Skill` tool: the skill's name as the session lists it, the prompt as its
+   arguments. From here you are deep-research's coordinator and follow its instructions as written —
+   except where to write: the prompt's `Files:` block is this skill's rule and overrides deep-research's
+   own default of the current directory, and as its coordinator you hold its agents to it.
+5. **When it delivers**, it names where the report is. Take that path from its words — its folders may
+   change between versions; do not assume them — and find its notes folder for this round under
+   `raw/round-<n>/research_notes/`. Then, in the same turn, moving files only inside the round:
+   - `mv` the report (`raw/round-<n>/reports/<title>.md`) to `raw/round-<n>/report.md`, and the notes
+     folder (`raw/round-<n>/research_notes/<title>/`) to `raw/round-<n>/notes`;
+   - `rmdir` the emptied `raw/round-<n>/reports/` and `raw/round-<n>/research_notes/` — `rmdir` fails
+     on a folder that is not empty, which is the point; a folder that stays is left as it is and named
+     at the review;
+   - **compare**: `ls -A` the project root and `docs/research/` again, against the round's `before`.
+     Anything new outside the run — deep-research ignored the `Files:` block — is moved into
+     `raw/round-<n>/` (`mv`), the folders it made and emptied are removed (`rmdir`), and the operator
+     is told what was moved and from where;
    - continue at `phases.md › Phase 1 — Research`, step 3. deep-research's own summary to the operator
      is not the end of the run.
 
@@ -99,8 +119,11 @@ An agent errors, hits a limit, or returns nothing usable; deep-research stops pa
 
 - **Do not redo its work yourself and do not wait in silence.** Set the round `failed` in `STATE.json`
   with the reason, tell the operator what failed and what was kept.
-- **deep-research failed**: whatever it wrote stays where it is until the retry; on `continue` the
-  round starts again — `phases.md › continue`. When it fails twice, offer the scouts for this round.
+- **deep-research failed**: whatever it wrote stays inside `raw/round-<n>/` — run the comparison of
+  `Calling deep-research`, step 5, first, so nothing of the round is left in the project root. On
+  `continue` the round starts again and the cut-off folder is moved aside to
+  `raw/round-<n>-incomplete/` — `phases.md › continue`. When it fails twice, offer the scouts for
+  this round.
 - **A scout failed**: the other scouts' notes are kept; the retry runs only the failed group's scout.
 - **The curator failed**: the raw material is complete, so the retry is the curator alone, with a note
   that files it finds half-written are a failed attempt to replace, not the operator's text to keep.

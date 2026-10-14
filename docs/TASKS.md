@@ -27,6 +27,11 @@ Statuses: `todo` · `in progress` · `done`.
   `/showcase`) write into `docs/<name>/` by default; the folder is proposed in a dialog and is the operator's to
   change. Each of them is used from the plugin while still script-less, so the procedure is proven before the
   mechanical parts are frozen in `bin/`.
+- A skill that writes files has a working folder, and nothing is created outside it, not even for a moment —
+  temporary files included; never the project root, `/tmp`, the session's scratchpad or an outputs folder
+  (T25, rule 7 in [skills/README.md](skills/README.md)). `/standards` keeps its state in `docs/standards/`.
+- Every skill shows the operator where it is: a checklist of the mode's stages, a progress line, the waits and the
+  resume point; the chat checklist is the guarantee, the session's task list a mirror (T26, rule 8).
 
 ## Open questions
 
@@ -709,6 +714,232 @@ Later:
 - `/derive-rules` (T8) derives a project's own rules from its code; `/standards` installs the portable ones. Both
   write `.claude/rules/`; whether they become one skill.
 - A `react` pack check that every token has a light and a dark value (shared with T23).
+
+## T25 — Skills write only inside their working folder · `done` (0.13.0, with T26)
+
+Every skill that writes files has a working folder, and everything it creates stays inside it: results, state, raw
+material, intermediate and temporary files. Nothing is created outside it: not in the project root, not in `docs/`
+above the folder, not in `/tmp`, `os.tmpdir()`, the session scratchpad or an "outputs" folder. A folder the operator
+picked outside `docs/` follows the same rule: nothing is created outside it, not even for a moment. Agreed with the
+operator on 2026-10-13.
+
+Why: after `/research`, the project root gains `reports/` and `research_notes/`. deep-research writes into the
+current directory. `/research` moves its output into the run afterwards, but when a round fails the folders stay in the
+root. deep-research may also copy the report to an outputs folder that nobody cleans up. Other skills leak in the same
+way, as listed below.
+
+Decisions:
+- `/blueprint`, `/backlog` and `/showcase` keep asking for their folder. Whatever is chosen, nothing is written outside
+  it.
+- `/standards` keeps its state in `docs/standards/` instead of `.claude/standards/`.
+- The rule is enforced by instructions and a structure test, not by a hook. T20's idea of a hook for the research
+  agents stays separate.
+- Some files are exempt: those that are the whole point of a skill and that tools read from a fixed place. These are
+  `/scaffold`'s components, `/setup-permissions`' `.claude/settings.json`, and `/standards`' `.claude/rules/*.md`,
+  `eslint/standards/*.mjs` and the ESLint config wiring. None of these skills creates temporary files.
+
+| Skill | Working folder |
+|-------|----------------|
+| `/research` | `docs/research/` (the runs index); a run's material only in `docs/research/<YYYY-MM-DD>-<slug>/` |
+| `/blueprint` | the folder chosen at Intake (default `docs/blueprint/`) |
+| `/backlog` | the folder chosen (default `docs/backlog/`) |
+| `/showcase` | the folder chosen (default `docs/showcase/`) |
+| `/standards` | `docs/standards/` |
+
+What to do:
+- `/research`:
+  - `engines.md › Calling deep-research`:
+    - Drop step 1, "note what exists in the project root".
+    - Instead, `mkdir -p "<run>/raw/round-<n>"` and make it deep-research's research directory. The prompt gains a
+      `Files:` block:
+      - use `<absolute run path>/raw/round-<n>/` as the research directory;
+      - create `research_notes/` and `reports/` inside it, not in the current directory and not in one used earlier
+        in the conversation;
+      - give the subagents absolute paths inside it;
+      - do not copy the report to an outputs folder or send it as a file.
+    - Say that the skill is deep-research's coordinator. This instruction therefore overrides deep-research's "same
+      directory or current working directory" rule (its SKILL.md, steps 2 and 7).
+  - On delivery, files move only inside the round:
+    - `reports/<title>.md` → `report.md`;
+    - `research_notes/<title>/` → `notes/` (the notes are not "beside" the report; fix that wording);
+    - `rmdir` the emptied `reports/` and `research_notes/`.
+
+    No `rmdir` happens in the project root any more.
+  - A safeguard: `ls` the project root and `docs/research/` before the call, and compare after delivery. If
+    deep-research still created anything outside the run, move it into `raw/round-<n>/`, remove the empty folders it
+    made, and tell the operator.
+  - `engines.md › When something fails`: a failed round's files stay inside `raw/round-<n>/`. `continue` already moves
+    them aside to `raw/round-<n>-incomplete/`.
+  - `phases.md › Phase 0 — Frame`, step 7: replace the undefined `<root>/README.md` with `docs/research/README.md`, in
+    the `docs/` chosen at step 1.
+  - `SKILL.md`:
+    - *The output folder* states the invariant.
+    - *What this skill does not do* loses the exception for "moving deep-research's output out of the project root",
+      and forbids creating anything outside `docs/research/`.
+    - *Done when*: nothing is created outside the run folder and the runs index.
+  - `agents/researchScout.md` and `agents/researchCurator.md` say explicitly: never `/tmp`, the scratchpad or the
+    project root.
+  - `docs/skills/research.md` mirrors all of this.
+- `/blueprint`:
+  - `intake.md` step 1 and `mechanics.md` state the invariant, including `.sources/`.
+  - `bin/blueprint.mjs export --out` refuses a path that resolves outside the blueprint folder, with a test in
+    `tests/blueprint.test.mjs`.
+  - `docs/skills/blueprint.md` mirrors this.
+- `/backlog`: the invariant goes into *The output folder* and *Done when*. `docs/skills/backlog.md` mirrors it.
+- `/showcase`:
+  - The invariant goes into *The output folder*.
+  - The scratch page `scheme.html` (`phases.md › Step 1`) is never deleted today, because `allowed-tools` has no
+    `rm`. The site's `build.mjs` template removes `scheme.html` from its folder once `STATE.json` records the chosen
+    scheme. The step says "run `node build.mjs`" instead of "delete the scratch page".
+  - Test in `tests/showcaseFrame.test.mjs`. `docs/skills/showcase.md` mirrors this.
+- `/standards`:
+  - `bin/lib/standards.mjs`: `STATE_FILE`, `FINDINGS_FILE` and `INCOMING_DIR` move under `docs/standards/`. New:
+    `REVIEW_DIFF = 'docs/standards/review.diff'`.
+  - `findProjectRoot` looks for the new path. A project that has only `.claude/standards/standards.json` is migrated
+    on the next write: the folder moves to `docs/standards/`, the empty `.claude/standards/` is removed, and the move
+    is reported.
+  - The review diff:
+    - `review-context` writes it to `docs/standards/review.diff` instead of `os.tmpdir()`;
+    - `record` deletes it, or a new `review-done` command when nothing is recorded;
+    - `install` writes `docs/standards/.gitignore` with `review.diff`, so a diff left by an interrupted review is
+      never committed;
+    - `references/review.md` gains the step.
+  - Replace the old path in `SKILL.md`, `references/install.md`, `references/review.md`, the `react` pack's
+    `rules.md` and `eslint.mjs`, `docs/skills/standards.md` and `docs/hooks/standardsCheck.md`, and in the comments
+    of `bin/scaffold.mjs` and `bin/standardsCheck.mjs`.
+  - `tests/standards.test.mjs`: the expected paths follow the new spec. New tests:
+    - the diff lands in `docs/standards/`, and nothing in `os.tmpdir()`;
+    - `record` and `review-done` remove the diff;
+    - the legacy migration works;
+    - `install` writes the `.gitignore`.
+- The shared rule:
+  - `docs/skills/README.md › Rules every skill follows` gains rule 7, **Writes stay in the working folder**: the
+    invariant, temporary files kept in the folder and removed by the skill, the places never written to, and the
+    exemptions.
+  - `docs/agents/README.md`: an agent writes only into the folder its brief names, never into `/tmp` or the
+    scratchpad.
+  - `tests/structure.test.mjs`:
+    - no `tmpdir(` or `os.tmpdir` in `bin/**/*.mjs`;
+    - no `/tmp`, `mktemp` or `scratchpad` as a place to write in `skills/**/*.md` and `agents/*.md`;
+    - the `SKILL.md` of research, blueprint, backlog, showcase and standards contains the invariant's fixed sentence.
+  - The top *Decisions* gain one line on the rule. Bump the version in `.claude-plugin/plugin.json`.
+
+Done when:
+- `npm test` passes, including the new tests above.
+- Two real `/research` runs on a `template-*` project, one with deep-research and one with the scouts, after a
+  `touch` of a marker:
+  - `find <project root> -newer <marker> -not -path '*/docs/research/*' -not -path '*/node_modules/*'` lists nothing;
+  - the root has no `reports/` or `research_notes/`;
+  - the run has `raw/round-1/report.md` and `notes/`.
+- `/standards review-context` on a project with a pack: the diff is in `docs/standards/review.diff`, nothing matches
+  `$TMPDIR/dev-assistant-review-*`, and the diff is gone after `record`.
+- `/showcase init`: no `scheme.html` remains once the scheme is chosen and `node build.mjs` has run.
+- `node bin/blueprint.mjs export --out ../x.md` is refused with the reason.
+
+Started on the operator's word on 2026-10-14.
+
+What was done (0.13.0):
+- `/research`: deep-research gets the round's `raw/round-<n>/` as its research directory through a `Files:` block in
+  its prompt, which overrides its own default of the current directory; the report and the notes are renamed inside
+  the round, and the emptied `reports/` and `research_notes/` are removed there. The project root and
+  `docs/research/` are listed into the round's new `before` field and compared at delivery; anything left outside
+  the run is moved into the round and reported. A failed round's files stay in the round; `continue` moves them to
+  `raw/round-<n>-incomplete/` (`-incomplete-2` and on). Phase 0 step 7 names `docs/research/README.md`. The scout and
+  the curator create nothing but their files.
+- `/blueprint`: the invariant in `SKILL.md`, `intake.md` step 1 and a new `mechanics.md › The working folder`;
+  `bin/blueprint.mjs export --out` refuses a path outside the folder (a sibling sharing the folder's name prefix
+  included).
+- `/backlog`: the invariant in *The output folder* and *Done when*.
+- `/showcase`: the invariant in *The output folder*; `build.mjs` exports `removeSchemeScratch()`, which removes the
+  Color scheme step's `scheme.html` once `STATE.json` has `steps.scheme: "done"`; `node build.mjs` and `open.mjs` run
+  it, and step 1 leaves the page to the build.
+- `/standards`: the state, the findings, `incoming/` and the review diff in `docs/standards/`; `review-context`
+  writes `docs/standards/review.diff`, `finding` removes it, the new `review-done` removes it when nothing was
+  recorded, and `status` names one an interrupted review left. `install` writes `docs/standards/.gitignore`
+  (`review.diff`, the project's lines kept). A project with only `.claude/standards/` is still found and read, and
+  the next command that writes moves the folder (`.claude/` stays), reports it and names the installed files that
+  still point to the old path; when both exist, `docs/standards/` wins and the old one is left. The `react` pack
+  reads `docs/standards/standards.json` and is 1.1.0.
+- Rule 7 in `docs/skills/README.md`, with the table of working folders and the exemptions; `docs/agents/README.md`:
+  an agent creates nothing but what its brief names. `tests/structure.test.mjs`: no `tmpdir` in `bin/` or the skills'
+  scripts; no `/tmp`, `mktemp`, `$TMPDIR` or scratchpad in a skill or an agent except in a sentence that forbids it;
+  the invariant's sentence in the five `SKILL.md`.
+- Tests: `tests/blueprint.test.mjs` (the refusal; the export to another folder now goes to `export/share/` inside
+  the blueprint, as the rule requires), `tests/showcaseFrame.test.mjs` (the scratch page kept, then removed),
+  `tests/standards.test.mjs` (the new paths, the diff, `review-done`, the `.gitignore`, the migration in its cases).
+
+Result: 0.13.0; 334 tests pass. The real-run criteria — two `/research` runs with a marker file, `/standards
+review-context` on a project, `/showcase init` — are still to be tried after a restart.
+
+## T26 — Every skill shows where it is · `done` (0.13.0, with T25)
+
+While a skill runs, the operator always knows which stage it is at, what has been done, what comes next and whether
+it is working or waiting for them. Today a long skill (`/blueprint`'s eight phases, `/showcase`'s 21 steps, a wave of
+agents, a deep-research round) runs for minutes with no sign of where it is, and the stages exist only in
+`references/*.md` and `STATE.json`, which the operator does not see. Asked for by the operator on 2026-10-13.
+
+What to do:
+- Every skill names its stages per mode in a `## Progress` section of its `SKILL.md`: the fixed list the operator
+  will see, taken from the procedure that already exists (`/blueprint`'s phases, `/research`'s Frame, Research, Curate,
+  Review, `/showcase`'s steps, `/backlog`'s and `/standards`' modes). A short skill (`/scaffold`,
+  `/setup-permissions`) has a short list, but still has one.
+- At the start, the stages go into Claude Code's task list, so the UI shows the checklist: done, the current one
+  in progress, the rest pending. A stage the run skips is marked so, not left pending. Each skill's `allowed-tools`
+  gains the task-list tool if it needs to be listed.
+- On every stage change, one line in the chat in a fixed shape, for example:
+  `▸ /blueprint · phase 3 of 8 — Modules · step 2 of 5: module files (4 of 9 written)`.
+  Inside a long stage, the line names the step and the count of units done against the total.
+- Waiting is visible:
+  - before agents, deep-research or a long script start: what runs, how many units, and that the skill waits for
+    them (the wave size is already said for `/blueprint`; now every skill says it);
+  - as each unit returns: the count, and any failure by name;
+  - at a gate or a question: the line says the skill is waiting for the operator, and on what.
+- A resumed run (`continue`, `status`) rebuilds the task list and the line from `STATE.json`, so the operator sees
+  where the previous session stopped before anything new happens.
+- At the end, a closing line: the stages done, skipped and failed, and where the result is.
+- The shared rule: `docs/skills/README.md › Rules every skill follows` gains rule 8, **Progress is visible**: the
+  stage list, the task list, the line's shape, waits, resume, the closing line. Each skill's page in `docs/skills/`
+  shows its stage list.
+- `tests/structure.test.mjs`: every `SKILL.md` has a `## Progress` section with at least one stage per mode it
+  documents.
+
+Done when:
+- `npm test` passes, including the new structure check.
+- A real run of `/blueprint` (or `/showcase`) and of `/scaffold`: at any moment the task list and the last line show
+  the stage, what is done and what is next; a wave of agents shows its count as they return; a gate says it waits for
+  the operator; a `continue` in a new session shows the same place before going on.
+
+Decided (2026-10-14):
+- The checklist in the chat is the guarantee; the task list only mirrors it. Claude Code 2.1.268 gives `TaskCreate`,
+  `TaskUpdate`, `TaskList` and `TaskGet` by default only on some models (`TodoWrite` instead with
+  `CLAUDE_CODE_ENABLE_TASKS=0`); on the others, Claude 5 models among them, none of them exists unless
+  `CLAUDE_CODE_ENABLE_TODO_TOOLS=1`. The tools need no permission, and `allowed-tools` only pre-approves, so no skill
+  lists them. A plain subagent's access to the parent's list is undocumented; the skill, not its agents, keeps it.
+- The model writes the checklist and the line from the `## Progress` table and `STATE.json`; no script. It is a
+  report of where the run is, not a result that must come out the same every time.
+- The line's skeleton is language-neutral (`▸ /blueprint · 5/8 Modules (L2) · writers, wave 1 · 4/9`): the marks,
+  the numbers and the command are fixed, the stage and the step are in the operator's language, like the rest of
+  the chat.
+- Marks: `✓` done, `▸` the current one, `·` still to come, `–` skipped, `✗` failed. The numbers count the mode's
+  stages from 1, so `/blueprint`'s phase 4 is `5/8`.
+
+What was done (0.13.0):
+- A `## Progress` section in every `SKILL.md` (blueprint, research, backlog, showcase, standards, scaffold,
+  setup-permissions): the fixed sentence, the checklist, the line, units, waits, resume, and a `| Mode | Stages |`
+  table with a row for every mode of the arguments table. `/scaffold` and `/setup-permissions` have the short form
+  (checklist, line, final checklist).
+- `docs/skills/README.md`: rule 8, **Progress is visible**; the page layout gains *Progress*; the `allowed-tools` row
+  says it pre-approves and takes nothing away. Every skill's page has a `## Progress` section with the same table.
+- `tests/structure.test.mjs`: per skill, the section with the sentence and a non-empty stage table, a row for every
+  mode the arguments table documents, and the page's table equal to the skill's.
+
+Result: the procedure is in place and `npm test` holds it; the second done criterion (a real run of `/blueprint` or
+`/showcase` and of `/scaffold`, and a `continue` in a new session) is still to be tried after a restart.
+
+Later:
+- The current skill and stage in Claude Code's status line, read from the active `STATE.json`.
+- A `progress` command in `bin/blueprint.mjs` (and the other skills' scripts once they exist), if the model's
+  checklist drifts from `STATE.json` in real runs.
 
 ## Draft of the next tasks
 

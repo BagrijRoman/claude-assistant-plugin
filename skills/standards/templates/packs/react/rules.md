@@ -12,7 +12,7 @@ Every rule has an id. A review finding cites it; a commit the operator lets thro
 `Standards-skipped: <id> <reason>` in its message. *Enforced by* says what catches a break: `lint` (ESLint,
 reported after every edit), `check` (the `standards-check` hook, when the turn ends and at commit), `review`
 (the `pattern-reviewer` agent, through `/standards review`). A rule the review keeps catching moves to a
-stronger layer. Settings live in `.claude/standards/standards.json`; this file is regenerated from them.
+stronger layer. Settings live in `docs/standards/standards.json`; this file is regenerated from them.
 
 ## RCT-01 Shared components
 

@@ -58,5 +58,5 @@ of both, grouped by rule, with counts. Fix nothing here. Ask the operator, per r
 
 ## 6. Hand over
 
-Tell the operator to commit `.claude/standards/`, the rules file, the lint file and the ESLint config change,
-and to restart Claude Code so a new session loads the rules file.
+Tell the operator to commit `docs/standards/` (its `.gitignore` keeps a review diff out), the rules file, the lint
+file and the ESLint config change, and to restart Claude Code so a new session loads the rules file.

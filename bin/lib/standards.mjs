@@ -1,12 +1,14 @@
 // Standards packs and a project's installation of them. A pack lives in the plugin under
 // skills/standards/templates/packs/<pack>/: `pack.json` (version, the files it installs), `rules.md` (the rules,
 // one `## <ID> <title>` heading and one `Enforced by:` line each — the one source the lint, the checks and the
-// review all read) and its lint rules. The project keeps its side in .claude/standards/: `standards.json`
-// (installed packs, their settings, the rules switched off, the hash of every file last installed) and
-// `findings.json` (review findings and the promotions decided from them).
+// review all read) and its lint rules. The project keeps its side in docs/standards/: `standards.json`
+// (installed packs, their settings, the rules switched off, the hash of every file last installed),
+// `findings.json` (review findings and the promotions decided from them), `incoming/` (new versions waiting for a
+// hand merge), and `review.diff` while a review runs, kept out of git by the folder's `.gitignore`. An older
+// install kept it in .claude/standards/: still found and read, and moved by the next command that writes.
 
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmdirSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, posix, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { checkFiles, checkTree } from './componentLayout.mjs';
@@ -14,9 +16,14 @@ import { ESLINT_CONFIGS } from './projectTools.mjs';
 
 export const PLUGIN_ROOT = dirname(dirname(dirname(fileURLToPath(import.meta.url))));
 export const PACKS_DIR = join(PLUGIN_ROOT, 'skills', 'standards', 'templates', 'packs');
-export const STATE_FILE = '.claude/standards/standards.json';
-export const FINDINGS_FILE = '.claude/standards/findings.json';
-export const INCOMING_DIR = '.claude/standards/incoming';
+export const STANDARDS_DIR = 'docs/standards';
+export const STATE_FILE = 'docs/standards/standards.json';
+export const FINDINGS_FILE = 'docs/standards/findings.json';
+export const INCOMING_DIR = 'docs/standards/incoming';
+export const REVIEW_DIFF = 'docs/standards/review.diff';
+export const GITIGNORE_FILE = 'docs/standards/.gitignore';
+export const LEGACY_DIR = '.claude/standards';
+const LEGACY_STATE_FILE = `${LEGACY_DIR}/standards.json`;
 export const DEFAULT_PROMOTE_AFTER = 2;
 
 /** The script checks a rule can name in `Enforced by: check <name>`. */
@@ -244,19 +251,68 @@ export const renderPack = (pack, installed) => pack.files.map((file) => {
 
 // ── Project state ──────────────────────────────────────────────────────────────────────────────────────────
 
-/** The nearest directory at or above `path` with .claude/standards/standards.json, or null. */
+/** The nearest directory at or above `path` with docs/standards/standards.json (or the legacy one), or null. */
 export const findProjectRoot = (path) => {
   let dir = resolve(path);
   for (;;) {
-    if (existsSync(join(dir, STATE_FILE))) return dir;
+    if (existsSync(join(dir, STATE_FILE)) || existsSync(join(dir, LEGACY_STATE_FILE))) return dir;
     const parent = dirname(dir);
     if (parent === dir) return null;
     dir = parent;
   }
 };
 
-export const readState = (root) => readJson(join(root, STATE_FILE));
-export const readFindings = (root) => readJson(join(root, FINDINGS_FILE)) ?? { lastFinding: 0, findings: [], promotions: [] };
+/**
+ * The legacy folder of an older install: `only` while the project has nothing else, `both` when docs/standards/
+ * took over and .claude/standards/ is still there, else null.
+ */
+export const legacyState = (root) => {
+  if (existsSync(join(root, STATE_FILE))) return isDir(join(root, LEGACY_DIR)) ? 'both' : null;
+  return existsSync(join(root, LEGACY_STATE_FILE)) ? 'only' : null;
+};
+
+/** Where a file of docs/standards/ is now: in .claude/standards/ until the legacy folder is moved. */
+export const inUse = (root, file) => (legacyState(root) === 'only' ? `${LEGACY_DIR}${file.slice(STANDARDS_DIR.length)}` : file);
+
+/**
+ * Moves the legacy .claude/standards/ to docs/standards/ (creating docs/ if needed) and removes the emptied
+ * folder; .claude/ itself stays. An entry docs/standards/ already has is left behind and returned in `kept`.
+ */
+export const migrateLegacy = (root) => {
+  const from = join(root, LEGACY_DIR);
+  const to = join(root, STANDARDS_DIR);
+  if (!existsSync(to)) {
+    mkdirSync(dirname(to), { recursive: true });
+    renameSync(from, to);
+    return { kept: [] };
+  }
+  const kept = [];
+  for (const name of readdirSync(from)) {
+    if (existsSync(join(to, name))) kept.push(name);
+    else renameSync(join(from, name), join(to, name));
+  }
+  if (!kept.length) rmdirSync(from);
+  return { kept };
+};
+
+export const readState = (root) => readJson(join(root, inUse(root, STATE_FILE)));
+export const readFindings = (root) => readJson(join(root, inUse(root, FINDINGS_FILE))) ?? { lastFinding: 0, findings: [], promotions: [] };
+
+/**
+ * Makes docs/standards/.gitignore list the review diff, so a diff an interrupted review left is never committed;
+ * the project's own lines stay. Returns what it did, as `fileAction` names it: `create`, `update` or `same`.
+ */
+export const ensureGitignore = (root, { dryRun = false } = {}) => {
+  const file = join(root, GITIGNORE_FILE);
+  const entry = posix.basename(REVIEW_DIFF);
+  const current = existsSync(file) ? readFileSync(file, 'utf8') : null;
+  if (current?.split('\n').some((line) => line.trim() === entry)) return 'same';
+  if (!dryRun) {
+    mkdirSync(dirname(file), { recursive: true });
+    writeFileSync(file, `${current ? current.replace(/\n?$/, '\n') : ''}${entry}\n`);
+  }
+  return current === null ? 'create' : 'update';
+};
 
 /**
  * What installing `content` at `to` would do, given the hash of the version installed last (`base`):

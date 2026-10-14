@@ -53,8 +53,8 @@ every step that changes it, with `updated` from `date "+%Y-%m-%dT%H:%M"`.
    file, ask again. Run → `brief.md` status `approved on <date>`; `STATE.json`: `consent.grantedOn`,
    `consent.scope` (the question ids and the product names), `engine`, `phase: "research"`, round 1
    `pending` with its questions. Cancel → the folder stays with the draft, `phase: "frame"`.
-7. **The runs index.** Create `<root>/README.md` from `templates/README.md` when there is none, and
-   add or update the run's row.
+7. **The runs index.** Create `docs/research/README.md` — in the `docs/` chosen at step 1 — from
+   `templates/README.md` when there is none, and add or update the run's row.
 
 ## Phase 1 — Research
 
@@ -110,8 +110,10 @@ every step that changes it, with `updated` from `date "+%Y-%m-%dT%H:%M"`.
 
 Find the run (`SKILL.md › How to read the arguments`), read `STATE.json`, and resume its phase: a
 round `failed` or `running` (a session that ended mid-research) starts again at Phase 1, step 1 —
-`raw/round-<n>/` from a cut-off run is moved aside to `raw/round-<n>-incomplete/`, not mixed with the
-new one. A round `researched` resumes at Phase 2. Files the operator edited by hand are theirs: re-read
+`raw/round-<n>/` from a cut-off run is moved aside to `raw/round-<n>-incomplete/` (`-incomplete-2`
+and on when that exists), not mixed with the new one; a round that was `running` gets the comparison
+of `engines.md › Calling deep-research` first, so whatever it left outside the run joins the folder
+moved aside. A round `researched` resumes at Phase 2. Files the operator edited by hand are theirs: re-read
 before writing, and show what you change.
 
 ### status

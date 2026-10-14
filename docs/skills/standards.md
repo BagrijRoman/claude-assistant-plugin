@@ -45,18 +45,41 @@ Spacing stays on the platform's scale: Tailwind's on the web, plain numbers on n
   shows them, asks the operator about what is uncertain, installs with the confirmed values, adds the lint file to
   the ESLint config, then runs the check and the project's lint to show what the existing code breaks. Fixes nothing.
 - **`update`** — reinstalls every pack with its settings; a file the project edited is kept, and when the pack
-  changed it too, the new version waits in `.claude/standards/incoming/` for a hand merge and `resolve`.
+  changed it too, the new version waits in `docs/standards/incoming/` for a hand merge and `resolve`.
 - **`status`**, **`check`** — what is installed and in what state; what the whole project breaks.
 - **`disable <rule> <reason>`**, **`enable <rule>`** — the only way a rule is switched off: with the operator's
   reason, marked under the rule's heading in the rules file; its lint and checks stop, the review skips it.
-- **`review`** — `review-context` collects the diff, the changed and untracked files and the rules to review; the
-  reviewer returns findings with rule ids; the operator decides each (fix, waive, reject); the fixes are made and
-  checked; fixed and waived findings are recorded; promotions are proposed.
+- **`review`** — `review-context` writes the diff to `docs/standards/review.diff` and lists the changed and
+  untracked files and the rules to review; the reviewer returns findings with rule ids; the operator decides each
+  (fix, waive, reject); the fixes are made and checked; fixed and waived findings are recorded with `finding`,
+  which removes the diff (`review-done` removes it when nothing was recorded); promotions are proposed.
 - **`promote`** — what waits for a decision, and the decision recorded.
+
+## The working folder
+
+The skill's working folder is `docs/standards/` in the project: `standards.json` (installed packs, settings, rules
+switched off, the hash of every file installed), `findings.json` (findings and promotions), `incoming/` (new
+versions waiting for a hand merge) and a `.gitignore`.
+
+Writes stay in the working folder: nothing is created outside it, not even for a moment.
+
+- Temporary files live there too, and the skill removes them: the review diff, `docs/standards/review.diff`, is
+  written by `review-context` and removed by `finding`, or by `review-done` when the review recorded nothing.
+  `install` writes `docs/standards/.gitignore` with `review.diff` (keeping any line the project added), so a diff
+  an interrupted review left is never committed.
+- `/tmp`, `os.tmpdir()`, the session scratchpad and the project root are never written to.
+- Exempt are the files that are the point of the skill, because tools read them from a fixed place:
+  `.claude/rules/*.md`, `eslint/standards/*.mjs` and the wiring of the lint file into the ESLint config.
+
+A project installed before this folder kept its files in `.claude/standards/`. The hook, `status`, `check` and
+`/scaffold` still find and read it there; the next command that writes moves the whole folder to
+`docs/standards/` (creating `docs/` if needed), removes the emptied `.claude/standards/` (`.claude/` stays) and
+says so in its report, with a request to run `update` when an installed file still names the old folder. When
+both folders exist, `docs/standards/` is used and `.claude/standards/` is left untouched and reported.
 
 ## Promotion
 
-`.claude/standards/findings.json` holds every recorded finding (`F-001`…) with its rule, file, line, summary and
+`docs/standards/findings.json` holds every recorded finding (`F-001`…) with its rule, file, line, summary and
 status, and every promotion decided. When a rule collects two findings since its last promotion (`promoteAfter`
 in `standards.json`), or a finding fits no rule, the script proposes, and the skill puts it to the operator: a
 lint rule if the pattern shows in the syntax, a script check if it shows in files and folders, a sharper text or
@@ -67,10 +90,30 @@ records the choice, and the rule's count starts again.
 The project may keep its own rules in the same form — `## PRJ-01 Title` and an `Enforced by:` line in any
 `.claude/rules/*.md` — and findings and promotions work for them too.
 
+## Progress
+
+The skill shows where it is at every step: a checklist of the mode's stages when it starts, at every
+gate and at the end; a line `▸ /<command> · <n>/<N> <stage> · <step>` at every change; what it waits for
+and how many; and, on `continue` or `status`, the checklist rebuilt from its state first
+([rule 8](README.md#rules-every-skill-follows)). The stages per mode, as its `SKILL.md` lists them:
+
+| Mode | Stages |
+|------|--------|
+| `install <pack> [dir]` | Detect → Confirm the settings → Install → Wire the lint → What the existing code breaks → Hand over |
+| `update` | Update → Merges pending → Resolve |
+| `status` | Status → What needs action |
+| `check` | Script checks → Project lint → Report |
+| `disable <rule> <reason>` | The operator's reason → Disable → Report |
+| `enable <rule>` | Enable → Report |
+| `review [--staged \| --base <ref>]` | Collect the change → The reviewer reads → The operator decides → Record → Remove the diff → Promotions |
+| `promote` | What waits → Options → The operator chooses → Record |
+| *(none)* | Status → The mode that fits |
+
 ## What it will not do
 
 - Edit `standards.json`, `findings.json` or an installed file by hand; the script is the only writer, apart from
   wiring the lint and a merge the operator agreed to.
+- Write outside `docs/standards/`, apart from the exempt files, or leave the review diff behind.
 - Switch a rule off without the operator's reason, through an `eslint-disable` comment, or by deleting it.
 - Record a finding before the operator decided it, or write `Standards-skipped:` on its own initiative.
 - Change the plugin's pack from inside a project: a pack-wide promotion is written up, not made.
@@ -90,9 +133,10 @@ node bin/standards.mjs <command> [--dir <project>]
 | `check [--files a,b]` | the script checks over the project or the given files; exit `1` when something is found |
 | `disable <rule> --reason <text>` / `enable <rule>` | switch a rule off or on and regenerate the rules file |
 | `resolve <file>` | after a hand merge: take the incoming version as the new base and remove it from `incoming/` |
-| `finding --rule <id\|none> --file <path> --summary <text> [--line n] [--status fixed\|waived\|open]` or `finding --stdin` | record findings; print the promotions now waiting |
+| `finding --rule <id\|none> --file <path> --summary <text> [--line n] [--status fixed\|waived\|open]` or `finding --stdin` | record findings; remove the review diff; print the promotions now waiting |
 | `promote [--rule <id> \| --finding <F-nnn>] [--to <layer>] [--note <text>]` | list what waits, or record a decision: `lint`, `check`, `text`, `keep` for a rule; `new`, `keep` for a finding |
-| `review-context [--staged \| --base <ref>]` | JSON for the reviewer: the diff file (in the system temp folder), changed and untracked files, rules files, `CLAUDE.md`, the rules to review |
+| `review-context [--staged \| --base <ref>]` | JSON for the reviewer: the diff file (`docs/standards/review.diff`), changed and untracked files, rules files, `CLAUDE.md`, the rules to review, `notes` (a move of the legacy folder) |
+| `review-done` | after a review that recorded nothing: remove the review diff |
 
 Settings (`--set`): `platform` (`web` · `native`), `srcDir`, `sharedDir`, `featuresDir`, `tokensFiles`
 (comma-separated), `aliases` (`prefix=target`, comma-separated), `skipLint` (pack lint rules the project
@@ -106,7 +150,7 @@ What an install does to each file, by the hash of the version it installed last:
 | exactly the new version | up to date |
 | edited by the project, and the pack's version unchanged | kept as edited |
 | untouched by the project, and the pack's version changed | replaced |
-| edited by the project, and the pack's version changed (or there before the pack) | kept; the new version goes to `.claude/standards/incoming/<file>` |
+| edited by the project, and the pack's version changed (or there before the pack) | kept; the new version goes to `docs/standards/incoming/<file>` |
 
 The installed lint file reads the settings from `standards.json` when ESLint loads it, so a change of settings or
 a rule switched off needs no edit of the ESLint config.
@@ -126,8 +170,10 @@ a rule switched off needs no edit of the ESLint config.
 ## Tests
 
 - [tests/standards.test.mjs](../../tests/standards.test.mjs) — the pack's rules and the lint rules it names,
-  rendering, detection, install (dry run, a second run, `--set`, kept edits, incoming and `resolve`, wiring),
-  `update`, `status`, `disable` / `enable`, `check`, findings and promotions, `review-context`.
+  rendering, detection, install (dry run, a second run, `--set`, kept edits, incoming and `resolve`, wiring, the
+  `.gitignore`), `update`, `status`, `disable` / `enable`, `check`, findings and promotions, `review-context` (the
+  diff in `docs/standards/`, nothing in the system temp folder), the diff removed by `finding` and `review-done`,
+  and the move of a legacy `.claude/standards/`.
 - [tests/standardsLint.test.mjs](../../tests/standardsLint.test.mjs) — every lint rule through ESLint's `Linter`,
   each with cases that must be reported and cases that must pass.
 - On a copy of `template-next-admin` (0.12.0): the install detected the right settings, the real ESLint ran the

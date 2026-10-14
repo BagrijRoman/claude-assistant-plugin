@@ -6,7 +6,7 @@
 // created file by file, and is incomplete in between.
 // Stop is held at most once per turn (`stop_hook_active`). A commit is blocked while a finding remains, unless
 // its message carries `Standards-skipped: <rule id> <reason>` — the operator's decision, never the model's.
-// A project without .claude/standards/standards.json, or any internal error: exit 0, silently.
+// A project without docs/standards/standards.json, or any internal error: exit 0, silently.
 
 import { readFileSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';

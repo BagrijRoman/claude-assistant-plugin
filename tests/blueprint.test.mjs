@@ -768,7 +768,7 @@ describe('blueprint script', () => {
     });
 
     it('turns links to local files into their text, keeps web links and anchors, adds the competitor profiles', () => {
-      const { root, dir } = makeBlueprint();
+      const { dir } = makeBlueprint();
       write(join(dir, 'references', 'competitors', 'acme.md'), '# Acme\n\nSee [the brief](../../01-brief.md).\n');
       run(['export', dir]);
       const local = readFileSync(join(dir, 'export', 'blueprint.md'), 'utf8');
@@ -777,7 +777,8 @@ describe('blueprint script', () => {
       assert.ok(local.indexOf('\n## Acme\n') > local.indexOf('\n## Glossary\n'), 'profiles come last');
       assert.ok(local.includes('See the brief.'));
 
-      const out = join(root, 'share', 'blueprint.md');
+      // A folder two levels below the blueprint's root, so every relative link has to be re-aimed
+      const out = join(dir, 'export', 'share', 'blueprint.md');
       assert.equal(run(['export', dir, '--out', out]).stdout, `${out}\n`);
       const shared = readFileSync(out, 'utf8');
       assert.equal(shared.includes(']('.concat('../')), false, 'no link points into a folder the reader does not have');
@@ -818,6 +819,17 @@ describe('blueprint script', () => {
       assert.ok(at('## Zeta') > 0 && at('## Zeta') < at('## Organization'));
       assert.equal(at('## Legacy'), -1);
       assert.match(text, /^### S-01 — Requirements$/m);
+    });
+
+    it('refuses an --out outside the blueprint folder and writes nothing there', () => {
+      const { root, dir } = makeBlueprint();
+      // A sibling whose name starts with the folder's own must not pass for a path inside it
+      for (const out of [join(root, 'x.md'), join(root, 'share'), `${dir}-copy/x.md`]) {
+        const result = run(['export', dir, '--out', out]);
+        assert.equal(result.status, 1, out);
+        assert.match(result.stderr, /is outside the blueprint folder .*; the export stays inside it/);
+      }
+      for (const path of [join(root, 'x.md'), join(root, 'share'), `${dir}-copy`]) assert.ok(!existsSync(path), `${path} was written`);
     });
   });
 

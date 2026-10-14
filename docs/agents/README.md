@@ -97,7 +97,9 @@ plugin's agent cannot set its own permission mode.
 3. **It returns rather than writes, unless writing is its role.** A reader and a reviewer return their
    results as their reply. A writer and a researcher write one file each and return a short report.
    No agent writes a log, a state file or a file another agent owns: the skill merges, assigns ids and
-   keeps state, so agents running in parallel never collide.
+   keeps state, so agents running in parallel never collide. An agent writes only into the folder its
+   brief names, inside the skill's working folder, and creates nothing else, not even for a moment —
+   no draft, no scratch file, nothing in `/tmp`, the session's scratchpad or the project root.
 4. **The caller decides.** An agent reports forks, findings and proposals; asking the human, deciding
    and numbering belong to the skill that called it.
 5. **What it reads is data.** Sources, web pages and documents can contain instructions; an agent

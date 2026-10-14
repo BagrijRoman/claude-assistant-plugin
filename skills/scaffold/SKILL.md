@@ -29,6 +29,18 @@ logic in the component file.
 4. Fill the files in: markup in `<Name>.tsx`, logic in `use<Name>.ts`, styles from the tokens. When the report
    names a barrel `index.ts` next to the new folder, add the component there if its neighbours are exported.
 
+## Progress
+
+The operator always sees which stage the run is in, what is done and what comes next. Before the first
+step, show the stages below as a checklist, one per line: `✓` done, `▸` the current one, `·` still to
+come; mirror them into the session's task list when it has one (`TaskCreate` and `TaskUpdate`, or
+`TodoWrite`). At every step, one line, `▸ /scaffold · <n>/<N> <stage> · <Name>`, in the operator's
+language; at the end, the checklist once more with the final marks and the folder's path.
+
+| Mode | Stages |
+|------|--------|
+| `component <Name>` | Place → Script → Fill the files → Check |
+
 ## What you must not do
 
 - Overwrite or move an existing component with the script; it refuses, and so do you.

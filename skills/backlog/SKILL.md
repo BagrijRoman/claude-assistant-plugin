@@ -96,6 +96,12 @@ the argument becomes the recommended option, checked the same way. Never scaffol
 folder without the operator confirming that specific folder; a folder outside git is the operator's
 call, named in Gate 1's summary.
 
+Writes stay in the working folder: nothing is created outside it, not even for a moment.
+The working folder is the backlog folder chosen at `init`, wherever it is. Every file of the backlog,
+`STATE.json` and any file needed only for a while are created inside it, and a passing file is removed
+once it has served. Nothing goes into the project root, `docs/` above the folder, the blueprint's
+folder, `/tmp` or the session's scratchpad — never, by you or by an agent.
+
 Templates for every file are in `templates/` next to this file
 (`${CLAUDE_PLUGIN_ROOT}/skills/backlog/templates/`); copy them, do not invent layouts.
 
@@ -167,6 +173,40 @@ labelled, the operator's own answer always possible via "Other" — within the t
 Small choices (a task's title, the order of two independent tasks) you make yourself; the outline
 gate and the detail gate are where the operator sees and corrects them.
 
+## Progress
+
+The operator always sees which stage the run is in, what is done and what comes next.
+
+- **The checklist.** When a mode starts, show its stages from the table below, one per line: `✓`
+  done, `▸` the current one, `·` still to come, `–` skipped by this run, `✗` failed. Show it again at every
+  gate and at the end, with the marks brought up to date and where the result is. When the session
+  has a task-list tool (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), mirror the stages there, one
+  item per stage, and keep the items current; without one, the checklist in the chat is enough.
+- **The line.** At every change of stage or step, one line:
+  `▸ /backlog · <n>/<N> <stage> · <step>`, plus `· <k>/<m>` while units are counted —
+  `▸ /backlog · 8/9 Detail batches 1–2 · detailers · 1/2`. The marks, the numbers and the command are
+  fixed; the stage and the step are in the operator's language.
+- **Units.** A stage that works through units — batches outlined or detailed, tasks written, question
+  rounds, resync changes — counts them in the line, and the task list gets an item per unit while
+  there are twelve or fewer.
+- **Waits.** Before detailers start, say how many and that you wait for them; as each returns, the
+  line with the count, and a failure by name. At a gate or a question, the line says the run waits for
+  the operator, and for what.
+- **Resume.** `continue` and `status` show the checklist rebuilt from `STATE.json` (`pending`, the
+  batches) before anything else, so the operator sees where the last session stopped.
+
+| Mode | Stages |
+|------|--------|
+| `init [dir]` | Find the blueprint → Folder → Read the blueprint → What exists already → Strategy → Outline → Gate 1 (outline) → Detail batches 1–2 → Gate 2 (detail) |
+| `continue` | The stages of the mode in `STATE.json.pending`, from the step it records |
+| `status` | Hand edits → Blueprint checks → Report |
+| `next` | Hand edits → Blueprint checks → What to work on |
+| `detail <batch>` | Check → Write → Merge → Questions → Gate |
+| `done <id>` | Mark → Acceptance criteria → What it unblocked → Views |
+| `add [text]` | Title and kind → Blueprint or manual → Placement → Views |
+| `plan <action>` | The change → Confirm → Apply → Views |
+| `resync` | What moved → Report → Questions → Gate → Apply |
+
 ## What this skill does not do
 
 - **Edit the blueprint.** Feedback goes to `PLANNING.md` and to the operator.
@@ -192,5 +232,7 @@ gate and the detail gate are where the operator sees and corrects them.
 - Every outline row has an id; batches 1 and 2 have task files with scope, 2–8 subtasks each with
   *done when*, acceptance criteria and *How to verify*; no task depends on a task in a later batch.
 - `BACKLOG.md` shows the batches, the tasks ready now and the questions that block tasks.
+- Nothing was created outside the backlog folder: no scratch file in the project root, `/tmp` or
+  the scratchpad, and nothing in the blueprint.
 - The operator knows the daily loop: `/backlog next` → work → `/backlog done T-NNN.n` after each
   subtask; the last one closes the task once its criteria hold.

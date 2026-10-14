@@ -13,19 +13,23 @@
 //   node bin/standards.mjs finding --stdin            (a JSON array of { rule, file, line, summary, status })
 //   node bin/standards.mjs promote [--rule <id> | --finding <F-nnn>] [--to <layer>] [--note <text>]
 //   node bin/standards.mjs review-context [--staged | --base <ref>] [--dir <project>]
+//   node bin/standards.mjs review-done [--dir <project>]
 //
 // Installing is idempotent and never overwrites a project's edit: a file the project changed is kept, and when
-// the pack changed it too, the new version goes to .claude/standards/incoming/ for a hand merge (`resolve`).
+// the pack changed it too, the new version goes to docs/standards/incoming/ for a hand merge (`resolve`).
+// Everything the script keeps is in docs/standards/, the review diff included: `review-context` writes it there,
+// and `finding` (or `review-done`, when the review recorded nothing) removes it. An older install's
+// .claude/standards/ is moved to docs/standards/ by the next command that writes, and the report says so.
 // Exit 0 on success, 1 on an error or, for `check`, when something is found.
 
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import {
-  availablePacks, DEFAULT_PROMOTE_AFTER, detectSettings, fileAction, FINDINGS_FILE, findRule, formatCheckFindings,
-  incomingPath, lintWiring, loadPack, parseSetting, pluginVersion, promotionCandidates, readFindings, readState,
-  renderPack, runChecks, SETTING_KEYS, sha256, STATE_FILE, today, writeJson,
+  availablePacks, DEFAULT_PROMOTE_AFTER, detectSettings, ensureGitignore, fileAction, FINDINGS_FILE, findRule,
+  formatCheckFindings, GITIGNORE_FILE, incomingPath, inUse, LEGACY_DIR, legacyState, lintWiring, loadPack,
+  migrateLegacy, parseSetting, pluginVersion, promotionCandidates, readFindings, readState, renderPack,
+  REVIEW_DIFF, runChecks, SETTING_KEYS, sha256, STANDARDS_DIR, STATE_FILE, today, writeJson,
 } from './lib/standards.mjs';
 
 const BOOLEAN_FLAGS = new Set(['dry-run', 'staged', 'stdin']);
@@ -60,6 +64,46 @@ const fail = (message) => {
 const stateOrFail = () => readState(root) ?? fail(`no standards installed in ${root} (no ${STATE_FILE}); run \`install <pack>\` first.`);
 const saveState = (state) => {
   if (!dryRun) writeJson(join(root, STATE_FILE), state);
+};
+
+const LEFT_LEGACY = `${LEGACY_DIR}/ left as it is: ${STANDARDS_DIR}/ is the folder in use; remove the old one once `
+  + 'nothing in it is needed.';
+
+/** The installed pack files that still name the legacy folder, as an older install wrote them. */
+const filesNamingLegacy = (state) => Object.values(state?.packs ?? {})
+  .flatMap((installed) => Object.keys(installed.files ?? {}))
+  .filter((to) => existsSync(join(root, to)) && /\.claude['", /]+standards/.test(readFileSync(join(root, to), 'utf8')));
+
+/**
+ * Before a command writes: an older install's .claude/standards/ moves to docs/standards/, and the lines say so;
+ * when both exist, docs/standards/ is used and the old folder is left as it is. `reapplies`: the command rewrites
+ * the packs' files itself, so the ones that still name the old folder need no `update`.
+ */
+const migrationLines = ({ reapplies = false } = {}) => {
+  const legacy = legacyState(root);
+  if (legacy === 'both') return [`[dev-assistant] standards: ${LEFT_LEGACY}`];
+  if (legacy !== 'only') return [];
+  if (dryRun) return [`[dev-assistant] standards: ${LEGACY_DIR}/ would move to ${STANDARDS_DIR}/.`];
+  const { kept } = migrateLegacy(root);
+  const stale = reapplies ? [] : filesNamingLegacy(readState(root));
+  return [
+    `[dev-assistant] standards: moved ${LEGACY_DIR}/ to ${STANDARDS_DIR}/; the project's standards files live there now, commit the move.`,
+    ...(kept.length ? [`  left in ${LEGACY_DIR}/: ${kept.join(', ')} (${STANDARDS_DIR}/ already has them); compare them and remove them by hand.`] : []),
+    ...(stale.length ? [`  ${stale.join(', ')} still name${stale.length === 1 ? 's' : ''} ${LEGACY_DIR}/: run \`update\` to replace ${stale.length === 1 ? 'it' : 'them'}.`] : []),
+  ];
+};
+
+const prepareWrite = (options) => {
+  const lines = migrationLines(options);
+  if (lines.length) print(lines);
+};
+
+/** Removes the review diff; true when there was one. */
+const removeReviewDiff = () => {
+  const file = join(root, REVIEW_DIFF);
+  if (!existsSync(file)) return false;
+  if (!dryRun) unlinkSync(file);
+  return true;
 };
 
 const layers = (rule) => [...new Set(rule.enforcedBy.map((item) => item.layer))].join(', ');
@@ -137,9 +181,11 @@ const install = (name, { fromUpdate = false } = {}) => {
       fail(error.message);
     }
   }
+  if (!fromUpdate) prepareWrite({ reapplies: true });
   const lines = [];
   const before = JSON.stringify(state);
   state.packs[name] = applyPack(pack, previous, settings, previous?.disabled ?? {}, lines);
+  lines.push(`  ${FILE_LABELS[ensureGitignore(root, { dryRun })]} ${GITIGNORE_FILE}`);
   const changed = JSON.stringify(state) !== before;
   saveState(state);
 
@@ -152,7 +198,7 @@ const install = (name, { fromUpdate = false } = {}) => {
     ...wiringLines(pack),
     ...(fromUpdate ? [] : ['Rules:', ...pack.rules.map((rule) => `  ${rule.id} ${rule.title} · ${layers(rule)}`)]),
     ...(previous || dryRun ? [] : [
-      'Next: commit .claude/standards/, the rules file and the lint file; `check` shows what the existing code breaks.',
+      `Next: commit ${STANDARDS_DIR}/, the rules file and the lint file; \`check\` shows what the existing code breaks.`,
     ]),
   ]);
 };
@@ -161,6 +207,7 @@ const update = () => {
   const state = stateOrFail();
   const names = Object.keys(state.packs);
   if (!names.length) fail('no packs installed.');
+  prepareWrite({ reapplies: true });
   for (const name of names) install(name, { fromUpdate: true });
 };
 
@@ -172,13 +219,16 @@ const fileStatus = (pack, installed) => renderPack(pack, installed).map(({ to, c
     update: 'the pack has a newer version: run `update`',
     conflict: 'edited in the project, and the pack changed it too: `update` puts the new version in incoming/',
   }[fileAction(root, to, content, installed.files?.[to])];
-  const pending = existsSync(join(root, incomingPath(to))) ? `; merge pending: ${incomingPath(to)}` : '';
+  const pending = existsSync(join(root, inUse(root, incomingPath(to)))) ? `; merge pending: ${incomingPath(to)}` : '';
   return `  ${to}: ${label}${pending}`;
 });
 
 const status = () => {
   const state = stateOrFail();
   const lines = [`[dev-assistant] standards in ${root}`];
+  const legacy = legacyState(root);
+  if (legacy === 'only') lines.push(`Folder: ${LEGACY_DIR}/, from an older install; the next command that writes moves it to ${STANDARDS_DIR}/.`);
+  if (legacy === 'both') lines.push(LEFT_LEGACY);
   for (const [name, installed] of Object.entries(state.packs)) {
     const pack = loadPack(name);
     if (!pack) {
@@ -199,6 +249,9 @@ const status = () => {
   const candidates = promotionCandidates(record, state.promoteAfter ?? DEFAULT_PROMOTE_AFTER);
   lines.push(`Findings: ${record.findings.length}${record.findings.length ? ` (${Object.entries(byRule).map(([rule, count]) => `${rule} ×${count}`).join(', ')})` : ''}`
     + `; promotions decided: ${record.promotions.length}; waiting for a decision: ${candidates.length}${candidates.length ? ' (run `promote`)' : ''}`);
+  if (existsSync(join(root, REVIEW_DIFF))) {
+    lines.push(`Review: ${REVIEW_DIFF} is left from a review that did not finish; run \`review\` again, or \`review-done\` to remove it.`);
+  }
   print(lines);
 };
 
@@ -218,6 +271,7 @@ const check = () => {
 const packOfRule = (state, id) => findRule(state, id, root)?.pack ?? fail(`no installed pack has the rule "${id}".`);
 
 const reapply = (state, name, disabled, lines) => {
+  prepareWrite({ reapplies: true });
   const installed = state.packs[name];
   state.packs[name] = applyPack(loadPack(name), installed, installed.settings, disabled, lines);
   saveState(state);
@@ -249,10 +303,11 @@ const resolveConflict = () => {
   const [to] = positional;
   if (!to) fail('usage: resolve <file>, the path the pack installs, as `status` shows it');
   const state = stateOrFail();
-  const incoming = join(root, incomingPath(to));
-  if (!existsSync(incoming)) fail(`nothing to resolve: ${incomingPath(to)} does not exist.`);
+  if (!existsSync(join(root, inUse(root, incomingPath(to))))) fail(`nothing to resolve: ${incomingPath(to)} does not exist.`);
   const name = Object.keys(state.packs).find((pack) => loadPack(pack)?.files.some((file) => file.to === to))
     ?? fail(`no installed pack installs ${to}.`);
+  prepareWrite();
+  const incoming = join(root, inUse(root, incomingPath(to)));
   state.packs[name].files[to] = sha256(readFileSync(incoming, 'utf8'));
   if (!dryRun) unlinkSync(incoming);
   saveState(state);
@@ -316,10 +371,13 @@ const finding = () => {
     record.findings.push(entry);
     added.push(entry);
   }
+  prepareWrite();
   if (!dryRun) writeJson(join(root, FINDINGS_FILE), record);
+  const removed = removeReviewDiff();
   print([
     `[dev-assistant] standards: ${added.length} finding${added.length === 1 ? '' : 's'} recorded in ${FINDINGS_FILE}:`,
     ...added.map((entry) => `  ${entry.id} · ${entry.rule ?? 'no rule'} · ${entry.file} · ${entry.status} · ${entry.summary}`),
+    ...(removed ? [`The review diff ${REVIEW_DIFF} is removed.`] : []),
     ...proposalLines(state, record),
   ]);
 };
@@ -344,6 +402,7 @@ const promote = () => {
   const entry = { date: today(), rule: candidate.rule, findings: candidate.findings, to: flags.to };
   if (flags.note) entry.note = flags.note;
   record.promotions.push(entry);
+  prepareWrite();
   if (!dryRun) writeJson(join(root, FINDINGS_FILE), record);
   print([`[dev-assistant] standards: recorded — ${candidate.rule ?? candidate.findings[0]} → ${flags.to}${flags.note ? ` (${flags.note})` : ''}.`]);
 };
@@ -356,12 +415,15 @@ const git = (args) => {
 const reviewContext = () => {
   const state = stateOrFail();
   if (git(['rev-parse', '--git-dir']) === null) fail(`${root} is not inside a git repository.`);
+  const notes = migrationLines();
+  // The .gitignore first, so a diff an earlier review left is not listed as untracked.
+  ensureGitignore(root);
   const hasHead = git(['rev-parse', '--verify', '--quiet', 'HEAD']) !== null;
   const range = flags.staged || !hasHead ? ['--cached'] : [flags.base ?? 'HEAD'];
   const diff = git(['diff', '--relative', '--no-color', '--no-ext-diff', ...range]) ?? fail('git diff failed.');
   const changed = (git(['diff', '--relative', '--name-only', ...range]) ?? '').split('\n').filter(Boolean);
   const untracked = flags.staged ? [] : (git(['ls-files', '--others', '--exclude-standard']) ?? '').split('\n').filter(Boolean);
-  const diffFile = join(tmpdir(), `dev-assistant-review-${sha256(root).slice(0, 12)}.diff`);
+  const diffFile = join(root, REVIEW_DIFF);
   writeFileSync(diffFile, diff);
 
   // Every rules file of the project, the packs' and its own: the reviewer applies those whose paths match.
@@ -387,7 +449,13 @@ const reviewContext = () => {
     rulesFiles,
     claudeMd: existsSync(join(root, 'CLAUDE.md')) ? 'CLAUDE.md' : null,
     reviewRules,
+    notes,
   }, null, 2)}\n`);
+};
+
+const reviewDone = () => {
+  prepareWrite();
+  print([`[dev-assistant] standards: review done; ${removeReviewDiff() ? `${REVIEW_DIFF} is removed` : `no ${REVIEW_DIFF} to remove`}.`]);
 };
 
 const COMMANDS = {
@@ -405,6 +473,7 @@ const COMMANDS = {
   finding,
   promote,
   'review-context': reviewContext,
+  'review-done': reviewDone,
 };
 
 (COMMANDS[command] ?? (() => fail(`unknown command "${command ?? ''}"; one of ${Object.keys(COMMANDS).join(', ')}.`)))();

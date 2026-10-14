@@ -17,7 +17,9 @@ Read `mechanics.md` first. Each phase says what it starts from, its steps, and i
    nothing above argues against it — plus one or two alternatives that fit the project; the operator
    can type any path as Other. A directory passed in the argument becomes the recommended option,
    checked the same way. Never scaffold into a non-empty folder without the operator confirming that
-   specific folder; a folder outside git is the operator's call, noted in the gate summary.
+   specific folder; a folder outside git is the operator's call, noted in the gate summary. Whatever
+   folder is chosen, everything the blueprint makes is created inside it, `.sources/` included, and
+   nothing outside it (`mechanics.md › The working folder`).
 2. **Scaffold.** Create the folder, `modules/`, `references/competitors/`; copy the logs and the
    index from `templates/` — `00-sources.md`, `DECISIONS.md`, `ASSUMPTIONS.md`, `OPEN-QUESTIONS.md`,
    `GLOSSARY.md`, `CHANGELOG.md`, `README.md` — filling the placeholders you can (project name, date)

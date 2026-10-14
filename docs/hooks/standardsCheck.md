@@ -31,7 +31,7 @@ that already has its layout right, and at commit, so a broken layout does not en
 | a turn already held once by a Stop hook (`stop_hook_active`) | a turn is held at most once; what is left is the operator's to see |
 | a commit whose message carries `Standards-skipped: RCT-02 <reason>` | the operator let that rule go for this commit, with a reason |
 | a rule switched off in the project (`/standards disable`) | it no longer applies there |
-| a project without `.claude/standards/standards.json` | no pack installed, nothing to check |
+| a project without `docs/standards/standards.json` | no pack installed, nothing to check |
 | any command that is not `git commit`, an unreadable transcript, any internal error | fails open |
 
 ## How it decides
@@ -40,7 +40,7 @@ that already has its layout right, and at commit, so a broken layout does not en
    result, not a harness message), and collects the `file_path` of every `Write`, `Edit`, `MultiEdit` and
    `NotebookEdit` after it. **Commit:** for each `git commit` in the command, the files it records
    (`git diff --cached --name-only`, or against `HEAD` with `-a`), in the repository the command runs in.
-2. Groups the files by project: the nearest folder above each with `.claude/standards/standards.json`.
+2. Groups the files by project: the nearest folder above each with `docs/standards/standards.json`.
 3. For each project, runs the checks its installed packs name in `Enforced by: check …` over the touched
    folders only: for a file in a component, its outermost component folder (so a subcomponent's parent is
    checked too); for a file in a group folder (`components/`, `ui/`, a feature), that folder's loose files.

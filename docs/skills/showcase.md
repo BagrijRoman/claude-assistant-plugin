@@ -52,7 +52,10 @@ The skill reads **the whole documentation folder** (`docs/` by default) through 
 blueprint when there is one, requirements, feature files, earlier design work — and the product's
 code when it exists (a token file, a component library). It writes into `docs/showcase/` by
 default, proposed in a dialog with alternatives; a non-empty folder is never used without
-confirmation.
+confirmation. Whatever folder is chosen, it is the skill's working folder, and writes stay in it:
+nothing is created outside it, not even for a moment — not in the project root, `docs/` above it,
+`/tmp` or the session's scratchpad. The one passing file, the Color scheme step's `scheme.html`, is
+removed by `build.mjs` once `STATE.json` records the scheme chosen, so the skill needs no `rm`.
 
 ```
 docs/showcase/
@@ -119,6 +122,25 @@ the Flows index kept in step with `pages.mjs`; device frames per
 surface; the 600 px letter frame; the language switch and dictionaries, with the frame's own words
 in them too; presentation mode; a build that writes the navigation into every page, refuses two
 entries with one i18n key, and changes nothing when run twice.
+
+## Progress
+
+The skill shows where it is at every step: a checklist of the mode's stages when it starts, at every
+gate and at the end; a line `▸ /<command> · <n>/<N> <stage> · <step>` at every change; what it waits for
+and how many; and, on `continue` or `status`, the checklist rebuilt from its state first
+([rule 8](README.md#rules-every-skill-follows)). The stages per mode, as its `SKILL.md` lists them:
+
+| Mode | Stages |
+|------|--------|
+| `init [dir]`, `continue` | Intake → Color scheme → Technology → Frame → Foundations → Logo → Microcopy and tone → Components → Icons → Illustrations → States → Sign-in layouts → App layout → Key screens → Flows → Emails → Not found page → Charts → Technology page → Principles, Decisions, Changelog, Next steps → Audit |
+| `status` | Read the state → Report |
+| `section <id>` | Plan → Approval → Build → Gate |
+| `flow <id>` | Description → Approval → Build → Gate |
+| `flow new` | List → Description → Approval → Build → Gate |
+| `pick <section> <variant>` | Check the variant → Mark it → Decisions → Build |
+| `add` | What and where → Page → Build |
+| `audit` | Checks per theme and language → Fixes → Final gate |
+| `open` | Build → Serve → The address |
 
 ## What it will not do
 

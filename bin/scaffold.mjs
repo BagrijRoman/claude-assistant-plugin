@@ -5,7 +5,7 @@
 //   node bin/scaffold.mjs component <Name> --shared [<group>] [--hook] [--styles] [--dir <project>]
 //   node bin/scaffold.mjs component <Name> --in <parent component folder> [--single | --hook] [--styles] [--dir <project>]
 //
-// Folders come from the project's installed `react` pack (.claude/standards/standards.json), or, without one,
+// Folders come from the project's installed `react` pack (docs/standards/standards.json), or, without one,
 // from what the project looks like. `--in` makes a subcomponent in the parent's components/; `--single` makes it
 // one file. Never overwrites: an existing folder or file is an error. Prints what it created.
 

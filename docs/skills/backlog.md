@@ -55,7 +55,9 @@ defaults to the blueprint's sibling (`docs/backlog/`), checked for version contr
 root is not a repository but holds repositories, the recommendation moves into the one that holds the
 blueprint (`initialDocs/backlog/` on a root of `backend/`, `frontend/`, `initialDocs/`). Any path may
 be typed; a non-empty folder is never used without confirmation. The blueprint's path is stored
-relative to the backlog folder.
+relative to the backlog folder. Whatever folder is chosen, it is the skill's working folder, and
+writes stay in it: nothing is created outside it, not even for a moment — not in the project root,
+`docs/` above it, the blueprint, `/tmp` or the session's scratchpad.
 
 ```
 docs/backlog/
@@ -153,6 +155,25 @@ drops. Holes the slicing finds in the blueprint go to `PLANNING.md › Feedback 
 the operator takes to `/blueprint feedback`; `resync` closes each row when the blueprint answers it.
 Every mode lists what the operator edited by hand since the last run before it changes anything, and an
 interrupted `init`, `detail` or `resync` resumes where it stopped.
+
+## Progress
+
+The skill shows where it is at every step: a checklist of the mode's stages when it starts, at every
+gate and at the end; a line `▸ /<command> · <n>/<N> <stage> · <step>` at every change; what it waits for
+and how many; and, on `continue` or `status`, the checklist rebuilt from its state first
+([rule 8](README.md#rules-every-skill-follows)). The stages per mode, as its `SKILL.md` lists them:
+
+| Mode | Stages |
+|------|--------|
+| `init [dir]` | Find the blueprint → Folder → Read the blueprint → What exists already → Strategy → Outline → Gate 1 (outline) → Detail batches 1–2 → Gate 2 (detail) |
+| `continue` | The stages of the mode in `STATE.json.pending`, from the step it records |
+| `status` | Hand edits → Blueprint checks → Report |
+| `next` | Hand edits → Blueprint checks → What to work on |
+| `detail <batch>` | Check → Write → Merge → Questions → Gate |
+| `done <id>` | Mark → Acceptance criteria → What it unblocked → Views |
+| `add [text]` | Title and kind → Blueprint or manual → Placement → Views |
+| `plan <action>` | The change → Confirm → Apply → Views |
+| `resync` | What moved → Report → Questions → Gate → Apply |
 
 ## What it will not do
 

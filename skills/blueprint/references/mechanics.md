@@ -7,6 +7,17 @@ Templates live in the skill's own folder, `${CLAUDE_PLUGIN_ROOT}/skills/blueprin
 like `templates/STATE.json` is relative to the skill's folder. A reference such as
 `mechanics.md › Depth` names a file and a heading in it.
 
+## The working folder
+
+Writes stay in the working folder: nothing is created outside it, not even for a moment. The working
+folder is the blueprint folder chosen at Intake. Every file the skill makes is created there: the
+documents and logs, `STATE.json`, `modules/`, `references/competitors/`, the converted copies of Word
+files in `.sources/`, the one-document copy in `export/`. A file needed only for a while is created
+there too and removed once it has served. Never write into the project root, into `docs/` above the
+folder, into `/tmp` or the system's temporary folder, or into the session's scratchpad; never leave a
+copy in an "outputs" folder. Every agent's brief names a file inside the folder, and the script's
+`export --out` refuses a path outside it. Sending a document anywhere else is the operator's step.
+
 ## The helper script
 
 The bookkeeping is done by a script, not by counting:

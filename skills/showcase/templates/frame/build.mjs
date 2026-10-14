@@ -13,7 +13,7 @@
 // Flows, child pages of their own — folds, and only one is open at a time; a root without items is a
 // plain link. Every label carries a data-i18n key, so i18n.js can swap it. The page of a root with
 // children needs <div data-children></div> where their list goes (genPages writes it).
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, unlink, writeFile } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { BANDS } from './pages.mjs';
 import { SITE } from './site.mjs';
@@ -254,6 +254,26 @@ function buildPage(html, page) {
   return next;
 }
 
+// The Color scheme step leaves a scratch page, scheme.html, with the proposed schemes side by side. It is
+// needed only until the operator picks one: once STATE.json records the step done, the next build removes
+// it, so nothing of the choice outlives it. Returns whether it removed the page.
+export async function removeSchemeScratch() {
+  let state;
+  try {
+    state = JSON.parse(await readFile(new URL('STATE.json', root), 'utf8'));
+  } catch {
+    return false;
+  }
+  if (state?.steps?.scheme !== 'done') return false;
+  try {
+    await unlink(new URL('scheme.html', root));
+    return true;
+  } catch (error) {
+    if (error.code === 'ENOENT') return false;
+    throw error;
+  }
+}
+
 // Returns the paths of the pages it had to rewrite
 export async function build() {
   const changed = [];
@@ -271,6 +291,7 @@ export async function build() {
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const changed = await build();
+  if (await removeSchemeScratch()) console.log('Removed scheme.html: the color scheme is chosen');
   console.log(
     changed.length === 0
       ? `Navigation is up to date in all ${realPages.length} pages of ${fileURLToPath(root)}`
