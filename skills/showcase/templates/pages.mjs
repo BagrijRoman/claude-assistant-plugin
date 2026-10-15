@@ -63,7 +63,7 @@ export const BANDS = [
     desc: 'The design system: the basics every screen is drawn with, the pictures, and the components.',
     pages: [
       {
-        id: 'design', path: 'design/index.html', title: 'Design', desc: 'The basics of the design — principles, colors, type, spacing, shape, motion, the logo, icons, words and states — each on a page of its own.',
+        id: 'design', path: 'design/index.html', title: 'Design', desc: 'The basics of the design — principles, colors, type, spacing, shape, motion, the logo and its loaders, icons, words and states — each on a page of its own.',
         children: [
           { id: 'principles', path: 'design/principles.html', title: 'Principles', desc: 'What the design holds to, each with an example of doing it and of not doing it.', sections: [] },
           {
@@ -109,6 +109,15 @@ export const BANDS = [
             sections: [
               { id: 'sideBySide', title: 'Side by side', desc: 'Every mark at one size, on light and on dark, then at the size of the menu and of a browser tab.' },
               { id: 'sizes', title: 'Sizes and spacing', desc: 'The mark at 16, 24, 32, 64 and 128 px; its clear space; what it must never be put on.' },
+            ],
+          },
+          {
+            id: 'loaders', path: 'design/loaders.html', title: 'Loaders', desc: 'The logo set in motion: what the product shows while it waits, in a button, a panel and at start.',
+            sections: [
+              { id: 'kinds', title: 'While it waits', desc: 'Each loader at 64, 32 and 16 px, and what it is for.' },
+              { id: 'progress', title: 'When the share is known', desc: 'The mark that fills as the work goes.' },
+              { id: 'inUse', title: 'Where they stand', desc: 'A button, a panel, a long wait, the start of the application.' },
+              { id: 'rules', title: 'Rules', desc: 'When a loader shows, the words beside it, reduced motion.' },
             ],
           },
           {

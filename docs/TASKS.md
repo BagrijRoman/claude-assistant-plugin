@@ -1187,6 +1187,26 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T33 — `/showcase` Loaders: the picked logo in motion, a page of its own · `done` (0.17.0)
+
+At the Logo gate on ETC.V2 the operator asked for loaders built on the picked mark, then for them to be
+a page of their own under Design, and for the skill to make that page on every showcase.
+
+What was done (0.17.0):
+- Design gets a child page **Loaders** (`design/loaders.html`) after Logo, in `templates/pages.mjs`: While it
+  waits · When the share is known · Where they stand · Rules.
+- `sections.md › Loaders` says what it holds: 3–5 loaders from the mark's own parts at 64 / 32 / 16 px, the
+  determinate form, each loader in place with its words, the rules (a delay, in place, words, reduced motion,
+  `role="status"`); every animation ends on the mark at rest.
+- Made in step 5 after the pick (`phases.md`, SKILL.md's table): a plan of loaders (`plans/loaders.md`),
+  `tools/genLoaders.mjs`, one gate for both pages.
+- `templates/tokens.css` gets `--duration-loader`; `templates/components.css` a Loader starter (`.ld`, sizes,
+  `.ld__part`, the turn / fade / beat keyframes).
+
+Done when:
+- `npm test` passes.
+- The ETC.V2 showcase has the Loaders page and the operator approves the Logo gate.
+
 ## T32 — `/showcase` menu: the product and its architecture first, design in pages · `done` (0.16.0)
 
 Asked for by the operator on 2026-10-15, at the Frame gate of the first real run (ETC.V2): the menu should open on the

@@ -81,6 +81,22 @@ status — then the list of its pages (`<div data-children>`). Its child pages, 
     backgrounds it may and may not sit on; the mark with the wordmark.
   Every mark is SVG on a 64-unit grid, `currentColor` as the ink and `var(--lg-ground)` for
   knockouts, so it follows the theme and the scheme.
+- **Loaders** (`design/loaders.html`), made once the logo is picked — the picked mark in motion, so
+  that waiting looks like the product:
+  - **While it waits**: 3–5 loaders, each at 64, 32 and 16 px with its class (`ld--<id>`) and what it
+    is for. A loader is the mark's own SVG with each part (a core, a ring, a stroke) in a group
+    `.ld__part` that the animation turns, fades, scales or draws — never a new drawing. One of them
+    reads at 16 px, for buttons, fields and rows.
+  - **When the share is known**: the determinate form — a part of the mark fills as the work goes
+    (0, a third, two thirds, done), with the figure beside it.
+  - **Where they stand**: each loader in place — a button at work with its label (`Calculating…`),
+    a panel loading, a long wait with how long it may take, an import with its share, the
+    application starting on the brand color — in the product's words and the sample company.
+  - **Rules**: not at once (only after a short delay, so a quick answer never flashes it); in place
+    of what is coming; with words beside it past 16 px; still under reduced motion; the words in a
+    `role="status"` region.
+  Every animation runs on `--duration-loader` and ends on the mark at rest, so under reduced motion
+  (site.css stops every animation at its end) a loader is the still mark beside its words.
 - **Icons** (`design/icons.html`): *The set* — every icon at 16 px with its name as used in code, in
   both themes; *Sizes and rules* — the grid, the stroke, 16 / 20 / 24; where an icon stands alone
   and where it needs a label; the icons that mean a status and must keep their shape.

@@ -237,7 +237,12 @@ Each follows the same shape: **plan → approve → build in parallel → build.
   SVG on a 64-unit grid in `currentColor` with `var(--lg-ground)` knockouts; the side-by-side
   section at one size on light and dark, then at menu size (28 px) and tab size (16 px); the
   sizes section, on `design/logo.html`. The operator picks → `pick logo <id>` → `site.mjs › mark`
-  becomes that SVG.
+  becomes that SVG. Then the **Loaders** page, `design/loaders.html`, in the same step: plan 3–5
+  loaders, each a motion of the picked mark's own parts (they turn, light up in turn, draw, beat)
+  with what it is for — a button or a row at 16 px, a panel, a long wait, the start of the
+  application — one line each; approve (`plans/loaders.md`); `tools/genLoaders.mjs` draws them as
+  the Loaders item of `sections.md › Design` says, the keyframes in `components.css › Loader`. The Logo gate shows
+  both pages.
 
 ## Step 6 — Microcopy and tone
 

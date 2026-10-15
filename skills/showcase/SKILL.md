@@ -121,7 +121,7 @@ each flow. The order is the order of a customer's attention, not the order of ma
 | Group | Root sections, in order, with what unfolds under each |
 |-------|-------------------------------------------------------|
 | **Product** | **Product** (the home page: what it is · who uses it · modules · how it works · sample company · about this site; child page **Technology stack** — each technology with its official mark, one line, a link to its site) · **Architecture** (diagrams: the system in its world · its parts · modules · how data moves · where it runs · one request) |
-| **Design** | **Design** (child pages: Principles · Colors · Typography · Spacing and layout · Radius and shadows · Motion · Logo · Icons · Microcopy and tone · States · Charts when the product has figures) · **Illustrations** (for states · from the domain · in place · reserve) · **Components** (one item per component) |
+| **Design** | **Design** (child pages: Principles · Colors · Typography · Spacing and layout · Radius and shadows · Motion · Logo · Loaders · Icons · Microcopy and tone · States · Charts when the product has figures) · **Illustrations** (for states · from the domain · in place · reserve) · **Components** (one item per component) |
 | **The product in use** | **Screens** (child pages: Sign-in layouts · App layout · Key screens · Emails · Not found page) · **Flows** (one page per flow, with the step player) |
 | **Project** | Decisions · Changelog · Next steps |
 
@@ -142,7 +142,7 @@ and approves or sends it back. The key is the step's name in `STATE.json › ste
 | 2 Technology | `stack` | the stack, chosen in a dialog from what the operator has (starter templates, code) and what the documentation implies | the reading |
 | 3 Frame | `frame` | the folder scaffolded, tokens from the scheme, starting pages; the Product page from the reading and the Technology stack page with the official marks; the site opens | 1, 2 |
 | 4 Foundations | `foundations` | tokens finished; the Design pages Colors, Typography, Spacing and layout, Radius and shadows, Motion, with live swatches and contrast | 3 |
-| 5 Logo | `logo` | marks from ideas in the product, at every size; one picked | 4 |
+| 5 Logo | `logo` | marks from ideas in the product, at every size; one picked; then the Loaders page, the picked mark set in motion | 4 |
 | 6 Microcopy and tone | `microcopy` | voice and patterns in every language — the source of every string that follows, so it comes before the first step that writes words | 0 |
 | 7 Components | `components` | the standard set, the product's own, a reserve; styled to the project | 4, 6 |
 | 8 Icons | `icons` | the set on its grid | 7 |

@@ -79,7 +79,7 @@ customer's attention:
 | Group | Root sections, with what unfolds under each |
 |-------|---------------------------------------------|
 | Product | **Product**, the home page (what it is · who uses it · modules · how it works · sample company · about this site; child page **Technology stack**: each technology with its official mark, one line and a link to its site) · **Architecture** (diagrams for the customer: the system in its world · its parts · modules · how data moves · where it runs · one request) |
-| Design | **Design** (child pages: Principles · Colors · Typography · Spacing and layout · Radius and shadows · Motion · Logo · Icons · Microcopy and tone · States · Charts) · **Illustrations** (for states · from the domain · in place · reserve) · **Components** (one item per component) |
+| Design | **Design** (child pages: Principles · Colors · Typography · Spacing and layout · Radius and shadows · Motion · Logo · Loaders · Icons · Microcopy and tone · States · Charts) · **Illustrations** (for states · from the domain · in place · reserve) · **Components** (one item per component) |
 | The product in use | **Screens** (Sign-in layouts · App layout · Key screens · Emails · Not found page) · **Flows** (a page per flow with the step player) |
 | Project | Decisions · Changelog · Next steps |
 
@@ -94,7 +94,7 @@ site and approves: **Intake** (the reading, languages, name, the sample company 
 **Color scheme** (confirmed from the design, or three proposals shown side by side on mini-UI
 before anything is drawn) → **Technology** (a dialog per layer) → **Frame** (the folder
 scaffolded, tokens from the scheme, the Product page from the reading and the Technology stack
-page with the official marks, a starting page for every other section — the site opens) → Foundations → Logo → **Microcopy and tone** (the source of every string that follows, in
+page with the official marks, a starting page for every other section — the site opens) → Foundations → Logo (and the Loaders made from the picked mark) → **Microcopy and tone** (the source of every string that follows, in
 every language, so before the first step that writes words) → Components → Icons → Illustrations
 → States → Sign-in layouts → App layout → Key screens → **Flows** → Emails → Not found → Charts →
 **Architecture** → Principles, Decisions, Changelog, Next steps → **Audit**.

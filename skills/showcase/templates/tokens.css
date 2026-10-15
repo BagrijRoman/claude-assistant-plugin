@@ -99,6 +99,7 @@
   --duration-base: 200ms;
   --duration-slow: 400ms;
   --duration-spin: 800ms; /* one turn of a spinner */
+  --duration-loader: 1600ms; /* one cycle of a loader drawn from the logo (components.css › Loader) */
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
 
   /* The 4 px spacing scale */

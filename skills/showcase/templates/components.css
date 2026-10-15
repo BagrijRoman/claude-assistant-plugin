@@ -106,6 +106,20 @@
 .btn.is-loading .spinner { color: var(--color-primary-foreground); }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ── Loader: the picked logo in motion (design/loaders.html) — starter. Each part of the mark is a
+   <g class="ld__part"> the animation turns, fades or scales about the centre; the Loaders step adds
+   the loaders fitted to the mark. Every animation ends on the mark at rest, so under reduced motion
+   a loader is the still mark. Sizes: --sm 16 (buttons, rows), --md 32, --lg 64 ── */
+.ld { display: inline-block; flex: none; width: 32px; height: 32px; color: var(--color-primary); overflow: visible; }
+.ld--sm { width: 16px; height: 16px; }
+.ld--md { width: 32px; height: 32px; }
+.ld--lg { width: 64px; height: 64px; }
+.btn .ld { color: currentColor; }
+.ld__part { transform-box: view-box; transform-origin: 50% 50%; }
+@keyframes ld-turn { to { transform: rotate(360deg); } }
+@keyframes ld-fade { 0%, 60%, 100% { opacity: 1; } 30% { opacity: 0.2; } }
+@keyframes ld-beat { 0%, 50%, 100% { transform: scale(1); } 20% { transform: scale(0.82); } }
+
 /* ── Segmented control: the theme and language switches of this site — starter ── */
 .segmented {
   display: inline-flex;
