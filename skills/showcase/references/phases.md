@@ -145,7 +145,8 @@ site itself — so it can start from the files instead. Nothing in the procedure
      per actor; the operator renames or accepts.
    - **Depth**: full (every section, Recommended) · essentials (Product with the stack,
      Architecture, Foundations, Logo, Microcopy, Illustrations, Components, Sign-in, App layout,
-     Flows; the rest planned). Under essentials a step
+     Flows, Emails; the rest planned). Emails are in at every depth: every product sends letters,
+     and the customer sees them before most screens. Under essentials a step
      that needs a planned one draws what it needs in place — a sign-in panel without the
      Illustrations page, a flow's screens without the Key screens page.
 4. Write `STATE.json` (a product without figures: `steps.charts` is `skipped`), `DECISIONS.md`
@@ -324,10 +325,23 @@ Two approvals, by design.
 ## Steps 15–18 — Emails, Not found, Charts, Architecture
 
 - **Emails (15).** Plan: the common letters (invitation, verification code, password reset,
-  welcome, digest, security alert) and the product's own, proposed from the flows (what a flow
-  sends and when). Approve. `tools/genEmails.mjs` with `mail(...)`: a 600 px letter — brand
-  header with the mark, an illustration, the one message, the one action button, the footer —
-  shown as a mail client shows it, with subject and sender; words from Microcopy.
+  welcome, digest, security alert) and the product's own, proposed from the flows and the
+  documentation's notifications (what is sent, to whom, when) — each with its subject, its one
+  action and its picture, one line each. Approve (`plans/emails.md`). Then:
+  1. **The template** first — the one layout every letter is filled into: the brand header with
+     the mark, the picture, the heading, the message, the one action button, a secondary detail
+     (a code, a list, a figure), the footer with the sender and why they received it. Its parts
+     and sizes are the *Template* section of the page, drawn once with each part named.
+  2. **A picture per letter**, about its moment (an invitation: a door opening onto the product's
+     world; a reset: a key; a digest: the week's figures; an alert: a shield), in the product's
+     colors and its domain — the scenes of Illustrations reused where they fit, the rest drawn now
+     into `assets/illustrations.js` the same way (`--ill-*` tokens only, no text, no faces), and
+     added to the Illustrations page's *In place*. When Illustrations is planned away, drawn here
+     all the same.
+  3. `tools/genEmails.mjs` with `mail(...)`: every letter in the template, 600 px, shown as a mail
+     client shows it, with subject and sender, the sample cast and company; words from Microcopy,
+     or — when Microcopy is skipped — in the tone the requirements set. Letters may be built by
+     subagents per group, each writing `tools/parts/emails/<group>.mjs`.
 - **Not found (16).** Plan: 3–5 ideas, each a picture from the product's world with a moving
   detail. Approve. `variant`s on their own full screen; pick one.
 - **Charts (17).** Only when the product has figures. The library is SC-008, chosen in step 2

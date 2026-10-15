@@ -206,6 +206,7 @@ export const BANDS = [
           {
             id: 'emails', path: 'screens/emails.html', title: 'Emails', desc: 'The letters the product sends, as a mail client shows them: the common ones, and the ones the product’s own flows need.',
             sections: [
+              { id: 'template', title: 'Template', desc: 'The one layout every letter uses, its parts named, and what a mail client changes.' },
               { id: 'general', title: 'Common letters', desc: 'Invitation, verification code, password reset, welcome, digest, security alert.' },
               { id: 'product', title: 'The product’s letters', desc: 'Letters its own flows send.' },
             ],

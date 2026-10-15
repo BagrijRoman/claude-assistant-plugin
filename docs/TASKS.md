@@ -1187,6 +1187,26 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T34 — `/showcase` Emails at every depth: a template and a picture per letter · `done` (0.18.0)
+
+On ETC.V2 (depth essentials) the operator asked for a page of email templates for the cases the app
+sends, and for the skill to make basic letters with pictures in the product's colors and theme on every
+showcase.
+
+What was done (0.18.0):
+- Emails are in at every depth: the essentials list of `phases.md › Step 0` names them.
+- Step 15 (`phases.md`): the plan goes to `plans/emails.md`; the **template** is drawn first (header with
+  the mark, picture, heading, message, action, secondary detail, footer); every letter gets a **picture of
+  its own** about its moment, in `--ill-*` tokens, reused from Illustrations or drawn into
+  `assets/illustrations.js` (also when Illustrations is planned away); words from Microcopy or, when it is
+  skipped, the requirements' tone; builders per group in `tools/parts/emails/`.
+- `sections.md › Emails` gets the *Template* section (parts, sizes, what a mail client changes);
+  `templates/pages.mjs` gets its menu item; SKILL.md's step table says so.
+
+Done when:
+- `npm test` passes.
+- The ETC.V2 showcase has the Emails page and the operator approves its gate.
+
 ## T33 — `/showcase` Loaders: the picked logo in motion, a page of its own · `done` (0.17.0)
 
 At the Logo gate on ETC.V2 the operator asked for loaders built on the picked mark, then for them to be

@@ -152,7 +152,7 @@ and approves or sends it back. The key is the step's name in `STATE.json › ste
 | 12 App layout | `appLayout` | several shells with a folding sidebar; one picked | 7 |
 | 13 Key screens | `screens` | the main screens in device frames per surface | 7, 10, 12 |
 | 14 Flows | `flows` | list approved → each description approved → built with the step player, the controls of each step highlighted in the order they are used | 13 |
-| 15 Emails | `emails` | the common letters and the product's own, illustrated | 6, 9 |
+| 15 Emails | `emails` | the template, then the common letters and the product's own, each with a picture of its own in the product's colors; at every depth | 6, 9 |
 | 16 Not found page | `notFound` | several, with moving pictures; one picked | 9 |
 | 17 Charts | `charts` | only when the product has figures, with the library chosen in step 2 | 4 |
 | 18 Architecture | `architecture` | the architecture drawn for the customer: diagrams of the system in its world, its parts, modules, data, deployment, one request | 2 |

@@ -158,12 +158,16 @@ The list of its pages (`<div data-children>`), each its own page:
   of the surfaces its actors use. For each: who looks at it and when, what it is for, the screen
   filled with the sample data, and its empty state small beside it. Grouped by module or by actor
   as the documentation suggests.
-- **Emails** (`screens/emails.html`): *Common letters* — invitation, verification code, password
-  reset, welcome, digest, security alert; *The product's letters* — what its flows send, each named
-  after the moment it is sent. Each letter 600 px, in `mail()`: subject and sender as a mail client
-  shows them; the brand header with the mark; an illustration; one message in the voice of
-  Microcopy; one action button; the footer with why they received it. Light theme is the letter's
-  own; the dark theme shows how a dark mail client renders it.
+- **Emails** (`screens/emails.html`), made at every depth: *Template* — the one layout every letter
+  uses, drawn once with its parts named (brand header with the mark, picture, heading, message,
+  action button, secondary detail, footer) and their sizes, and what a mail client changes: the
+  pictures go out as images in the brand colors, a dark mail client may recolor the letter;
+  *Common letters* — invitation, verification code, password reset, welcome, digest, security
+  alert; *The product's letters* — what its flows send, each named after the moment it is sent.
+  Each letter 600 px, in `mail()`, filled into the template: subject and sender as a mail client
+  shows them; a picture of its own about that moment, in the product's colors and from its domain;
+  one message in the voice of Microcopy; one action button; the footer with why they received it.
+  Light theme is the letter's own; the dark theme shows how a dark mail client renders it.
 - **Not found page** (`screens/notFound.html`): 3–5 variants on their own full screen outside the
   shell: a picture from the product's world with one moving detail, the 404 worked into it, a
   sentence and the way back. One `Selected`.
