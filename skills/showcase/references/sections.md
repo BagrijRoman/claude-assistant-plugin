@@ -97,8 +97,10 @@ status — then the list of its pages (`<div data-children>`). Its child pages, 
     `role="status"` region.
   Every animation runs on `--duration-loader` and ends on the mark at rest, so under reduced motion
   (site.css stops every animation at its end) a loader is the still mark beside its words.
-- **Icons** (`design/icons.html`): *The set* — every icon at 16 px with its name as used in code, in
-  both themes; *Sizes and rules* — the grid, the stroke, 16 / 20 / 24; where an icon stands alone
+- **Icons** (`design/icons.html`): two groups, and only these — *Base* — the standard icons the
+  components and screens use, with the library's names; *From the domain* — the icons of the
+  product's own subjects, drawn for it, each with the thing it stands for. Every icon at 16 px with its
+  name as used in code and where it is used, in both themes; *Sizes and rules* — the grid, the stroke, 16 / 20 / 24; where an icon stands alone
   and where it needs a label; the icons that mean a status and must keep their shape.
 - **Microcopy and tone** (`design/microcopy.html`): *Voice* — who speaks and how, in three lines;
   the words the product uses and avoids (from the glossary). *Buttons and links*, *Errors*, *Empty

@@ -1187,6 +1187,23 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T36 — `/showcase` Icons: the base standard set and the domain's own, nothing else · `done` (0.20.0)
+
+At the Components gate on ETC.V2 (2026-10-15) the operator asked that the Icons step generate only the
+icons specific to the project's theme and the basic standard ones, and that the skill hold to it.
+
+What was done (0.20.0):
+- `phases.md › Icons (8)`: two lists — *base* (the standard icons the components, shell and planned screens
+  use, named and drawn as the chosen library has them) and *from the domain* (the product's own subjects
+  the library has no fit for) — each icon with where it is used; approved into `plans/icons.md`; what the
+  sprite holds beyond the two lists is removed.
+- `sections.md › Icons` and `templates/pages.mjs`: the page's sections are *Base* and *From the domain*
+  (was *The set*), then *Sizes and rules*; SKILL.md's step table and `docs/skills/showcase.md` say so.
+
+Done when:
+- `npm test` passes.
+- The ETC.V2 Icons page has the two groups only, and the operator approves its gate.
+
 ## T35 — `/showcase` Layouts: a root section, its variants led by animated pictures · `done` (0.19.0)
 
 On ETC.V2, during the Components step (2026-10-15), the operator asked for the skill to add a section of

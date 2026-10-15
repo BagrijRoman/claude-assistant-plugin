@@ -145,7 +145,7 @@ and approves or sends it back. The key is the step's name in `STATE.json › ste
 | 5 Logo | `logo` | marks from ideas in the product, at every size; one picked; then the Loaders page, the picked mark set in motion | 4 |
 | 6 Microcopy and tone | `microcopy` | voice and patterns in every language — the source of every string that follows, so it comes before the first step that writes words | 0 |
 | 7 Components | `components` | the standard set, the product's own, a reserve; styled to the project | 4, 6 |
-| 8 Icons | `icons` | the set on its grid | 7 |
+| 8 Icons | `icons` | two groups only: the base standard icons the components and screens use, and the icons of the product's domain; on their grid | 7 |
 | 9 Illustrations | `illustrations` | a picture for every state a screen can be in and for the cases of the domain, some moving; a reserve | 4, 5 |
 | 10 States | `states` | picture + words + action for empty, loading, error, access, offline, done | 6, 9 |
 | 11 Auth layout | `signIn` | Layouts: several, every one with an animated scene of the domain; one picked | 7, 9 |

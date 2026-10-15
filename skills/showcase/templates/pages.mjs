@@ -121,9 +121,10 @@ export const BANDS = [
             ],
           },
           {
-            id: 'icons', path: 'design/icons.html', title: 'Icons', desc: 'The icon set on its grid, with the names used in code, at its sizes, in both themes.',
+            id: 'icons', path: 'design/icons.html', title: 'Icons', desc: 'Two groups only — the base icons the components and screens use, and the icons of the product’s domain — on their grid, with the names used in code, in both themes.',
             sections: [
-              { id: 'set', title: 'The set', desc: 'Every icon with its name.' },
+              { id: 'base', title: 'Base', desc: 'The standard icons the components and screens use, with the library’s names.' },
+              { id: 'domain', title: 'From the domain', desc: 'The icons of the product’s own subjects, drawn for it.' },
               { id: 'rules', title: 'Sizes and rules', desc: 'The grid, the stroke, where an icon stands alone and where it needs a label.' },
             ],
           },

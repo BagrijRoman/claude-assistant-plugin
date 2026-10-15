@@ -95,7 +95,8 @@ site and approves: **Intake** (the reading, languages, name, the sample company 
 before anything is drawn) → **Technology** (a dialog per layer) → **Frame** (the folder
 scaffolded, tokens from the scheme, the Product page from the reading and the Technology stack
 page with the official marks, a starting page for every other section — the site opens) → Foundations → Logo (and the Loaders made from the picked mark) → **Microcopy and tone** (the source of every string that follows, in
-every language, so before the first step that writes words) → Components → Icons → Illustrations
+every language, so before the first step that writes words) → Components → Icons (two groups only: the base
+standard icons the components and screens use, and the icons of the product's domain) → Illustrations
 → States → **Layouts** (Auth layout → App layout → Not found page) → Key screens → **Flows** → Emails → Charts →
 **Architecture** → Principles, Decisions, Changelog, Next steps → **Audit**.
 

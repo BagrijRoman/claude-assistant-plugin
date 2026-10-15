@@ -266,8 +266,14 @@ The shape of steps 4–5: **plan → approve → build in parallel → build.mjs
   `proposed`, the words from Microcopy — and returning its `components.css` blocks;
   `tools/genComponents.mjs` puts the parts together. Restyle the starter classes to the project.
   Samples use the cast and data of `sample.mjs`.
-- **Icons (8).** The sprite in `assets/showcase.js` is the start; add what the components and
-  screens need; `design/icons.html` lists every icon with its name, the grid and the rules.
+- **Icons (8).** Two kinds only, nothing else is drawn: **base** — the standard icons the components,
+  the shell and the planned screens use (actions, navigation, status, files), named and drawn as the
+  icon library chosen in step 2 has them; and **from the domain** — the product's own subjects the
+  library has no fit for (for a carbon product: a scope, an emission source by kind, a factor, a
+  meter, a site by type, lineage), drawn in the same grid and stroke. No icon is added because a set
+  "should have it": each names where it is used. Plan the two lists with that column; approve
+  (`plans/icons.md`). The sprite in `assets/showcase.js` is the start — what it holds beyond the
+  two lists is removed; `design/icons.html` shows the two groups with names, the grid and the rules.
 - **Illustrations (9).** A root section of its own. Plan, in two lists: **for states** — a picture
   for every state a screen can be in (empty, nothing found, error, no access, locked or closed,
   offline when the product has it, done) — and **from the domain** — the scenes of the product's
