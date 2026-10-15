@@ -17,12 +17,20 @@
 .sc-side__title .navlink--page { flex: 1; padding-left: 0; }
 .navlink--page { font-weight: 500; }
 
-/* While its root is open, the page on show is marked in the list under the title, so the title keeps
-   no background. Folded, the title carries the mark: aria-current="page" for a page in sections,
-   "true" for the root of a child page on show (a flow). */
-.sc-side__group[open] > .sc-side__title .navlink--page[aria-current] { background: transparent; }
-.sc-side__group:not([open]) > .sc-side__title .navlink--page[aria-current='true'] {
+/* The row is the <summary>, chevron and title together: the hover and the mark of the page on show
+   are drawn on it, never on the link alone, or the highlight would start after the chevron. While
+   its root is open, the page on show is marked in the list under the title, so the row keeps no
+   background. Folded, the row carries the mark: aria-current="page" for a page in sections, "true"
+   for the root of a child page on show (a flow). */
+.sc-side__title .navlink--page,
+.sc-side__title .navlink--page:hover,
+.sc-side__title .navlink--page[aria-current] { background: transparent; }
+.sc-side__title:hover .navlink--page { color: var(--color-foreground); }
+.sc-side__group:not([open]) > .sc-side__title:has(> .navlink--page[aria-current]) {
   background: var(--color-primary-soft);
+}
+.sc-side__group:not([open]) > .sc-side__title:has(> .navlink--page[aria-current]),
+.sc-side__group:not([open]) > .sc-side__title > .navlink--page[aria-current] {
   color: var(--color-primary-strong);
 }
 
@@ -233,8 +241,24 @@ html.present .sc-present-exit { display: inline-flex; }
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
 }
+
+/* ── Contrast verdict: showcase.js writes <span class="pill pill--success|danger"> into each row ── */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+}
+.pill--success { background: var(--color-success-soft); color: var(--color-success-text); }
+.pill--danger { background: var(--color-danger-soft); color: var(--color-danger-text); }
