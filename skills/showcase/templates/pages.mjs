@@ -163,6 +163,14 @@ export const BANDS = [
         ],
       },
       {
+        id: 'layouts', path: 'layouts/index.html', title: 'Layouts', desc: 'The frames every screen sits in — the sign-in, the application’s shell, the page a wrong address lands on — each in several variants with the product’s pictures in motion. One of each is selected.',
+        children: [
+          { id: 'signIn', path: 'layouts/signIn.html', title: 'Auth layout', desc: 'The screens before the product — sign-in, invitation, forgotten password: the form beside an animated scene from the product’s world. Several variants; one is selected.', sections: [] },
+          { id: 'appLayout', path: 'layouts/appLayout.html', title: 'App layout', desc: 'The shell every screen lives in: the sidebar that folds, the top bar, the page — with the product’s pictures where a user meets them first. Several variants; one is selected.', sections: [] },
+          { id: 'notFound', path: 'layouts/notFound.html', title: 'Not found page', desc: 'The page an address no route matches lands on: several versions, each with a moving picture in the product’s style.', sections: [] },
+        ],
+      },
+      {
         id: 'components', path: 'components/index.html', title: 'Components', desc: 'Every component on one page, one section each: what it is for, its variations and states, its sizes. The standard set, the product’s own, and a reserve for later.',
         sections: [
           { id: 'button', title: 'Button', desc: 'Variants and sizes; hover, focus, disabled and loading; with an icon.' },
@@ -195,13 +203,11 @@ export const BANDS = [
   {
     id: 'inUse',
     title: 'The product in use',
-    desc: 'The product as its users meet it: its first screen, its shell, its screens, its letters, and its flows step by step.',
+    desc: 'The product as its users meet it: its screens, its letters, and its flows step by step.',
     pages: [
       {
-        id: 'screens', path: 'screens/index.html', title: 'Screens', desc: 'The screens of the product: the sign-in, the shell every screen lives in, the main screens, the letters it sends and the page a wrong address lands on.',
+        id: 'screens', path: 'screens/index.html', title: 'Screens', desc: 'The screens of the product in its picked shell, and the letters it sends.',
         children: [
-          { id: 'signIn', path: 'screens/signIn.html', title: 'Sign-in layouts', desc: 'The first screen a user sees: the form, and an animated panel about the product beside it. Several layouts; one is selected.', sections: [] },
-          { id: 'appLayout', path: 'screens/appLayout.html', title: 'App layout', desc: 'The shell every screen lives in: a sidebar with grouped menus that folds, a top bar, the page under them. Several layouts; one is selected.', sections: [] },
           { id: 'key', path: 'screens/key.html', title: 'Key screens', desc: 'The main screens of the product on the devices it is used on.', sections: [] },
           {
             id: 'emails', path: 'screens/emails.html', title: 'Emails', desc: 'The letters the product sends, as a mail client shows them: the common ones, and the ones the product’s own flows need.',
@@ -211,7 +217,6 @@ export const BANDS = [
               { id: 'product', title: 'The product’s letters', desc: 'Letters its own flows send.' },
             ],
           },
-          { id: 'notFound', path: 'screens/notFound.html', title: 'Not found page', desc: 'The page an address no route matches lands on: several versions, each with a moving picture in the product’s style.', sections: [] },
         ],
       },
       { id: 'flows', path: 'flows/index.html', title: 'Flows', desc: 'The product in use, step by step: signing in first, then the flows of the product itself. Each flow is a page of its own with a step player.', children: [] },

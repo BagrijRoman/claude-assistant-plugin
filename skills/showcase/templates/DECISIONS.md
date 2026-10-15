@@ -11,7 +11,7 @@ makes, filled when each is taken; any other choice is a new row from SC-009, in 
 | SC-002 | | Color scheme | {{A: … · B: … · C: …}} | | | |
 | SC-003 | | Technology stack | | | | |
 | SC-004 | | Logo | {{marks by id}} | | | |
-| SC-005 | | Sign-in layout | {{variants by id}} | | | |
+| SC-005 | | Auth layout | {{variants by id}} | | | |
 | SC-006 | | App layout | | | | |
 | SC-007 | | Not found page | | | | |
 | SC-008 | | Charts library | static SVG on tokens · vendored Chart.js / ECharts · none | | | |

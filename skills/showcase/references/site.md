@@ -60,8 +60,8 @@ export const BANDS = [{ id, title, desc, pages: [page, …] }, …];      // a g
 Ids are the i18n keys: `nav.<page>`, `nav.<page>.desc`, `nav.<page>.<section>`,
 `nav.<page>.<section>.desc`, `nav.band.<band>`, `nav.band.<band>.desc`, a child under its root:
 `nav.<page>.<child>` (a flow: `nav.flows.<flow>`), and a child's section
-`nav.<page>.<child>.<section>` — so a flow called `signIn` does not take the label of the Sign-in
-layouts page (`nav.screens.signIn`). The menu shows no band label: a band is a group of roots, set
+`nav.<page>.<child>.<section>` — so a flow called `signIn` does not take the label of the Auth
+layout page (`nav.layouts.signIn`). The menu shows no band label: a band is a group of roots, set
 apart from the next by a gap, and a heading of the catalog on the Product page. The first page is
 the home page, `index.html` — the Product page; build.mjs writes the catalog into it. A section's element on the page has the section's id. After any
 change: `node build.mjs`, which stops with the two entries named when two would share a key.

@@ -1,6 +1,6 @@
 ---
 name: showcase
-description: Builds the project's design showcase — a static site in docs/showcase/ that shows the customer the product before it exists (what it is and for whom, the technology stack with official marks, the architecture in diagrams, then the design — colors, type, logo, icons, words, states — illustrations, components, sign-in and app layouts, key screens, flows with a step player, emails, 404) and gives the team what every screen is drawn with (tokens, components, icons, microcopy, decisions). Reads the whole documentation folder; the operator decides every fork; theme and interface language switch everywhere. Human-invoked only.
+description: Builds the project's design showcase — a static site in docs/showcase/ that shows the customer the product before it exists (what it is and for whom, the technology stack with official marks, the architecture in diagrams, then the design — colors, type, logo, icons, words, states — illustrations, layouts — sign-in, the app's shell and the 404, led by animated pictures of the domain — components, key screens, flows with a step player, emails) and gives the team what every screen is drawn with (tokens, components, icons, microcopy, decisions). Reads the whole documentation folder; the operator decides every fork; theme and interface language switch everywhere. Human-invoked only.
 argument-hint: "[init [dir] | continue | status | section <id> | flow <id> | pick <section> <variant> | add | audit | open]"
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(node:*), Bash(ls:*), Bash(mkdir:*), Bash(cp:*), Bash(find:*), AskUserQuestion, Agent, SendUserFile
@@ -115,14 +115,14 @@ The menu: the project's name on top, then the **root sections**, nothing above t
 labels; a group of roots is set apart from the next by a gap. A root folds, and only one is open at
 a time — opening one folds the one that was open; a root without items is a plain link. The items
 under a root are its **sections** — anchors on its own page, the one on screen marked as it scrolls —
-and its **child pages**, one level down: the stack under Product, the pages of Design, the screens,
-each flow. The order is the order of a customer's attention, not the order of making:
+and its **child pages**, one level down: the stack under Product, the pages of Design, the layouts,
+the screens, each flow. The order is the order of a customer's attention, not the order of making:
 
 | Group | Root sections, in order, with what unfolds under each |
 |-------|-------------------------------------------------------|
 | **Product** | **Product** (the home page: what it is · who uses it · modules · how it works · sample company · about this site; child page **Technology stack** — each technology with its official mark, one line, a link to its site) · **Architecture** (diagrams: the system in its world · its parts · modules · how data moves · where it runs · one request) |
-| **Design** | **Design** (child pages: Principles · Colors · Typography · Spacing and layout · Radius and shadows · Motion · Logo · Loaders · Icons · Microcopy and tone · States · Charts when the product has figures) · **Illustrations** (for states · from the domain · in place · reserve) · **Components** (one item per component) |
-| **The product in use** | **Screens** (child pages: Sign-in layouts · App layout · Key screens · Emails · Not found page) · **Flows** (one page per flow, with the step player) |
+| **Design** | **Design** (child pages: Principles · Colors · Typography · Spacing and layout · Radius and shadows · Motion · Logo · Loaders · Icons · Microcopy and tone · States · Charts when the product has figures) · **Illustrations** (for states · from the domain · in place · reserve) · **Layouts** (child pages: Auth layout · App layout · Not found page — variants led by animated pictures of the domain) · **Components** (one item per component) |
+| **The product in use** | **Screens** (child pages: Key screens · Emails) · **Flows** (one page per flow, with the step player) |
 | **Project** | Decisions · Changelog · Next steps |
 
 Everywhere: a theme switch (light · dark · system) that every page follows, hex codes and contrast
@@ -148,12 +148,12 @@ and approves or sends it back. The key is the step's name in `STATE.json › ste
 | 8 Icons | `icons` | the set on its grid | 7 |
 | 9 Illustrations | `illustrations` | a picture for every state a screen can be in and for the cases of the domain, some moving; a reserve | 4, 5 |
 | 10 States | `states` | picture + words + action for empty, loading, error, access, offline, done | 6, 9 |
-| 11 Sign-in layouts | `signIn` | several, with animated panels; one picked | 7, 9 |
-| 12 App layout | `appLayout` | several shells with a folding sidebar; one picked | 7 |
-| 13 Key screens | `screens` | the main screens in device frames per surface | 7, 10, 12 |
-| 14 Flows | `flows` | list approved → each description approved → built with the step player, the controls of each step highlighted in the order they are used | 13 |
-| 15 Emails | `emails` | the template, then the common letters and the product's own, each with a picture of its own in the product's colors; at every depth | 6, 9 |
-| 16 Not found page | `notFound` | several, with moving pictures; one picked | 9 |
+| 11 Auth layout | `signIn` | Layouts: several, every one with an animated scene of the domain; one picked | 7, 9 |
+| 12 App layout | `appLayout` | Layouts: several shells with a folding sidebar, most with the product's moving pictures in place; one picked | 7, 9 |
+| 13 Not found page | `notFound` | Layouts: several, each a moving picture with the 404 in it; one picked | 9 |
+| 14 Key screens | `screens` | the main screens in device frames per surface, in the picked shell | 7, 10, 12 |
+| 15 Flows | `flows` | list approved → each description approved → built with the step player, the controls of each step highlighted in the order they are used | 14 |
+| 16 Emails | `emails` | the template, then the common letters and the product's own, each with a picture of its own in the product's colors; at every depth | 6, 9 |
 | 17 Charts | `charts` | only when the product has figures, with the library chosen in step 2 | 4 |
 | 18 Architecture | `architecture` | the architecture drawn for the customer: diagrams of the system in its world, its parts, modules, data, deployment, one request | 2 |
 | 19 Principles · Decisions · Changelog · Next | `principles`, `project` | the pages about the project | all |
@@ -161,7 +161,7 @@ and approves or sends it back. The key is the step's name in `STATE.json › ste
 
 ## Variants and picks
 
-Logo, sign-in layouts, app layout and the not-found page are made as **several variants**, because
+Logo and the three Layouts — auth, app, not found — are made as **several variants**, because
 a customer chooses better between things than from a description. Each variant is a section with
 an id; `/showcase pick <section> <variant>` marks the chosen one `Selected`, moves it first, writes
 `site.mjs › selected`, fills the group's row in `DECISIONS.md` and regenerates the Decisions page
@@ -193,7 +193,7 @@ The operator always sees which stage the run is in, what is done and what comes 
 
 | Mode | Stages |
 |------|--------|
-| `init [dir]`, `continue` | Intake → Color scheme → Technology → Frame → Foundations → Logo → Microcopy and tone → Components → Icons → Illustrations → States → Sign-in layouts → App layout → Key screens → Flows → Emails → Not found page → Charts → Architecture → Principles, Decisions, Changelog, Next steps → Audit |
+| `init [dir]`, `continue` | Intake → Color scheme → Technology → Frame → Foundations → Logo → Microcopy and tone → Components → Icons → Illustrations → States → Auth layout → App layout → Not found page → Key screens → Flows → Emails → Charts → Architecture → Principles, Decisions, Changelog, Next steps → Audit |
 | `status` | Read the state → Report |
 | `section <id>` | Plan → Approval → Build → Gate |
 | `flow <id>` | Description → Approval → Build → Gate |

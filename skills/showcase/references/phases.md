@@ -16,9 +16,9 @@ must have is in [sections.md](sections.md); how pages are written, in [site.md](
 - [Steps 4–5 — Foundations, Logo](#steps-45--foundations-logo)
 - [Step 6 — Microcopy and tone](#step-6--microcopy-and-tone)
 - [Steps 7–9 — Components, Icons, Illustrations](#steps-79--components-icons-illustrations)
-- [Steps 10–13 — States, Sign-in layouts, App layout, Key screens](#steps-1013--states-sign-in-layouts-app-layout-key-screens)
-- [Step 14 — Flows](#step-14--flows)
-- [Steps 15–18 — Emails, Not found, Charts, Architecture](#steps-1518--emails-not-found-charts-architecture)
+- [Steps 10–14 — States, Layouts, Key screens](#steps-1014--states-layouts-key-screens)
+- [Step 15 — Flows](#step-15--flows)
+- [Steps 16–18 — Emails, Charts, Architecture](#steps-1618--emails-charts-architecture)
 - [Step 19 — Principles, Decisions, Changelog, Next steps](#step-19--principles-decisions-changelog-next-steps)
 - [Step 20 — Audit](#step-20--audit)
 - [Other modes](#other-modes)
@@ -68,7 +68,7 @@ pieces in parallel — one per component group, per flow, per letter. Pass `mode
 call for the readers and for the builders of components, icons, states, key screens, flows, emails,
 charts and the technology page: their work follows an approved plan and the conventions of `site.md`,
 and you look at every result before the gate. The marks of the Logo, the pictures of Illustrations and
-the variants of Sign-in layouts, App layout and the Not found page are built on the session's model:
+the variants of the Layouts (Auth, App, Not found) are built on the session's model:
 there the drawing is what the customer chooses between. A brief names: the files to
 read (`site.md`, `sections.md`, `sample.mjs`, `tokens.css`, the plan in `plans/`), the file to
 write (`tools/gen<Name>.mjs`, then run it — or, when several pieces make one page, a part
@@ -144,7 +144,7 @@ site itself — so it can start from the files instead. Nothing in the procedure
    - **Sample company and cast**: propose a fictional company fitting the domain and one person
      per actor; the operator renames or accepts.
    - **Depth**: full (every section, Recommended) · essentials (Product with the stack,
-     Architecture, Foundations, Logo, Microcopy, Illustrations, Components, Sign-in, App layout,
+     Architecture, Foundations, Logo, Microcopy, Illustrations, Layouts — Auth and App, Components,
      Flows, Emails; the rest planned). Emails are in at every depth: every product sends letters,
      and the customer sees them before most screens. Under essentials a step
      that needs a planned one draws what it needs in place — a sign-in panel without the
@@ -278,25 +278,41 @@ The shape of steps 4–5: **plan → approve → build in parallel → build.mjs
   text, no faces; some with CSS animation that stops under `prefers-reduced-motion`; the sections
   For states, From the domain, In place and Reserve.
 
-## Steps 10–13 — States, Sign-in layouts, App layout, Key screens
+## Steps 10–14 — States, Layouts, Key screens
 
 - **States (10).** One section per state: the picture (from Illustrations), the words (from
   Microcopy), the action; where it appears in the product; the loading section shows skeletons
   and when a spinner is right instead.
-- **Sign-in layouts (11).** Plan: 3–5 layouts, each one line — the form on one side, an animated
-  panel about the product on the other; each panel a different idea of the product (its data
-  moving, its domain drawn, its promise). Approve. `tools/genSignIn.mjs`: each a `variant` with
-  the full screen in a desktop device frame, the panel's animation in CSS on tokens, still under
-  reduced motion; the form uses the components. The operator picks one.
-- **App layout (12).** Plan: 2–4 shells — sidebar that folds to icons, sidebar with grouped
-  menus, top navigation, rail + panel — each one line. Approve. Each a `variant` with the shell
-  around a real-looking page, the sidebar folded and unfolded, the menu's states, the user menu;
-  responsive behaviour described. Pick one; it becomes the shell of every later screen.
-- **Key screens (13).** Plan: the screens the flows will need, from the documentation (a
+- **Layouts (11–13)** — a root section of its own, `sections.md › Layouts`; its three pages are three
+  steps, each **plan → approve → build → pick**, and pictures lead every one of them. A variant's plan
+  line names its composition **and its scene**: which picture from Illustrations, or which new one,
+  what moves in it, what it shows still. Scenes are drawn on the session's model, on `--ill-*` tokens,
+  their motion in CSS keyframes on tokens, still and complete under reduced motion; a new scene goes
+  into `assets/illustrations.js` and onto Illustrations' *In place*. When Illustrations is planned
+  away, the scenes are drawn here all the same.
+  - **Auth layout (11).** Plan: 3–5 variants, each one line — a composition (form beside a panel,
+    the scene full screen with the form on a card, a band above a narrow form, the data moving behind
+    the form) and an animated scene, each a different idea of the product (its data moving, its
+    domain drawn, its promise); every variant has one. Approve (`plans/signIn.md`).
+    `tools/genSignIn.mjs`: each a `variant` with the full screen in a desktop device frame, the
+    phone frame beside it, the other screens before the product (invitation, forgotten password,
+    verification sent) small; the form uses the components. The operator picks one.
+  - **App layout (12).** Plan: 2–4 shells — sidebar that folds to icons, sidebar with grouped
+    menus, top navigation, rail + panel — each one line, with where its pictures stand (the welcome
+    page of a new account, a setup card at the foot of the sidebar, a header scene, the empty state
+    in the shell); most carry a moving picture, one stays plain for the contrast. Approve
+    (`plans/appLayout.md`). `tools/genAppLayout.mjs`: each a `variant` with the shell around a
+    real-looking page, the sidebar folded and unfolded, the menu's states, the user menu; tablet and
+    phone drawn. Pick one; it becomes the shell of every later screen.
+  - **Not found page (13).** Plan: 3–5 ideas, each a picture from the product's world with a moving
+    detail and the 404 worked into it. Approve (`plans/notFound.md`). `tools/genNotFound.mjs`:
+    `variant`s on their own full screen; pick one.
+- **Key screens (14).** Plan: the screens the flows will need, from the documentation (a
   dashboard, the main list, a record, a form). Approve. One generator per screen or group,
-  rendering in `device()` frames for every surface the brief gives the screen's actors.
+  rendering in `device()` frames for every surface the brief gives the screen's actors, inside the
+  picked shell.
 
-## Step 14 — Flows
+## Step 15 — Flows
 
 Two approvals, by design.
 
@@ -322,9 +338,9 @@ Two approvals, by design.
    switch for free.
 4. Gate per flow or per batch of flows, as the operator prefers.
 
-## Steps 15–18 — Emails, Not found, Charts, Architecture
+## Steps 16–18 — Emails, Charts, Architecture
 
-- **Emails (15).** Plan: the common letters (invitation, verification code, password reset,
+- **Emails (16).** Plan: the common letters (invitation, verification code, password reset,
   welcome, digest, security alert) and the product's own, proposed from the flows and the
   documentation's notifications (what is sent, to whom, when) — each with its subject, its one
   action and its picture, one line each. Approve (`plans/emails.md`). Then:
@@ -342,8 +358,6 @@ Two approvals, by design.
      client shows it, with subject and sender, the sample cast and company; words from Microcopy,
      or — when Microcopy is skipped — in the tone the requirements set. Letters may be built by
      subagents per group, each writing `tools/parts/emails/<group>.mjs`.
-- **Not found (16).** Plan: 3–5 ideas, each a picture from the product's world with a moving
-  detail. Approve. `variant`s on their own full screen; pick one.
 - **Charts (17).** Only when the product has figures. The library is SC-008, chosen in step 2
   (ask now only if it was left open): **static SVG on tokens** (Recommended: no dependency, exact
   style, both themes free) · a vendored UMD library (Chart.js, ECharts, uPlot) when the operator
@@ -394,7 +408,7 @@ their stage, picks made and pending, planned sections. Write nothing.
 **`section <id>`** — the step for that section, alone: plan (or re-plan, keeping what the operator
 approved unless they say otherwise) → build → gate.
 
-**`flow <id>`** — the description and build of one flow; `flow new` runs step 14's two approvals
+**`flow <id>`** — the description and build of one flow; `flow new` runs step 15's two approvals
 for a new one and adds it to the list.
 
 **`pick <section> <variant>`** — confirm the variant exists; set `site.mjs › selected[section]`;

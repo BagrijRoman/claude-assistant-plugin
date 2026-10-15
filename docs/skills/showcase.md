@@ -79,8 +79,8 @@ customer's attention:
 | Group | Root sections, with what unfolds under each |
 |-------|---------------------------------------------|
 | Product | **Product**, the home page (what it is · who uses it · modules · how it works · sample company · about this site; child page **Technology stack**: each technology with its official mark, one line and a link to its site) · **Architecture** (diagrams for the customer: the system in its world · its parts · modules · how data moves · where it runs · one request) |
-| Design | **Design** (child pages: Principles · Colors · Typography · Spacing and layout · Radius and shadows · Motion · Logo · Loaders · Icons · Microcopy and tone · States · Charts) · **Illustrations** (for states · from the domain · in place · reserve) · **Components** (one item per component) |
-| The product in use | **Screens** (Sign-in layouts · App layout · Key screens · Emails · Not found page) · **Flows** (a page per flow with the step player) |
+| Design | **Design** (child pages: Principles · Colors · Typography · Spacing and layout · Radius and shadows · Motion · Logo · Loaders · Icons · Microcopy and tone · States · Charts) · **Illustrations** (for states · from the domain · in place · reserve) · **Layouts** (Auth layout · App layout · Not found page — the variants led by animated pictures of the domain) · **Components** (one item per component) |
+| The product in use | **Screens** (Key screens · Emails) · **Flows** (a page per flow with the step player) |
 | Project | Decisions · Changelog · Next steps |
 
 On every page: a theme switch (light · dark · system) that the whole site follows, hex codes and
@@ -96,7 +96,7 @@ before anything is drawn) → **Technology** (a dialog per layer) → **Frame** 
 scaffolded, tokens from the scheme, the Product page from the reading and the Technology stack
 page with the official marks, a starting page for every other section — the site opens) → Foundations → Logo (and the Loaders made from the picked mark) → **Microcopy and tone** (the source of every string that follows, in
 every language, so before the first step that writes words) → Components → Icons → Illustrations
-→ States → Sign-in layouts → App layout → Key screens → **Flows** → Emails → Not found → Charts →
+→ States → **Layouts** (Auth layout → App layout → Not found page) → Key screens → **Flows** → Emails → Charts →
 **Architecture** → Principles, Decisions, Changelog, Next steps → **Audit**.
 
 ### How it decides with the operator
@@ -154,7 +154,7 @@ and how many; and, on `continue` or `status`, the checklist rebuilt from its sta
 
 | Mode | Stages |
 |------|--------|
-| `init [dir]`, `continue` | Intake → Color scheme → Technology → Frame → Foundations → Logo → Microcopy and tone → Components → Icons → Illustrations → States → Sign-in layouts → App layout → Key screens → Flows → Emails → Not found page → Charts → Architecture → Principles, Decisions, Changelog, Next steps → Audit |
+| `init [dir]`, `continue` | Intake → Color scheme → Technology → Frame → Foundations → Logo → Microcopy and tone → Components → Icons → Illustrations → States → Auth layout → App layout → Not found page → Key screens → Flows → Emails → Charts → Architecture → Principles, Decisions, Changelog, Next steps → Audit |
 | `status` | Read the state → Report |
 | `section <id>` | Plan → Approval → Build → Gate |
 | `flow <id>` | Description → Approval → Build → Gate |

@@ -1187,6 +1187,32 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T35 — `/showcase` Layouts: a root section, its variants led by animated pictures · `done` (0.19.0)
+
+On ETC.V2, during the Components step (2026-10-15), the operator asked for the skill to add a section of
+layouts that shows the auth layout and the app layout, with variants for the operator to choose from,
+illustrations — animated, in the project's theme — first. They placed it after Illustrations and moved the
+Not found page into it.
+
+What was done (0.19.0):
+- `templates/pages.mjs`: a root **Layouts** (`layouts/index.html`) after Illustrations, with the child
+  pages Auth layout (`layouts/signIn.html`), App layout (`layouts/appLayout.html`) and Not found page
+  (`layouts/notFound.html`); Screens keeps Key screens and Emails. The child ids and the step keys stay
+  `signIn`, `appLayout`, `notFound`, so `STATE.json`, `selected` and `pick` are unchanged; the nav keys
+  become `nav.layouts.*`.
+- `sections.md › Layouts`: pictures come first — every Auth variant has an animated scene of the domain,
+  most App variants carry moving pictures where a user meets them first (welcome page, sidebar setup card,
+  header scene, empty state), one stays plain; every scene still and complete under reduced motion, taken
+  from Illustrations or drawn into `assets/illustrations.js` and added to its *In place*.
+- `phases.md`: steps 11–13 are the three Layouts (Auth, App, Not found), each plan → approve → build →
+  pick, a plan line naming its composition and its scene; Key screens 14, Flows 15, Emails 16. SKILL.md's
+  menu, step table, variants and stages, `templates/STATE.json`, `bin/skillResume.mjs`, the SC-005 row
+  and `docs/skills/showcase.md` follow.
+
+Done when:
+- `npm test` passes.
+- The ETC.V2 showcase has the Layouts root in its menu, and its Auth and App layout steps are built this way.
+
 ## T34 — `/showcase` Emails at every depth: a template and a picture per letter · `done` (0.18.0)
 
 On ETC.V2 (depth essentials) the operator asked for a page of email templates for the cases the app

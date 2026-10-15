@@ -132,6 +132,39 @@ Moving ones are marked, with a replay control. Pictures are SVG symbols in
 `assets/illustrations.js`, drawn only with `--ill-*` tokens, no text, no faces, so they need no
 translation and follow the theme. Sizes: hero, welcome, spot.
 
+### Layouts (`layouts/index.html`)
+The frames every screen sits in, before any one screen: the customer recognises the product by its
+first screen and its shell. The page: the selected variant of each layout large, side by side, then
+the list of its pages (`<div data-children>`). **Pictures come first here**: a layout is where the
+product's world meets the user, so its variants are told apart by their pictures — scenes from the
+domain, drawn on `--ill-*` tokens, that move (a slow loop of the product's data or world: smoke
+thinning over a plant, a meter turning, figures rising into a report) and stand still, complete,
+under reduced motion. A scene is taken from Illustrations' *From the domain* where one fits; a new
+one is drawn into `assets/illustrations.js` the same way and added to Illustrations' *In place*.
+Under each variant: the idea of its picture in one line, what moves, and the still version.
+
+- **Auth layout** (`layouts/signIn.html`): 3–5 variants, **every one with an animated scene**, each a
+  different composition and a different idea of the product — the form beside a panel of the scene;
+  the scene filling the screen with the form on a card over it; the scene as a band above a narrow
+  form; the product's data moving behind glass. The form is the components' (email, password, sign
+  in, forgotten password, where an invitation leads). Each variant: the full screen in a desktop
+  device frame, the same on a phone frame (the scene shrinks to a band or a spot, never away), and
+  the other screens before the product that share it — invitation accepted, forgotten password, a
+  verification sent — small beside it. One `Selected`.
+- **App layout** (`layouts/appLayout.html`): 2–4 variants of the shell — the sidebar folded and
+  unfolded, grouped menus with their states (default, hover, current, with a badge), the top bar
+  (page title, search, bell, language, theme, user menu), the page under them — around a page
+  filled with the sample data. **Most variants carry the product's pictures where a user meets them
+  first**: the welcome page of a new account (an animated scene and the first thing to do), a card
+  at the foot of the sidebar (the setup's progress as a small scene), a header scene on the home
+  page, the empty state inside the shell; one variant stays plain, so the customer sees the
+  difference. Each on a desktop frame; the folding shown; how it behaves on a tablet and a phone (a
+  drawer, a bottom bar) drawn where the surfaces call for it. One `Selected` — every later screen
+  uses it.
+- **Not found page** (`layouts/notFound.html`): 3–5 variants on their own full screen outside the
+  shell: a picture from the product's world with one moving detail, the 404 worked into it, a
+  sentence and the way back. One `Selected`.
+
 ### Components (`components/index.html`)
 One block per component, in the order of `pages.mjs`; the menu unfolds into the list. Each block:
 what it is for and the one rule that matters; *Variants* with a table (variant, look in tokens, used
@@ -142,18 +175,9 @@ a table; its source in the product's code or `proposed`. Samples use the cast an
 ## The product in use
 
 ### Screens (`screens/index.html`)
-The list of its pages (`<div data-children>`), each its own page:
+The list of its pages (`<div data-children>`), each its own page, every screen in the shell picked on
+Layouts:
 
-- **Sign-in layouts** (`screens/signIn.html`): 3–5 variants, each a full screen in a desktop device
-  frame: the form (email, password, sign in, forgotten password, where an invitation leads) on one
-  side, an animated panel on the other that says what the product is — its data moving, its domain
-  drawn, a promise. Under each: the idea of the panel, what moves, what it looks like still (reduced
-  motion). Then the picked layout on a phone frame when a mobile surface exists. One `Selected`.
-- **App layout** (`screens/appLayout.html`): 2–4 variants of the shell: the sidebar folded and
-  unfolded, grouped menus with their states (default, hover, current, with a badge), the top bar
-  (page title, search, bell, language, theme, user menu), the page under them. Each on a desktop
-  frame; the folding shown; how it behaves on a tablet and a phone (a drawer, a bottom bar)
-  described and drawn where the surfaces call for it. One `Selected` — every later screen uses it.
 - **Key screens** (`screens/key.html`): the main screens of the product, each in the device frames
   of the surfaces its actors use. For each: who looks at it and when, what it is for, the screen
   filled with the sample data, and its empty state small beside it. Grouped by module or by actor
@@ -168,10 +192,6 @@ The list of its pages (`<div data-children>`), each its own page:
   shows them; a picture of its own about that moment, in the product's colors and from its domain;
   one message in the voice of Microcopy; one action button; the footer with why they received it.
   Light theme is the letter's own; the dark theme shows how a dark mail client renders it.
-- **Not found page** (`screens/notFound.html`): 3–5 variants on their own full screen outside the
-  shell: a picture from the product's world with one moving detail, the 404 worked into it, a
-  sentence and the way back. One `Selected`.
-
 ### Flows (`flows/index.html` + `flows/<flow>.html`)
 The index: the flows as tiles, sign-in first, each with its actor and goal — build.mjs writes them
 from `children` in `pages.mjs`, in that order, the text of a tile being the flow's `desc`. Each

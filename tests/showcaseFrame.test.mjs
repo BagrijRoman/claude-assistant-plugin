@@ -100,11 +100,11 @@ describe('showcase frame', () => {
     assert.match(result.stdout, /nothing written/);
   });
 
-  it('keys a flow under Flows, apart from the screens page that has the same id', () => {
+  it('keys a flow under Flows, apart from the layout page that has the same id', () => {
     const html = readFileSync(join(dir, 'index.html'), 'utf8');
     assert.match(html, /href="flows\/signIn\.html"[^>]*><span data-i18n="nav\.flows\.signIn">Sign in<\/span>/);
-    assert.match(html, /href="screens\/signIn\.html"[^>]*><span data-i18n="nav\.screens\.signIn">Sign-in layouts<\/span>/);
-    assert.doesNotMatch(html, /data-i18n="nav\.screens\.signIn">Sign in</);
+    assert.match(html, /href="layouts\/signIn\.html"[^>]*><span data-i18n="nav\.layouts\.signIn">Auth layout<\/span>/);
+    assert.doesNotMatch(html, /data-i18n="nav\.layouts\.signIn">Sign in</);
   });
 });
 
