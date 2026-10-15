@@ -63,24 +63,25 @@ docs/showcase/
 ├── tokens.css · base.css · components.css            every value; the type scale; the components
 ├── sample.mjs · i18n/<lang>.js                       the fictional company and cast; dictionaries
 ├── tools/lib/html.mjs · tools/gen*.mjs · tools/parts/ the page shell; one generator per heavy page or flow; a page's pieces
-├── assets/                                           the frame: showcase.css/js, site.css, nav.js, i18n.js, flow.js
-├── <section>/index.html · flows/<flow>.html          one page per root section; one per flow
+├── assets/ · assets/tech/                            the frame: showcase.css/js, site.css, nav.js, i18n.js, flow.js; the stack's official marks
+├── index.html · <root>/index.html · <root>/<child>.html  the Product page; one page per root section; one per child page (stack, design pages, screens, flows)
 ├── plans/                                            the approved plans and flow descriptions
 └── STATE.json · DECISIONS.md · CHANGELOG.md · SOURCES.md · README.md
 ```
 
 ### The site
 
-The menu shows the project's name, then bands that do not fold — **Product**, **Design**,
-**Project** — each holding root sections that do. A root section is one long page; its items
-scroll to its parts and the menu marks the one on screen. Flows are pages of their own with a
-step player. The order is the order of a customer's attention:
+The menu shows the project's name, then the root sections and nothing above them — no band labels,
+a gap between groups. Every root folds, one open at a time; under it are its sections (anchors on
+its page, the one on screen marked) and its child pages one level down. The order is the order of a
+customer's attention:
 
-| Band | Sections |
-|------|----------|
-| Product | Overview · Principles · Logo · Sign-in layouts · App layout · Key screens · Flows · Emails |
-| Design | Illustrations · States · Not found page · Charts (when the product has figures) · Components · Icons · Foundations · Microcopy and tone |
-| Project | Technology · Decisions · Changelog · Next steps |
+| Group | Root sections, with what unfolds under each |
+|-------|---------------------------------------------|
+| Product | **Product**, the home page (what it is · who uses it · modules · how it works · sample company · about this site; child page **Technology stack**: each technology with its official mark, one line and a link to its site) · **Architecture** (diagrams for the customer: the system in its world · its parts · modules · how data moves · where it runs · one request) |
+| Design | **Design** (child pages: Principles · Colors · Typography · Spacing and layout · Radius and shadows · Motion · Logo · Icons · Microcopy and tone · States · Charts) · **Illustrations** (for states · from the domain · in place · reserve) · **Components** (one item per component) |
+| The product in use | **Screens** (Sign-in layouts · App layout · Key screens · Emails · Not found page) · **Flows** (a page per flow with the step player) |
+| Project | Decisions · Changelog · Next steps |
 
 On every page: a theme switch (light · dark · system) that the whole site follows, hex codes and
 contrast ratios included; a language switch when the operator named more than one interface
@@ -92,11 +93,11 @@ Dependencies, not the menu, decide it; each step ends with a gate where the oper
 site and approves: **Intake** (the reading, languages, name, the sample company and cast) →
 **Color scheme** (confirmed from the design, or three proposals shown side by side on mini-UI
 before anything is drawn) → **Technology** (a dialog per layer) → **Frame** (the folder
-scaffolded, tokens from the scheme, the overview, a starting page for every section — the site
-opens) → Foundations → Logo → **Microcopy and tone** (the source of every string that follows, in
+scaffolded, tokens from the scheme, the Product page from the reading and the Technology stack
+page with the official marks, a starting page for every other section — the site opens) → Foundations → Logo → **Microcopy and tone** (the source of every string that follows, in
 every language, so before the first step that writes words) → Components → Icons → Illustrations
 → States → Sign-in layouts → App layout → Key screens → **Flows** → Emails → Not found → Charts →
-Technology page → Principles, Decisions, Changelog, Next steps → **Audit**.
+**Architecture** → Principles, Decisions, Changelog, Next steps → **Audit**.
 
 ### How it decides with the operator
 
@@ -122,7 +123,7 @@ which it reads. So the skill cuts only what the next step does not use:
   `SOURCES.md` when it plans from the reading — never the pages already built. The operator may go on
   in the same context instead.
 - **Builders on Sonnet where the plan decides.** The readers of Intake and the builders of components,
-  icons, states, key screens, flows, emails, charts and the technology page work from an approved plan
+  icons, states, key screens, flows, emails, charts and the architecture work from an approved plan
   and the conventions of `site.md`, and every result is looked at before the gate, so they run on
   Sonnet. The marks of the Logo, the pictures of Illustrations and the variants of the sign-in layouts,
   the app layout and the not-found page — what the customer chooses between — stay on the session's
@@ -153,7 +154,7 @@ and how many; and, on `continue` or `status`, the checklist rebuilt from its sta
 
 | Mode | Stages |
 |------|--------|
-| `init [dir]`, `continue` | Intake → Color scheme → Technology → Frame → Foundations → Logo → Microcopy and tone → Components → Icons → Illustrations → States → Sign-in layouts → App layout → Key screens → Flows → Emails → Not found page → Charts → Technology page → Principles, Decisions, Changelog, Next steps → Audit |
+| `init [dir]`, `continue` | Intake → Color scheme → Technology → Frame → Foundations → Logo → Microcopy and tone → Components → Icons → Illustrations → States → Sign-in layouts → App layout → Key screens → Flows → Emails → Not found page → Charts → Architecture → Principles, Decisions, Changelog, Next steps → Audit |
 | `status` | Read the state → Report |
 | `section <id>` | Plan → Approval → Build → Gate |
 | `flow <id>` | Description → Approval → Build → Gate |
@@ -166,7 +167,8 @@ and how many; and, on `continue` or `status`, the checklist rebuilt from its sta
 ## What it will not do
 
 - Write a color, font, radius or duration anywhere but `tokens.css`; draw a logo or a picture in
-  anything but tokens and `currentColor`.
+  anything but tokens and `currentColor`. The one exception: a technology's official mark, a file in
+  `assets/tech/` in its owner's colors.
 - Write a heavy page by hand instead of through a generator.
 - Choose the scheme, the stack, a mark, a layout or a flow for the operator.
 - Load anything from the network when the site is viewed, except web fonts with a local fallback.
@@ -176,7 +178,10 @@ and how many; and, on `continue` or `status`, the checklist rebuilt from its sta
 ## The script
 
 The template ships the site's own code — `build.mjs` (navigation, idempotent), `open.mjs` (the
-server), `tools/genPages.mjs` (starting pages), `tools/lib/html.mjs` (the page shell and blocks) —
+server), `tools/genPages.mjs` (starting pages), `tools/fetchTechMarks.mjs` (the stack's official marks
+from Simple Icons, or a project's own site, into `assets/tech/` with `marks.json`), `tools/genProduct.mjs` and
+`tools/genStack.mjs` (the Product page and the stack: the rendering fixed, the content filled per project),
+`tools/lib/html.mjs` (the page shell and blocks) —
 which the skill runs with `node` inside the showcase folder.
 
 [bin/showcase.mjs](../../bin/showcase.mjs) `check <dir>` runs the rows of the audit that need no eyes,
@@ -185,11 +190,11 @@ hand (T31 in [TASKS.md](../TASKS.md)):
 
 | Check | Reported |
 |-------|----------|
-| every page `pages.mjs` gives a path, children included, is a file | `error: icons/index.html — pages.mjs gives page "icons" this path, and there is no such file …` |
+| every page `pages.mjs` gives a path, children included, is a file | `error: design/icons.html — pages.mjs gives page "icons" this path, and there is no such file …` |
 | the build is idempotent: `node build.mjs` twice, the second reporting the navigation up to date (the first may rewrite it, as the gate's build would) | `error: build.mjs — a second run still rewrites: …` |
 | no hex color in a `.css`, `.html` or `.js` file but `tokens.css` — anchors, entities, `url(#…)` and lines marked `allow-hex` are not colors; no `font-family` that is not a `var(--font…)`; no radius in px on a page | `error: components/index.html:42 — the color #ff0000 is a raw value; use a token from tokens.css` |
 | the dark set under `prefers-color-scheme: dark` and the one under `[data-theme='dark']` declare the same tokens with the same values | `error: tokens.css:181 — --color-danger is #ff0000 under [data-theme='dark'] but #f87171 in the media-query set` |
-| every language of `site.mjs` but the default has `i18n/<lang>.js`, holding every `data-i18n` and `data-i18n-attr` key of every page | `error: i18n/uk.js — no "nav.icons", which icons/index.html:12 uses` |
+| every language of `site.mjs` but the default has `i18n/<lang>.js`, holding every `data-i18n` and `data-i18n-attr` key of every page | `error: i18n/uk.js — no "nav.design.icons", which design/icons.html:12 uses` |
 | a dictionary key no page, script or generator names | `warning: i18n/uk.js:58 — "old.unused" is used by no page or script — remove it, or keep it knowingly` |
 
 Errors exit 1, warnings do not; a missing or foreign `STATE.json` stops it (exit 1); usage errors exit 2.
@@ -208,8 +213,9 @@ still to come (T19).
   reject some.
 - **Translations are generated.** The Microcopy page is the place to correct them; the
   dictionaries follow.
-- **Technology marks must be files in the folder.** Finding a free SVG per technology is a step
-  the skill does with the operator; without one the card shows the name only.
+- **Technology marks must be files in the folder.** `fetchTechMarks.mjs` takes them from Simple Icons
+  (CC0 files of trademarked marks) once, with the network; a technology Simple Icons lacks needs a URL
+  from its own site, or its card shows the initials on a tile.
 - **Charts** are static SVG by default; live tooltips need a vendored library, decided
   explicitly.
 
@@ -217,11 +223,13 @@ still to come (T19).
 
 - [tests/structure.test.mjs](../../tests/structure.test.mjs) — the skill directory, `SKILL.md`
   frontmatter, this page and the index rows.
-- [tests/showcaseFrame.test.mjs](../../tests/showcaseFrame.test.mjs) — scaffolds the frame as the
+- [tests/showcaseFrame.test.mjs](../../tests/showcaseFrame.test.mjs) — runs the Product and stack generators on a fresh scaffold; scaffolds the frame as the
   skill does, with one flow added, and checks genPages and the build: a starting page for every
   entry with a path, the navigation written and a second build changing nothing, every foldable root
-  carrying the shared `name` with at most one open, the root of the page on show open and none on
-  the overview, a flow's root open with its title marked, the language switch and the dictionary
+  carrying the shared `name` with at most one open, no band label in the menu and a gap between the
+  groups, the root of the page on show open (the Product root on the home page, Design on a design
+  page), a root's child pages listed on its page with the flow player only on flows, a flow's root
+  open with its title marked, the language switch and the dictionary
   wired in, a second genPages run writing nothing, a flow keyed apart from the root section with its
   id. A second scaffold has no flow at first, as the Frame step leaves it: the Flows index says it
   is being prepared, lists the flow after it is added and the build runs, and a `pages.mjs` with two

@@ -18,7 +18,7 @@ must have is in [sections.md](sections.md); how pages are written, in [site.md](
 - [Steps 7–9 — Components, Icons, Illustrations](#steps-79--components-icons-illustrations)
 - [Steps 10–13 — States, Sign-in layouts, App layout, Key screens](#steps-1013--states-sign-in-layouts-app-layout-key-screens)
 - [Step 14 — Flows](#step-14--flows)
-- [Steps 15–18 — Emails, Not found, Charts, Technology page](#steps-1518--emails-not-found-charts-technology-page)
+- [Steps 15–18 — Emails, Not found, Charts, Architecture](#steps-1518--emails-not-found-charts-architecture)
 - [Step 19 — Principles, Decisions, Changelog, Next steps](#step-19--principles-decisions-changelog-next-steps)
 - [Step 20 — Audit](#step-20--audit)
 - [Other modes](#other-modes)
@@ -34,8 +34,15 @@ lists each flow as `{ id, title, stage }`, the stage `listed / described / appro
 yet, so `continue` asks it again instead of guessing the answer. Update it at every change of
 state; on `continue` read it first and resume exactly there.
 
+**Show, do not describe.** Whatever the operator chooses or approves, they see first: open the page
+(`node open.mjs`, or the scratch page from disk) and, when Playwright is available, take
+screenshots of it into `screenshots/` — the page in both themes, in the second language too — look
+at them yourself before the operator does, and send them (`SendUserFile` when the session has it)
+so the choice can be made from the chat. A question about something visual never goes out with only
+words in it.
+
 **The gate.** At the end of a step: run `node build.mjs`, tell the operator what to open (the page,
-both themes, each language), list the decisions taken and what is still open, add a dated entry to
+both themes, each language), show it as above, list the decisions taken and what is still open, add a dated entry to
 `CHANGELOG.md` (the Changelog page is made from it in step 19), then ask (`AskUserQuestion`, header
 `Gate`): **Approve** (Recommended when nothing is pending) / **Revise** — they say what / **Stop
 here** — state saved. Never start the next step before approval; after it, the next step starts in a
@@ -136,8 +143,9 @@ site itself — so it can start from the files instead. Nothing in the procedure
    - **Name and short name** of the product as the site should show them.
    - **Sample company and cast**: propose a fictional company fitting the domain and one person
      per actor; the operator renames or accepts.
-   - **Depth**: full (every section, Recommended) · essentials (Foundations, Logo, Microcopy,
-     Components, Sign-in, App layout, Flows, Technology; the rest planned). Under essentials a step
+   - **Depth**: full (every section, Recommended) · essentials (Product with the stack,
+     Architecture, Foundations, Logo, Microcopy, Illustrations, Components, Sign-in, App layout,
+     Flows; the rest planned). Under essentials a step
      that needs a planned one draws what it needs in place — a sign-in panel without the
      Illustrations page, a flow's screens without the Key screens page.
 4. Write `STATE.json` (a product without figures: `steps.charts` is `skipped`), `DECISIONS.md`
@@ -159,12 +167,13 @@ tones, and **categorical** colors if the domain has categories.
    `pages.mjs`): the three schemes side by side, each on a strip of mini-UI — a button, a chip, a
    link, a selected row, on light and on dark — so the operator looks before choosing. The frame
    is not laid yet, so the page stands alone: its own `<style>` holds the three schemes' values (the
-   one page allowed to, as it does not outlive the choice), and the operator opens it from disk.
+   one page allowed to, as it does not outlive the choice). Open it from disk for the operator and
+   send its screenshot (*Show, do not describe*).
    Offer *like competitor* when a profile exists.
 3. Ask (`AskUserQuestion`, header `Scheme`): A (Recommended) / B / C — the operator may type a hue or
    a hex. Record SC-002. Leave the scratch page to the build: once the step is approved and
    `steps.scheme` is `done`, the first `node build.mjs` — when step 3 has laid the frame — removes
-   `scheme.html`. The Foundations page will show the chosen scheme.
+   `scheme.html`. The Colors page under Design will show the chosen scheme.
 
 ## Step 2 — Technology
 
@@ -174,8 +183,10 @@ integrations), and what the blueprint's architecture names. Ask per layer, 2–4
 web client, mobile client (if a mobile surface exists), backend, data store, hosting, and the
 charts library when the product has figures (the options of step 17). Options: your
 recommendation first · the alternative worth considering · *what the product already uses* when
-code exists; the operator types their own. Record SC-003 with the reasons, the charts library as
-SC-008. This feeds the Technology page in step 18.
+code exists; the operator types their own. Ask about the libraries the documentation leaves open
+too (internationalisation, icons, charts). Record SC-003 with the reasons, the charts library as
+SC-008. For every technology chosen, note its official site: the Technology stack page (step 3)
+shows each with its mark, one line and that link; the Architecture page (step 18) draws them.
 
 ## Step 3 — Frame
 
@@ -183,42 +194,57 @@ SC-008. This feeds the Technology page in step 18.
 2. Copy `site.mjs` with `{{NAME}}`, `{{MARK}}` (the first letter until a logo is picked),
    `{{PORT}}` (pick a free one, 4330 up), `{{LANGUAGES}}` (a JS array), `{{DEFAULT_LANGUAGE}}`.
 3. Copy `pages.mjs`; remove what the depth decision planned away (keep the entry without `path`
-   so it shows as planned), add domain components to the Components sections if the reading named
-   them. Copy `tokens.css` and write the scheme's values into the brand block (light and dark; the
+   so it shows as planned — a child page too), add domain components to the Components sections if
+   the reading named them, and fit the Stack page's sections to the layers the stack has. Copy `tokens.css` and write the scheme's values into the brand block (light and dark; the
    dark brand is lighter and the foreground on it darker — check contrast; the dark values stand
    twice, under the media query and under `[data-theme='dark']`, and must be the same). Copy
    `components.css`, `sample.mjs` (fill it), `README.md`, `CHANGELOG.md`, `DECISIONS.md` if not yet,
    and `i18n/lang.js` once per non-default language as `i18n/<lang>.js`, with the frame's strings
    translated (`ui.*`, `flow.*`, `overview.how.*`, `flows.list.*`) and the `nav.*` keys for every
-   page, section and child in `pages.mjs`.
-4. `node tools/genPages.mjs`. Then the overview (`sections.md › Overview`): `tools/genOverview.mjs`
-   writes `index.html` over its starting page — the hero (the product in one paragraph, from the
-   reading, and what this site is), `<div data-catalog></div>`, *Where this comes from* from
-   `SOURCES.md`, and *How to read this site* with the `overview.how.*` keys of the starting page.
-5. `node build.mjs`, `node open.mjs` — the operator sees the whole site with the menu, the theme and
-   language switches, the overview, and every section as a starting page. Gate.
+   page, section, child and child's section in `pages.mjs`.
+4. `node tools/genPages.mjs`. Then the **Product page** (`sections.md › Product`): the frame's
+   `tools/genProduct.mjs` — fill its arrays marked `FILL` from `SOURCES.md` (the tagline, the
+   paragraph, the promises, what each role does and where, the modules with the first release
+   marked, the main loop, one line of the sample company); keep its rendering, which follows
+   `sections.md`. It writes `index.html` over its starting page from them and `sample.mjs` — what it is, who uses it, the modules, how it works (the main loop drawn), the
+   sample company, and *About this site* with `<div data-catalog></div>`, where the content comes
+   from and how to read the site (the `overview.how.*` keys of the starting page), then the list of
+   its child pages (`<div data-children></div>`).
+5. The **Technology stack** page (`sections.md › Technology stack`): `node tools/fetchTechMarks.mjs
+   <slug> …` once with the Simple Icons slug of every technology in SC-003 (`name=url` for one Simple
+   Icons lacks: an SVG or PNG from the project's own site, or its GitHub organisation's picture,
+   `https://github.com/<org>.png`, when that is the project's logo and not a person; none fits → the
+   initials); then fill `LAYERS` and `LEAD` of the frame's `tools/genStack.mjs` — every technology
+   of SC-003 by layer, with its version, its Simple Icons slug, one line of what it does in this
+   product and its official site — and run it: it writes `product/stack.html` with the marks of
+   `assets/tech/marks.json`. Add the keys both pages introduce to every dictionary.
+6. `node build.mjs`, `node open.mjs` — the operator sees the whole site with the menu, the theme and
+   language switches, the Product page, the stack, and every other section as a starting page. Gate.
 
 ## Steps 4–5 — Foundations, Logo
 
 Each follows the same shape: **plan → approve → build in parallel → build.mjs → gate**.
 
 - **Foundations (4).** Finish `tokens.css` (type scale with the fonts decided, spacing, radii,
-  shadows, motion, sizes; categorical colors). Write `tools/genFoundations.mjs`: the sections in
-  `sections.md › Foundations`, with swatches, token values and contrast rows as showcase.js
-  expects (`site.md › Live values`). Font choice is a question when the documentation does not
+  shadows, motion, sizes; categorical colors). Write `tools/genFoundations.mjs`: the Design pages
+  Colors, Typography, Spacing and layout, Radius and shadows and Motion (`design/*.html`, the
+  sections in `sections.md › Design`), with swatches, token values and contrast rows as showcase.js
+  expects (`site.md › Live values`); and the Design root page, `design/index.html`: the system in
+  one screen — the brand color, the type, a button, a card — above the list of its pages. Font choice is a question when the documentation does not
   settle it (two proposals, with the reason).
 - **Logo (5).** Plan: 6–12 ideas for a mark, each from a concept in the product (a thing, an
   action, the initial, the domain) — one line each. Approve. `tools/genLogo.mjs`: each mark an
   SVG on a 64-unit grid in `currentColor` with `var(--lg-ground)` knockouts; the side-by-side
   section at one size on light and dark, then at menu size (28 px) and tab size (16 px); the
-  sizes section. The operator picks → `pick logo <id>` → `site.mjs › mark` becomes that SVG.
+  sizes section, on `design/logo.html`. The operator picks → `pick logo <id>` → `site.mjs › mark`
+  becomes that SVG.
 
 ## Step 6 — Microcopy and tone
 
 It needs only the Intake, and comes before Components — the first step that puts words on a
 sample. Decide the voice with the operator (two or three options: plain and warm · precise and
 formal · brisk and playful — with a sample error message in each). Then the patterns of
-`sections.md › Microcopy` with examples, and the **languages** section: the same messages in every
+`sections.md › Design` (Microcopy and tone) with examples, and the **languages** section: the same messages in every
 interface language, side by side. From here on every string on a screen, in a component or a
 letter is taken from this page, and its translations go to the dictionaries.
 
@@ -235,12 +261,16 @@ The shape of steps 4–5: **plan → approve → build in parallel → build.mjs
   `tools/genComponents.mjs` puts the parts together. Restyle the starter classes to the project.
   Samples use the cast and data of `sample.mjs`.
 - **Icons (8).** The sprite in `assets/showcase.js` is the start; add what the components and
-  screens need; the page lists every icon with its name, the grid and the rules.
-- **Illustrations (9).** Plan: the situations — from States (empty, loading, error, access,
-  offline, done), from the flows (a success at the end of each), sign-in panels, not-found — plus
-  a reserve. Approve. `tools/genIllustrations.mjs`: SVG symbols drawn only with `--ill-*` tokens
-  (added to `tokens.css`, derived from the scheme), no text, no faces; some with CSS animation
-  that stops under `prefers-reduced-motion`; the side-by-side section and the in-place section.
+  screens need; `design/icons.html` lists every icon with its name, the grid and the rules.
+- **Illustrations (9).** A root section of its own. Plan, in two lists: **for states** — a picture
+  for every state a screen can be in (empty, nothing found, error, no access, locked or closed,
+  offline when the product has it, done) — and **from the domain** — the scenes of the product's
+  world the reading gives (its places, its objects, its moments: a first setup, an import, an
+  approval, a report ready, a target reached), each named after where it will sit (onboarding, a
+  sign-in panel, a letter, an announcement, the 404) — plus a reserve. Approve. `tools/genIllustrations.mjs`:
+  SVG symbols drawn only with `--ill-*` tokens (added to `tokens.css`, derived from the scheme), no
+  text, no faces; some with CSS animation that stops under `prefers-reduced-motion`; the sections
+  For states, From the domain, In place and Reserve.
 
 ## Steps 10–13 — States, Sign-in layouts, App layout, Key screens
 
@@ -286,7 +316,7 @@ Two approvals, by design.
    switch for free.
 4. Gate per flow or per batch of flows, as the operator prefers.
 
-## Steps 15–18 — Emails, Not found, Charts, Technology page
+## Steps 15–18 — Emails, Not found, Charts, Architecture
 
 - **Emails (15).** Plan: the common letters (invitation, verification code, password reset,
   welcome, digest, security alert) and the product's own, proposed from the flows (what a flow
@@ -301,11 +331,13 @@ Two approvals, by design.
   wants live tooltips · none.
   Load the `dataviz` skill for the palette and the choice of chart forms. Draw the product's
   figures in both themes; the `charts` entry in `pages.mjs` gets its `path`.
-- **Technology page (18).** `tools/genTechnology.mjs`: the architecture as one SVG on tokens —
-  the clients per platform, the backend, the data, the external services, with the arrows named;
-  the stack as a grid of cards, each with the technology's mark (an SVG file under
-  `assets/tech/`, taken from a free set such as Simple Icons and kept in the folder, never a
-  CDN), its name, one line of what it is for; the path of one request through the parts.
+- **Architecture (18).** A root section, drawn for the customer, not for the team. Plan: the
+  diagrams the reading supports (`sections.md › Architecture`), one line each. Approve.
+  `tools/genArchitecture.mjs`: each diagram an inline SVG on tokens — boxes with the technology's
+  mark from `assets/tech/` where one stands for it, arrows named by what they carry, a legend — with
+  two or three sentences beside it of what it shows; the one-request section numbered step by step.
+  Load the `artifact-diagramming` skill when it is available for how to draw a diagram that shows
+  the real mechanism and stays legible in both themes.
 
 ## Step 19 — Principles, Decisions, Changelog, Next steps
 
@@ -315,8 +347,8 @@ Two approvals, by design.
   options as thumbnails or lines, the chosen one marked, the reason; a link to the variant.
 - **Changelog.** `tools/genChangelog.mjs` from `CHANGELOG.md`, which has had a dated entry per
   gate since step 3; it runs again at every later gate.
-- **Overview.** `tools/genOverview.mjs` again, so the hero and *Where this comes from* describe
-  the site as it now stands.
+- **Product page.** `tools/genProduct.mjs` again, so *About this site* and where the content
+  comes from describe the site as it now stands.
 - **Next steps.** The queue: what the site will get next, in order (planned sections, flows
   deferred, the reserve components). The ideas: proposals for the product beyond the
   documentation — each a title, one paragraph of what and why, where it came from. Ask the

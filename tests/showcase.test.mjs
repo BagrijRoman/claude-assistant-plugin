@@ -58,10 +58,10 @@ describe('showcase.mjs check', () => {
 
   it('reports a page pages.mjs names that is not there', () => {
     const dir = site();
-    rmSync(join(dir, 'icons/index.html'));
+    rmSync(join(dir, 'design/icons.html'));
     const result = check(dir);
     assert.equal(result.status, 1);
-    assert.match(result.stdout, /^error: icons\/index\.html — pages\.mjs gives page "icons" this path, and there is no such file/m);
+    assert.match(result.stdout, /^error: design\/icons\.html — pages\.mjs gives page "icons" this path, and there is no such file/m);
   });
 
   it('reports a raw color, a raw font and a radius in px on a page, and lets anchors, entities and marked lines pass', () => {
@@ -99,11 +99,11 @@ describe('showcase.mjs check', () => {
 
   it('reports a key a page uses that a dictionary lacks, and warns of one nothing uses', () => {
     const dir = site();
-    edit(dir, 'i18n/uk.js', "  'nav.icons': 'переклад',\n", '');
+    edit(dir, 'i18n/uk.js', "  'nav.design.icons': 'переклад',\n", '');
     edit(dir, 'i18n/uk.js', "  'ui.allPages':", "  'old.unused': 'стара',\n  'ui.allPages':");
     const result = check(dir);
     assert.equal(result.status, 1);
-    assert.match(result.stdout, /^error: i18n\/uk\.js — no "nav\.icons", which [\w/.]+\.html:\d+ uses$/m);
+    assert.match(result.stdout, /^error: i18n\/uk\.js — no "nav\.design\.icons", which [\w/.]+\.html:\d+ uses$/m);
     assert.match(result.stdout, /^warning: i18n\/uk\.js:\d+ — "old\.unused" is used by no page or script/m);
   });
 

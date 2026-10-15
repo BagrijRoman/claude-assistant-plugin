@@ -38,7 +38,7 @@ export const scaffold = ({ flow = true } = {}) => {
   }));
   mkdirSync(join(dir, 'i18n'));
   writeFileSync(join(dir, 'i18n', 'uk.js'), fill(readFileSync(join(TEMPLATES, 'i18n', 'lang.js'), 'utf8'), {
-    LANG: 'uk', LANGUAGE_NAME: 'Ukrainian', NAV_KEYS: "  'nav.overview': 'Огляд',",
+    LANG: 'uk', LANGUAGE_NAME: 'Ukrainian', NAV_KEYS: "  'nav.product': 'Продукт',",
   }));
   return dir;
 };

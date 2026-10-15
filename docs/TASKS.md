@@ -1186,3 +1186,40 @@ Order and contents are still being refined.
 | T15 | `/fix` | reproduce, root cause, minimal fix, test; the new test must fail before the fix (from T22) |
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
+
+## T32 — `/showcase` menu: the product and its architecture first, design in pages · `done` (0.16.0)
+
+Asked for by the operator on 2026-10-15, at the Frame gate of the first real run (ETC.V2): the menu should open on the
+product, not on the site; the stack and the architecture should be there for the customer, the stack with the
+official marks and links; the design should open into pages of its own; illustrations should be a section of their
+own, for states and for the domain; the components should unfold into their list; changelog and next steps stay at
+the end. The skill should lay the site that way from the start.
+
+What was done (0.16.0):
+- The menu: no band labels — a band is a group of roots set apart by a gap, and a heading of the catalog. Every
+  root folds; under it its sections (anchors) and its child pages, for any root, not only Flows. The order: Product
+  (the home page: what it is, who uses it, modules, how it works, sample company, about this site; child page
+  Technology stack) · Architecture · Design (child pages Principles, Colors, Typography, Spacing and layout, Radius
+  and shadows, Motion, Logo, Icons, Microcopy and tone, States, Charts) · Illustrations (for states, from the domain,
+  in place, reserve) · Components · Screens (Sign-in layouts, App layout, Key screens, Emails, Not found page) ·
+  Flows · Decisions · Changelog · Next steps.
+- `build.mjs` writes a gap instead of a band label; `genPages.mjs` lays the Product page as the home page (the
+  catalog and how to read the site in its `site` section), lists any root's child pages under "In this section",
+  and gives the flow player only to the pages under Flows.
+- `tools/fetchTechMarks.mjs`: the official marks of the stack from Simple Icons, or a project's own site, into
+  `assets/tech/` with `marks.json`; `.tech-mark` in `site.css` (`--mono` turns white on dark, `--initials` for a
+  technology with no mark). The one exception to "every value in tokens.css", stated in SKILL.md.
+- The Frame step writes the Product page and the Technology stack page; step 18 is Architecture (`architecture`
+  in STATE.json), diagrams for the customer; Illustrations plan two lists, for states and from the domain.
+- `SKILL.md`, `phases.md`, `sections.md`, `site.md`, the skill page and `bin/skillResume.mjs` follow; the frame tests
+  check the gap, the Product root open on the home page, Design open on a design page, child lists and the player.
+- The frame brings the generators of the first two pages, `tools/genProduct.mjs` and `tools/genStack.mjs`: the
+  rendering is fixed, the content is arrays marked `FILL`, so the next run lays them the way the operator approved on
+  ETC.V2 instead of writing them anew. A test runs both on a fresh scaffold.
+- *Show, do not describe* in `phases.md › Common mechanics` and in SKILL.md: whatever the operator chooses or
+  approves is opened and its screenshots sent (`SendUserFile` added to the allowed tools) — at the scheme step the
+  operator had asked to see the samples rather than read them.
+
+Done when:
+- `npm test` passes.
+- The ETC.V2 showcase is moved to the new menu and the operator approves its Frame gate.

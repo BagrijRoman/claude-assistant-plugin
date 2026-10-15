@@ -4,15 +4,13 @@
  * device frames, and reduced motion. Every color is a token; nothing here is the product's style.
  */
 
-/* ── Menu: bands and root sections ── */
+/* ── Menu: root sections, their groups set apart by a gap ── */
 
-.sc-side__band {
-  margin: 16px 12px 4px;
-  color: var(--color-subtle);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+.sc-side__gap {
+  margin: 12px 12px;
+  border: 0;
+  border-top: 1px solid var(--color-default);
 }
-.sc-side__band:first-of-type { margin-top: 8px; }
 
 /* The title of a root is a link inside the <summary>: the chevron folds, the title opens the page */
 .sc-side__title { display: flex; align-items: center; gap: 6px; }
@@ -27,6 +25,26 @@
   background: var(--color-primary-soft);
   color: var(--color-primary-strong);
 }
+
+/* ── Technology marks on the Stack page: files in assets/tech/ (tools/fetchTechMarks.mjs) in their
+   brand colors; a black or white mark (mono) turns white on the dark theme; a technology with no mark
+   shows its initials on a tile ── */
+
+.tech-mark { display: block; width: 40px; height: 40px; object-fit: contain; flex: none; }
+.tech-mark[src$=".png"] { border-radius: var(--radius-control); }
+.tech-mark--initials {
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  color: var(--color-muted);
+  font-weight: 600;
+  font-size: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .tech-mark--mono { filter: invert(1); }
+}
+:root[data-theme='dark'] .tech-mark--mono { filter: invert(1); }
 
 /* ── Top bar: language and presentation ── */
 

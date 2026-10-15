@@ -109,9 +109,10 @@ function renderRoot(page, current, prefix) {
   ].join('\n');
 }
 
+// The menu is the root sections and nothing above them: a band shows only as the gap before its group
 function renderSide(current, prefix) {
-  const bands = BANDS.map((band) => [
-    `    <p class="t-label sc-side__band" data-i18n="nav.band.${band.id}">${escapeHtml(band.title)}</p>`,
+  const bands = BANDS.map((band, index) => [
+    ...(index > 0 ? ['    <hr class="sc-side__gap">'] : []),
     ...allPages.filter((page) => page.band === band && !page.parent).map((page) => renderRoot(page, current, prefix)),
   ].join('\n'));
   return [

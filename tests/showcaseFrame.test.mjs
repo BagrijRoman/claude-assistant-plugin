@@ -1,8 +1,8 @@
 // The showcase skill ships a frame — build.mjs, genPages, the page shell — that is copied into every
 // project. These tests scaffold it the way the skill does, with one flow added, then check what genPages
 // and the build write: a starting page for every entry in pages.mjs that has a path; a menu whose
-// foldable roots share the name that keeps one of them open at a time; the root of the page on show
-// open and none on the overview; a flow's root open with its title marked; the language switch and the
+// foldable roots share the name that keeps one of them open at a time and no band label above them; the
+// root of the page on show open, the Product root on the home page; a flow's root open with its title marked; the language switch and the
 // dictionary wired in; a second build that changes nothing, and a second genPages run that writes nothing.
 // A second scaffold lays the frame with no flow, as the Frame step does, and adds one later, as the
 // Flows step does: the Flows index lists it after the next build, under a key of its own. The Color
@@ -55,12 +55,27 @@ describe('showcase frame', () => {
     }
   });
 
-  it('opens the root that holds the page on show, and none on the overview', () => {
-    const components = readFileSync(join(dir, 'components/index.html'), 'utf8');
-    const open = [...components.matchAll(/<details class="sc-side__group"[^>]*\bopen\b[^>]*>\s*<summary[^>]*>.*?href="([^"]+)"/gs)]
+  it('opens the root that holds the page on show, the Product root on the home page', () => {
+    const openOn = (path) => [...readFileSync(join(dir, path), 'utf8').matchAll(/<details class="sc-side__group"[^>]*\bopen\b[^>]*>\s*<summary[^>]*>.*?href="([^"]+)"/gs)]
       .map(([, href]) => href);
-    assert.deepEqual(open, ['../components/index.html']);
-    assert.equal(rootsOf(readFileSync(join(dir, 'index.html'), 'utf8')).filter(isOpen).length, 0);
+    assert.deepEqual(openOn('components/index.html'), ['../components/index.html']);
+    assert.deepEqual(openOn('index.html'), ['index.html']);
+    assert.deepEqual(openOn('design/colors.html'), ['../design/index.html']);
+  });
+
+  it('shows no band label in the menu, only a gap between the groups', () => {
+    const html = readFileSync(join(dir, 'index.html'), 'utf8');
+    const menu = html.match(/<!-- nav:start[^]*?<!-- nav:end -->/)?.[0] ?? '';
+    assert.doesNotMatch(menu, /data-i18n="nav\.band\./);
+    assert.equal(menu.split('<hr class="sc-side__gap">').length - 1, BANDS.length - 1);
+  });
+
+  it('lists a root\'s child pages on its own page, and gives the flow player only to flows', () => {
+    const design = readFileSync(join(dir, 'design/index.html'), 'utf8');
+    assert.match(design, /data-i18n="ui\.inThisSection"/);
+    assert.match(design, /<a class="card sc-tile" href="\.\.\/design\/colors\.html">/);
+    assert.doesNotMatch(readFileSync(join(dir, 'design/colors.html'), 'utf8'), /assets\/flow\.js/);
+    assert.match(readFileSync(join(dir, FLOW.path), 'utf8'), /assets\/flow\.js/);
   });
 
   it('opens the root of a flow and marks its title, with the flow itself as the page on show', () => {
@@ -85,11 +100,11 @@ describe('showcase frame', () => {
     assert.match(result.stdout, /nothing written/);
   });
 
-  it('keys a flow under Flows, apart from the root section that has the same id', () => {
+  it('keys a flow under Flows, apart from the screens page that has the same id', () => {
     const html = readFileSync(join(dir, 'index.html'), 'utf8');
     assert.match(html, /href="flows\/signIn\.html"[^>]*><span data-i18n="nav\.flows\.signIn">Sign in<\/span>/);
-    assert.match(html, /href="signIn\/index\.html"[^>]*><span data-i18n="nav\.signIn">Sign-in layouts<\/span>/);
-    assert.doesNotMatch(html, /data-i18n="nav\.signIn">Sign in</);
+    assert.match(html, /href="screens\/signIn\.html"[^>]*><span data-i18n="nav\.screens\.signIn">Sign-in layouts<\/span>/);
+    assert.doesNotMatch(html, /data-i18n="nav\.screens\.signIn">Sign in</);
   });
 });
 
@@ -156,7 +171,36 @@ describe('showcase frame, a flow added after the frame', () => {
     writeFileSync(join(dir, 'pages.mjs'), pages.replace("{ id: 'sizes', title: 'Sizes and spacing'", "{ id: 'sideBySide', title: 'Sizes and spacing'"));
     const result = run(dir, 'build.mjs');
     assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /share the i18n key nav\.logo\.sideBySide/);
+    assert.match(result.stderr, /share the i18n key nav\.design\.logo\.sideBySide/);
     writeFileSync(join(dir, 'pages.mjs'), pages);
+  });
+});
+
+describe('showcase frame, the Product page and the stack from their template generators', () => {
+  let dir;
+  before(() => {
+    dir = scaffold({ flow: false });
+    assert.equal(run(dir, 'tools/genPages.mjs').status, 0);
+  });
+  after(removeTempDirs);
+
+  it('writes the Product page over its starting page, with the catalog and the stack listed', () => {
+    const result = run(dir, 'tools/genProduct.mjs');
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(run(dir, 'build.mjs').status, 0);
+    const html = readFileSync(join(dir, 'index.html'), 'utf8');
+    for (const id of ['about', 'roles', 'modules', 'loop', 'sample', 'site']) assert.match(html, new RegExp(`<article class="sc-block" id="${id}"`));
+    assert.match(html, /<!-- catalog:start[^]*?href="architecture\/index\.html"/);
+    assert.match(html, /<!-- children:start[^]*?<a class="card sc-tile" href="product\/stack\.html">/);
+  });
+
+  it('writes the stack page, a technology without a mark on an initials tile, and the build stays idempotent', () => {
+    const result = run(dir, 'tools/genStack.mjs');
+    assert.equal(result.status, 0, result.stderr);
+    const html = readFileSync(join(dir, 'product/stack.html'), 'utf8');
+    assert.match(html, /<span class="tech-mark tech-mark--initials" aria-hidden="true">Ex<\/span>/);
+    assert.match(html, /target="_blank" rel="noopener"><span data-i18n="ui\.officialSite">/);
+    run(dir, 'build.mjs');
+    assert.match(run(dir, 'build.mjs').stdout, /Navigation is up to date/);
   });
 });

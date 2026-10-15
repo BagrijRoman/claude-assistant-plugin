@@ -56,7 +56,7 @@ const SHOWCASE_STAGES = [
   [['emails'], 'Emails'],
   [['notFound'], 'Not found page'],
   [['charts'], 'Charts'],
-  [['technology'], 'Technology page'],
+  [['architecture'], 'Architecture'],
   [['principles', 'project'], 'Principles, Decisions, Changelog, Next steps'],
   [['audit'], 'Audit'],
 ];

@@ -1,9 +1,9 @@
 ---
 name: showcase
-description: Builds the project's design showcase — a static site in docs/showcase/ that shows the customer the product before it exists (logo, sign-in and app layouts, key screens, flows with a step player, emails, illustrations, states, 404) and gives the team what every screen is drawn with (color scheme and tokens, components, icons, microcopy, technology, decisions). Reads the whole documentation folder; the operator decides every fork; theme and interface language switch everywhere. Human-invoked only.
+description: Builds the project's design showcase — a static site in docs/showcase/ that shows the customer the product before it exists (what it is and for whom, the technology stack with official marks, the architecture in diagrams, then the design — colors, type, logo, icons, words, states — illustrations, components, sign-in and app layouts, key screens, flows with a step player, emails, 404) and gives the team what every screen is drawn with (tokens, components, icons, microcopy, decisions). Reads the whole documentation folder; the operator decides every fork; theme and interface language switch everywhere. Human-invoked only.
 argument-hint: "[init [dir] | continue | status | section <id> | flow <id> | pick <section> <variant> | add | audit | open]"
 disable-model-invocation: true
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(node:*), Bash(ls:*), Bash(mkdir:*), Bash(cp:*), Bash(find:*), AskUserQuestion, Agent
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(node:*), Bash(ls:*), Bash(mkdir:*), Bash(cp:*), Bash(find:*), AskUserQuestion, Agent, SendUserFile
 ---
 
 # Showcase
@@ -29,7 +29,7 @@ from decisions you take with the operator.
 | `init [dir]` | choose the folder, read the documentation, decide languages, scheme and stack, lay the frame; then the steps in order |
 | `continue` | read `STATE.json`, resume the step it is in — from the files, in a fresh context (`phases.md › A fresh context`) |
 | `status` | the steps and their state, the picks made, what waits for the operator; change nothing |
-| `section <id>` | make or remake one root section (`logo`, `components`, `emails`, …) by its id in `pages.mjs` |
+| `section <id>` | make or remake one section (`components`, `illustrations`, `architecture`, a page under a root such as `logo` or `stack`, …) by its id in `pages.mjs` |
 | `flow <id>` | make or remake one flow; `flow new` adds one through the two approvals |
 | `pick <section> <variant>` | record the operator's choice among variants: `Selected` mark, `site.mjs › selected`, its row in `DECISIONS.md`, the Decisions page |
 | `add` | a page or a section the standard list does not have |
@@ -46,7 +46,9 @@ the site has conventions that are easy to break by improvising.
 **Everything is read from `tokens.css`.** No hex value, font name, radius or duration anywhere
 else — not in a page, not in a component, not in an illustration. A logo is `currentColor`; a
 picture is drawn in `--ill-*` tokens. This is what makes two themes and a color-scheme change a
-matter of one file, and the pages incapable of drifting from the tokens.
+matter of one file, and the pages incapable of drifting from the tokens. The one exception is the
+official mark of a technology on the Stack page: an SVG file in `assets/tech/` in its owner's
+colors, fetched once by `tools/fetchTechMarks.mjs`, never redrawn.
 
 **Nothing appears late.** The menu, the steps of a flow, the pictures are static markup; scripts
 only decide what is visible. A heavy page is written by a generator in `tools/` from data, never
@@ -55,7 +57,9 @@ by hand: the texts can then carry their language keys, and a change is made once
 **The operator decides.** The color scheme, the stack, which mark, which layout, which flows and
 what each shows — every one is a question with your recommendation first, and every answer a row in
 `DECISIONS.md`. Before a section is built, its plan (the list of marks, cases, components, flows)
-is shown and approved; a flow's description is approved before its screens are drawn.
+is shown and approved; a flow's description is approved before its screens are drawn. And the
+operator **sees before choosing**: the page opened and its screenshots sent, never a visual choice
+put in words alone (`phases.md › Common mechanics`).
 
 **State lives on disk.** `STATE.json` holds the step, the picks and the question waiting for an
 answer; `DECISIONS.md` the choices; `plans/` every approved plan and flow description; `CHANGELOG.md`
@@ -100,21 +104,26 @@ The frame comes from `templates/` next to this file (`${CLAUDE_PLUGIN_ROOT}/skil
 `STATE.json`, `DECISIONS.md`, `CHANGELOG.md` and `README.md` are copied with their `{{placeholders}}`
 filled. Then `node tools/genPages.mjs` lays a starting page for every section and `node build.mjs`
 writes the navigation — the operator can open the whole site before any section has content. The
+frame also brings the generators of the first two pages, `tools/genProduct.mjs` and
+`tools/genStack.mjs`, and `tools/fetchTechMarks.mjs` for the stack's official marks: fill their
+content, keep their rendering. The
 scripts find the site by their own location, so `node docs/showcase/build.mjs` works from anywhere.
 
 ## The site
 
-The menu: the project's name on top, then **bands** that do not fold, each holding **root
-sections**. A root section is one page; the items under it scroll to its parts and the menu marks
-the one on screen. A root with items folds, and only one is open at a time — opening one folds the
-one that was open; a root without items is a plain link. Flows is the exception: each flow is a page
-of its own with a step player. The order is the order of a customer's attention, not the order of making:
+The menu: the project's name on top, then the **root sections**, nothing above them — no band
+labels; a group of roots is set apart from the next by a gap. A root folds, and only one is open at
+a time — opening one folds the one that was open; a root without items is a plain link. The items
+under a root are its **sections** — anchors on its own page, the one on screen marked as it scrolls —
+and its **child pages**, one level down: the stack under Product, the pages of Design, the screens,
+each flow. The order is the order of a customer's attention, not the order of making:
 
-| Band | Root sections, in order |
-|------|-------------------------|
-| **Product** | Overview · Principles · Logo · Sign-in layouts · App layout · Key screens · Flows · Emails |
-| **Design** | Illustrations · States · Not found page · Charts (when the product has figures) · Components · Icons · Foundations · Microcopy and tone |
-| **Project** | Technology · Decisions · Changelog · Next steps |
+| Group | Root sections, in order, with what unfolds under each |
+|-------|-------------------------------------------------------|
+| **Product** | **Product** (the home page: what it is · who uses it · modules · how it works · sample company · about this site; child page **Technology stack** — each technology with its official mark, one line, a link to its site) · **Architecture** (diagrams: the system in its world · its parts · modules · how data moves · where it runs · one request) |
+| **Design** | **Design** (child pages: Principles · Colors · Typography · Spacing and layout · Radius and shadows · Motion · Logo · Icons · Microcopy and tone · States · Charts when the product has figures) · **Illustrations** (for states · from the domain · in place · reserve) · **Components** (one item per component) |
+| **The product in use** | **Screens** (child pages: Sign-in layouts · App layout · Key screens · Emails · Not found page) · **Flows** (one page per flow, with the step player) |
+| **Project** | Decisions · Changelog · Next steps |
 
 Everywhere: a theme switch (light · dark · system) that every page follows, hex codes and contrast
 ratios included; a language switch when there is more than one language; presentation mode
@@ -131,13 +140,13 @@ and approves or sends it back. The key is the step's name in `STATE.json › ste
 | 0 Intake | `intake` | folder, the reading, languages, name, the sample company and cast | — |
 | 1 Color scheme | `scheme` | the brand color and its companions — **first**, before anything is drawn; from the design when there is one, otherwise three proposals to look at | the reading |
 | 2 Technology | `stack` | the stack, chosen in a dialog from what the operator has (starter templates, code) and what the documentation implies | the reading |
-| 3 Frame | `frame` | the folder scaffolded, tokens from the scheme, starting pages, the overview, the site opens | 1 |
-| 4 Foundations | `foundations` | tokens finished, the Foundations page with live swatches and contrast | 3 |
+| 3 Frame | `frame` | the folder scaffolded, tokens from the scheme, starting pages; the Product page from the reading and the Technology stack page with the official marks; the site opens | 1, 2 |
+| 4 Foundations | `foundations` | tokens finished; the Design pages Colors, Typography, Spacing and layout, Radius and shadows, Motion, with live swatches and contrast | 3 |
 | 5 Logo | `logo` | marks from ideas in the product, at every size; one picked | 4 |
 | 6 Microcopy and tone | `microcopy` | voice and patterns in every language — the source of every string that follows, so it comes before the first step that writes words | 0 |
 | 7 Components | `components` | the standard set, the product's own, a reserve; styled to the project | 4, 6 |
 | 8 Icons | `icons` | the set on its grid | 7 |
-| 9 Illustrations | `illustrations` | pictures for every situation, some moving; a reserve | 4, 5 |
+| 9 Illustrations | `illustrations` | a picture for every state a screen can be in and for the cases of the domain, some moving; a reserve | 4, 5 |
 | 10 States | `states` | picture + words + action for empty, loading, error, access, offline, done | 6, 9 |
 | 11 Sign-in layouts | `signIn` | several, with animated panels; one picked | 7, 9 |
 | 12 App layout | `appLayout` | several shells with a folding sidebar; one picked | 7 |
@@ -146,7 +155,7 @@ and approves or sends it back. The key is the step's name in `STATE.json › ste
 | 15 Emails | `emails` | the common letters and the product's own, illustrated | 6, 9 |
 | 16 Not found page | `notFound` | several, with moving pictures; one picked | 9 |
 | 17 Charts | `charts` | only when the product has figures, with the library chosen in step 2 | 4 |
-| 18 Technology page | `technology` | the architecture drawn, the stack with marks | 2 |
+| 18 Architecture | `architecture` | the architecture drawn for the customer: diagrams of the system in its world, its parts, modules, data, deployment, one request | 2 |
 | 19 Principles · Decisions · Changelog · Next | `principles`, `project` | the pages about the project | all |
 | 20 Audit | `audit` | both themes × every language; the checks in site.md | all |
 
@@ -184,7 +193,7 @@ The operator always sees which stage the run is in, what is done and what comes 
 
 | Mode | Stages |
 |------|--------|
-| `init [dir]`, `continue` | Intake → Color scheme → Technology → Frame → Foundations → Logo → Microcopy and tone → Components → Icons → Illustrations → States → Sign-in layouts → App layout → Key screens → Flows → Emails → Not found page → Charts → Technology page → Principles, Decisions, Changelog, Next steps → Audit |
+| `init [dir]`, `continue` | Intake → Color scheme → Technology → Frame → Foundations → Logo → Microcopy and tone → Components → Icons → Illustrations → States → Sign-in layouts → App layout → Key screens → Flows → Emails → Not found page → Charts → Architecture → Principles, Decisions, Changelog, Next steps → Audit |
 | `status` | Read the state → Report |
 | `section <id>` | Plan → Approval → Build → Gate |
 | `flow <id>` | Description → Approval → Build → Gate |
@@ -201,7 +210,7 @@ The operator always sees which stage the run is in, what is done and what comes 
   are theirs; you recommend.
 - **Pull from the network at view time.** Fonts may load from Google Fonts with a local copy as
   fallback; technology marks and every other asset are files in the folder.
-- **Describe implementation** on the pages beyond the Technology section: a screen is a picture of
+- **Describe implementation** on the pages beyond the Technology stack and Architecture pages: a screen is a picture of
   behaviour, not a component tree.
 - **Invent the product.** What a screen shows comes from the documentation and the decisions; a
   gap is a question, not a guess — and goes into Next steps if the operator defers it.

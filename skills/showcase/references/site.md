@@ -31,13 +31,15 @@ a hand-written page breaks without noticing.
 | `base.css` | reset and the text classes `.t-page-title .t-section-title .t-card-title .t-body .t-body-strong .t-label .t-caption .t-figure .mono .tnum` |
 | `components.css` | the product's components, one block each |
 | `assets/showcase.css` | the frame: `.sc-side .sc-top .sc-main .sc-hero .sc-section .sc-section__head .sc-block .sc-row .sc-row__items .sc-state .sc-sample .sc-stage .sc-grid-2/3/4 .sc-tiles .sc-tile .sc-source .sc-proposed .sc-note .sc-list .swatch .sc-swatches .sc-diagram .frame .shell-sample .sc-motion .table-wrap` |
-| `assets/site.css` | bands, root links, language switch, presentation mode, the flow player, `.variant`, `.tag--selected`, `.device--phone/tablet/desktop`, `.mail`, reduced motion |
+| `assets/site.css` | the gaps between groups, root links, `.tech-mark` (`--mono`, `--initials`), language switch, presentation mode, the flow player, `.variant`, `.tag--selected`, `.device--phone/tablet/desktop`, `.mail`, reduced motion |
 | `assets/showcase.js` | the icon sprite (`<use href="#i-…">`), live swatches and contrast, tabs, switches, modals, toasts, motion replay; `window.showcase.enhance(root)` |
 | `assets/nav.js` | menu on narrow screens, one root open at a time (fallback), root-title clicks, in-place page swaps, scroll-spy, theme, presentation, keys; fires `pageswap` |
 | `assets/i18n.js` | translates `[data-i18n]` and `[data-i18n-attr]`; the language switch; `window.showcaseI18n` |
 | `assets/flow.js` | the step player |
 | `tools/lib/html.mjs` | `renderPage`, `section`, `block`, `variant`, `flowPlayer`, `flowMark`, `device`, `mail`, `t`, `escapeHtml` |
 | `tools/genPages.mjs` | a starting page for every page that does not exist yet |
+| `tools/fetchTechMarks.mjs` | the official marks of the stack, fetched once into `assets/tech/` with `marks.json` (title, color, `mono`, source) |
+| `assets/tech/` | the technology marks: the only files with colors of their own, never redrawn, never in a page |
 | `tools/gen*.mjs` | one generator per heavy page or flow |
 | `tools/parts/<page id>/*.mjs` | the pieces of a page made by several subagents, imported by its generator |
 | `sample.mjs` | the company, the cast, the data, `today` |
@@ -48,16 +50,20 @@ a hand-written page breaks without noticing.
 ## pages.mjs
 
 ```js
-export const BANDS = [{ id, title, desc, pages: [page, …] }, …];
-// page: { id, path, title, desc, sections: [{ id, title, desc }] }  — one long page, anchors
-//       { id, path, title, desc, children: [{ id, path, title, desc }] } — Flows: pages of their own
-//       { id, title, desc }                                           — planned: no path
+export const BANDS = [{ id, title, desc, pages: [page, …] }, …];      // a group: a gap in the menu, a heading in the catalog
+// page:  { id, path, title, desc, sections: [{ id, title, desc }] }  — one long page, anchors
+//        { id, path, title, desc, sections?, children: [child, …] }   — and pages one level down
+//        { id, title, desc }                                          — planned: no path
+// child: { id, path, title, desc, sections?: [{ id, title, desc }] } — a page; its sections are anchors on it
 ```
 
 Ids are the i18n keys: `nav.<page>`, `nav.<page>.desc`, `nav.<page>.<section>`,
-`nav.<page>.<section>.desc`, `nav.band.<band>`, `nav.band.<band>.desc`, and a child under its root:
-`nav.<page>.<child>` (a flow: `nav.flows.<flow>`), so a flow called `signIn` does not take the label
-of the Sign-in layouts page. A section's element on the page has the section's id. After any
+`nav.<page>.<section>.desc`, `nav.band.<band>`, `nav.band.<band>.desc`, a child under its root:
+`nav.<page>.<child>` (a flow: `nav.flows.<flow>`), and a child's section
+`nav.<page>.<child>.<section>` — so a flow called `signIn` does not take the label of the Sign-in
+layouts page (`nav.screens.signIn`). The menu shows no band label: a band is a group of roots, set
+apart from the next by a gap, and a heading of the catalog on the Product page. The first page is
+the home page, `index.html` — the Product page; build.mjs writes the catalog into it. A section's element on the page has the section's id. After any
 change: `node build.mjs`, which stops with the two entries named when two would share a key.
 
 ## Writing a page
@@ -161,7 +167,7 @@ address, gives ← → (taking the keys from the page turner while a flow is on 
 steps*, *Full screen* (the browser's, or an overlay). The bar shows the title of the step on
 show, in the language on show. A control inside a screen with `data-go="step-3"` jumps;
 `data-go="end"` shows "not drawn yet". The flow page is a child of Flows in `pages.mjs` and
-includes `assets/flow.js` (genPages does so for children); the next `node build.mjs` puts it in the
+includes `assets/flow.js` (genPages does so for the children of Flows, and only for them); the next `node build.mjs` puts it in the
 menu and on the Flows index.
 
 ## Device frames and letters

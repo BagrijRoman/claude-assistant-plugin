@@ -22,6 +22,7 @@ window.SHOWCASE_I18N['{{LANG}}'] = {
   'ui.alternative': 'Alternative',
   'ui.inProgress': 'Being prepared.',
   'ui.inProgressTitle': 'In progress',
+  'ui.inThisSection': 'In this section',
   'ui.contrast.on': 'on',
   'ui.contrast.passes': 'Passes',
   'ui.contrast.fails': 'Fails',
@@ -41,7 +42,7 @@ window.SHOWCASE_I18N['{{LANG}}'] = {
   'flow.notDrawn': 'This screen is not drawn yet',
   'flow.hints': 'Hints',
 
-  // ── The starting pages: how to read the site (on the overview), the Flows index ──
+  // ── The starting pages: how to read the site (on the Product page), the Flows index ──
   'overview.how.title': 'How to read this site',
   'overview.how.theme.title': 'Theme.',
   'overview.how.theme': 'The switch in the top bar sets light, dark or follow the device; every page follows.',

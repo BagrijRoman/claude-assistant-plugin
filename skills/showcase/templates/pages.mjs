@@ -1,40 +1,58 @@
 // The pages of the showcase, in menu order. This list is the one source for the menu, the
-// breadcrumbs, the catalog on the overview and the previous / next links: build.mjs writes all four
-// into every page as static markup. Run `node build.mjs` after changing it (open.mjs runs it too).
+// breadcrumbs, the catalog on the Product page and the previous / next links: build.mjs writes all
+// four into every page as static markup. Run `node build.mjs` after changing it (open.mjs runs it too).
 //
-// Shape: a band is a label in the menu that does not fold. A page under it is one root section: one
-// long HTML page; its `sections` are the anchors the menu lists under it, each an element of the
-// page with that id (the menu marks the one on screen as the page scrolls). Flows is the exception:
-// its `children` are pages of their own, one per flow. An entry without a path is planned: listed
-// in the menu and the catalog, not a link. Every id is also the i18n key: nav.<page id>,
-// nav.<page id>.<section id>, nav.band.<band id>.
+// Shape: a band is a group of root sections. The menu shows no label for it, only a gap before the
+// next group; the catalog on the Product page uses its title and description as headings. A root
+// section folds in the menu and shows two kinds of items under it: its `sections`, the anchors of its
+// own page (the menu marks the one on screen as the page scrolls), and its `children`, pages of their
+// own one level down (Design's pages, the stack under Product, each flow under Flows). A child may have
+// `sections` of its own; they are anchors on its page, not menu items. An entry without a path is
+// planned: listed in the menu and the catalog, not a link. Every id is also the i18n key: nav.<page>,
+// nav.<page>.<section>, nav.<root>.<child>, nav.<root>.<child>.<section>, nav.band.<band>.
 //
-// The order is the order of attention for the customer — identity first, then the product in use,
-// then the details, then how it is built. It is not the order the sections are made in.
+// The order is the order of attention for the customer — the product and how it is built first, then
+// its design, its pictures and its components, then the product in use, then the project. It is not
+// the order the sections are made in. The first page is the home page: the Product page, index.html.
 export const BANDS = [
   {
     id: 'product',
     title: 'Product',
-    desc: 'The product as the customer will meet it: its mark, its first screen, its shell, its flows.',
+    desc: 'What the product is, who it is for, what it is built with and how its parts fit together.',
     pages: [
-      { id: 'overview', path: 'index.html', title: 'Overview', desc: 'Every page of this site, where its content comes from, and how to read it.' },
-      { id: 'principles', path: 'principles/index.html', title: 'Principles', desc: 'What the design holds to, each with an example of doing it and of not doing it.', sections: [] },
       {
-        id: 'logo', path: 'logo/index.html', title: 'Logo', desc: 'Marks for the product, each from an idea in it, at every size it will be used at.',
+        id: 'product', path: 'index.html', title: 'Product', desc: 'The product in a few minutes: what it is and for whom, the roles, the modules, how it works, the sample company — and how to read this site.',
         sections: [
-          { id: 'sideBySide', title: 'Side by side', desc: 'Every mark at one size, on light and on dark, then at the size of the menu and of a browser tab.' },
-          { id: 'sizes', title: 'Sizes and spacing', desc: 'The mark at 16, 24, 32, 64 and 128 px; its clear space; what it must never be put on.' },
+          { id: 'about', title: 'What it is', desc: 'The product in one paragraph: what it does, for whom, the problem it solves.' },
+          { id: 'roles', title: 'Who uses it', desc: 'Every role, what it does in the product and where.' },
+          { id: 'modules', title: 'Modules', desc: 'The parts of the product, each in a line, and which come first.' },
+          { id: 'loop', title: 'How it works', desc: 'The product’s main loop, drawn step by step.' },
+          { id: 'sample', title: 'Sample company', desc: 'The fictional company and people every sample on this site uses.' },
+          { id: 'site', title: 'About this site', desc: 'Every page of this site, where its content comes from, and how to read it.' },
+        ],
+        children: [
+          {
+            id: 'stack', path: 'product/stack.html', title: 'Technology stack', desc: 'The technologies the product is built with, by layer: each with its official mark, one line of what it is for, and a link to its site.',
+            sections: [
+              { id: 'client', title: 'Clients', desc: 'What the user’s browser or device runs.' },
+              { id: 'server', title: 'Server', desc: 'The backend and its frameworks.' },
+              { id: 'data', title: 'Data and files', desc: 'Where data and files are kept.' },
+              { id: 'services', title: 'Services', desc: 'Mail, jobs, AI and the other services the product talks to.' },
+              { id: 'infrastructure', title: 'Hosting and delivery', desc: 'Where it runs and how it gets there.' },
+              { id: 'quality', title: 'Quality', desc: 'Tests, linting and the checks every change passes.' },
+            ],
+          },
         ],
       },
-      { id: 'signIn', path: 'signIn/index.html', title: 'Sign-in layouts', desc: 'The first screen a user sees: the form, and an animated panel about the product beside it. Several layouts; one is selected.', sections: [] },
-      { id: 'appLayout', path: 'appLayout/index.html', title: 'App layout', desc: 'The shell every screen lives in: a sidebar with grouped menus that folds, a top bar, the page under them. Several layouts; one is selected.', sections: [] },
-      { id: 'screens', path: 'screens/index.html', title: 'Key screens', desc: 'The main screens of the product on the devices it is used on.', sections: [] },
-      { id: 'flows', path: 'flows/index.html', title: 'Flows', desc: 'The product in use, step by step: signing in first, then the flows of the product itself. Each flow is a page of its own with a step player.', children: [] },
       {
-        id: 'emails', path: 'emails/index.html', title: 'Emails', desc: 'The letters the product sends, as a mail client shows them: the common ones, and the ones the product’s own flows need.',
+        id: 'architecture', path: 'architecture/index.html', title: 'Architecture', desc: 'How the product is put together, drawn for the customer: the system in its world, its parts, its modules, how data moves, where it runs.',
         sections: [
-          { id: 'general', title: 'Common letters', desc: 'Invitation, verification code, password reset, welcome, digest, security alert.' },
-          { id: 'product', title: 'The product’s letters', desc: 'Letters its own flows send.' },
+          { id: 'context', title: 'The system in its world', desc: 'The product, the people who use it and the systems around it.' },
+          { id: 'containers', title: 'Its parts', desc: 'The applications and stores the product is made of, and how they talk.' },
+          { id: 'modules', title: 'Modules', desc: 'The modules of the product and what each depends on.' },
+          { id: 'dataFlow', title: 'How data moves', desc: 'From the first entry to the reported figure.' },
+          { id: 'deployment', title: 'Where it runs', desc: 'The installation: hosting, regions, what runs where.' },
+          { id: 'request', title: 'One request', desc: 'The path of one user action through the system, numbered.' },
         ],
       },
     ],
@@ -42,28 +60,99 @@ export const BANDS = [
   {
     id: 'design',
     title: 'Design',
-    desc: 'The pieces every screen is made of, and the rules they follow.',
+    desc: 'The design system: the basics every screen is drawn with, the pictures, and the components.',
     pages: [
       {
-        id: 'illustrations', path: 'illustrations/index.html', title: 'Illustrations', desc: 'Pictures in the product’s own style and colors for every situation that has no data to show, some of them moving; with a reserve for later.',
-        sections: [
-          { id: 'sideBySide', title: 'Side by side', desc: 'Every picture at one size, with the situations it serves.' },
-          { id: 'inPlace', title: 'In place', desc: 'Each picture where it sits in the product.' },
+        id: 'design', path: 'design/index.html', title: 'Design', desc: 'The basics of the design — principles, colors, type, spacing, shape, motion, the logo, icons, words and states — each on a page of its own.',
+        children: [
+          { id: 'principles', path: 'design/principles.html', title: 'Principles', desc: 'What the design holds to, each with an example of doing it and of not doing it.', sections: [] },
+          {
+            id: 'colors', path: 'design/colors.html', title: 'Colors', desc: 'The color scheme and every color token, light and dark, with contrast computed from the tokens.',
+            sections: [
+              { id: 'scheme', title: 'Color scheme', desc: 'The brand color and its companions; why these.' },
+              { id: 'palette', title: 'Palette', desc: 'Surfaces, text, borders, brand, feedback; light and dark.' },
+              { id: 'categories', title: 'Categories', desc: 'The colors that tell the domain’s categories apart.' },
+              { id: 'contrast', title: 'Contrast', desc: 'Every text pair, both themes, against WCAG AA.' },
+            ],
+          },
+          {
+            id: 'typography', path: 'design/typography.html', title: 'Typography', desc: 'The typefaces and the text styles with the classes that write them.',
+            sections: [
+              { id: 'typefaces', title: 'Typefaces', desc: 'The families, their weights and the scripts they cover.' },
+              { id: 'styles', title: 'Text styles', desc: 'Every style with its size, line height, weight and class.' },
+            ],
+          },
+          {
+            id: 'spacing', path: 'design/spacing.html', title: 'Spacing and layout', desc: 'The spacing scale, the grid, the breakpoints and the sizes of controls and the shell.',
+            sections: [
+              { id: 'scale', title: 'Spacing scale', desc: 'The scale and where each step is used.' },
+              { id: 'layout', title: 'Grid and breakpoints', desc: 'Columns, gutters, the widths the layout changes at.' },
+              { id: 'sizes', title: 'Sizes', desc: 'Controls, the shell, the form width.' },
+            ],
+          },
+          {
+            id: 'shape', path: 'design/shape.html', title: 'Radius and shadows', desc: 'The radii and the elevations.',
+            sections: [
+              { id: 'radius', title: 'Radius', desc: 'The radii on controls, cards and pills.' },
+              { id: 'shadows', title: 'Shadows', desc: 'The elevations and where each is used.' },
+            ],
+          },
+          {
+            id: 'motion', path: 'design/motion.html', title: 'Motion', desc: 'Durations and easings, replayed on demand; what never moves.',
+            sections: [
+              { id: 'timing', title: 'Durations and easings', desc: 'Each replayed on demand.' },
+              { id: 'reduced', title: 'Reduced motion', desc: 'What stops, and what the still version shows.' },
+            ],
+          },
+          {
+            id: 'logo', path: 'design/logo.html', title: 'Logo', desc: 'Marks for the product, each from an idea in it, at every size it will be used at.',
+            sections: [
+              { id: 'sideBySide', title: 'Side by side', desc: 'Every mark at one size, on light and on dark, then at the size of the menu and of a browser tab.' },
+              { id: 'sizes', title: 'Sizes and spacing', desc: 'The mark at 16, 24, 32, 64 and 128 px; its clear space; what it must never be put on.' },
+            ],
+          },
+          {
+            id: 'icons', path: 'design/icons.html', title: 'Icons', desc: 'The icon set on its grid, with the names used in code, at its sizes, in both themes.',
+            sections: [
+              { id: 'set', title: 'The set', desc: 'Every icon with its name.' },
+              { id: 'rules', title: 'Sizes and rules', desc: 'The grid, the stroke, where an icon stands alone and where it needs a label.' },
+            ],
+          },
+          {
+            id: 'microcopy', path: 'design/microcopy.html', title: 'Microcopy and tone', desc: 'How the product speaks: its voice, and the patterns for buttons, errors, empty states, confirmations and notifications, in every language of the interface.',
+            sections: [
+              { id: 'voice', title: 'Voice', desc: 'Who is speaking and how.' },
+              { id: 'buttons', title: 'Buttons and links', desc: 'Verbs, length, capitalisation.' },
+              { id: 'errors', title: 'Errors', desc: 'What went wrong, what to do; never whose fault.' },
+              { id: 'emptyStates', title: 'Empty states', desc: 'What this is for and the first thing to do.' },
+              { id: 'confirmations', title: 'Confirmations', desc: 'Before a destructive action; after a success.' },
+              { id: 'notifications', title: 'Notifications and emails', desc: 'Subject lines, the first sentence, the one action.' },
+              { id: 'languages', title: 'Languages', desc: 'The same message in every interface language, side by side.' },
+            ],
+          },
+          {
+            id: 'states', path: 'design/states.html', title: 'States', desc: 'What a screen shows when it has nothing, is loading, failed, is closed to a role, is offline or has just succeeded — the picture, the words and the action.',
+            sections: [
+              { id: 'empty', title: 'Empty', desc: 'Nothing yet, and nothing matching a search or a filter.' },
+              { id: 'loading', title: 'Loading', desc: 'Skeletons, spinners and when to use which.' },
+              { id: 'error', title: 'Error', desc: 'A page that did not load; a form that did not save.' },
+              { id: 'access', title: 'Access', desc: 'A door closed to a role; a session that ended.' },
+              { id: 'offline', title: 'Offline', desc: 'No connection; changes waiting to sync.' },
+              { id: 'success', title: 'Done', desc: 'A thing completed.' },
+            ],
+          },
+          { id: 'charts', title: 'Charts', desc: 'The product’s figures drawn in its palette, in both themes.' },
         ],
       },
       {
-        id: 'states', path: 'states/index.html', title: 'States', desc: 'What a screen shows when it has nothing, is loading, failed, is closed to a role, is offline or has just succeeded — the picture, the words and the action.',
+        id: 'illustrations', path: 'illustrations/index.html', title: 'Illustrations', desc: 'Pictures in the product’s own style and colors: for every state a screen can be in, and for the cases of the product’s domain — some of them moving, with a reserve for later.',
         sections: [
-          { id: 'empty', title: 'Empty', desc: 'Nothing yet, and nothing matching a search or a filter.' },
-          { id: 'loading', title: 'Loading', desc: 'Skeletons, spinners and when to use which.' },
-          { id: 'error', title: 'Error', desc: 'A page that did not load; a form that did not save.' },
-          { id: 'access', title: 'Access', desc: 'A door closed to a role; a session that ended.' },
-          { id: 'offline', title: 'Offline', desc: 'No connection; changes waiting to sync.' },
-          { id: 'success', title: 'Done', desc: 'A thing completed.' },
+          { id: 'states', title: 'For states', desc: 'Empty, error, no access, locked, offline, done — a picture for each.' },
+          { id: 'domain', title: 'From the domain', desc: 'Scenes from the product’s world, for onboarding, panels, letters and announcements.' },
+          { id: 'inPlace', title: 'In place', desc: 'Each picture where it sits in the product.' },
+          { id: 'reserve', title: 'Reserve', desc: 'Pictures ready for situations the product will meet later.' },
         ],
       },
-      { id: 'notFound', path: 'notFound/index.html', title: 'Not found page', desc: 'The page an address no route matches lands on: several versions, each with a moving picture in the product’s style.', sections: [] },
-      { id: 'charts', title: 'Charts', desc: 'The product’s figures drawn in its palette, in both themes.' },
       {
         id: 'components', path: 'components/index.html', title: 'Components', desc: 'Every component on one page, one section each: what it is for, its variations and states, its sizes. The standard set, the product’s own, and a reserve for later.',
         sections: [
@@ -92,52 +181,37 @@ export const BANDS = [
           { id: 'appShell', title: 'App shell', desc: 'The sidebar, the top bar and the page, as components.' },
         ],
       },
+    ],
+  },
+  {
+    id: 'inUse',
+    title: 'The product in use',
+    desc: 'The product as its users meet it: its first screen, its shell, its screens, its letters, and its flows step by step.',
+    pages: [
       {
-        id: 'icons', path: 'icons/index.html', title: 'Icons', desc: 'The icon set on its grid, with the names used in code, at its sizes, in both themes.',
-        sections: [
-          { id: 'set', title: 'The set', desc: 'Every icon with its name.' },
-          { id: 'sizes', title: 'Sizes and rules', desc: 'The grid, the stroke, where an icon stands alone and where it needs a label.' },
+        id: 'screens', path: 'screens/index.html', title: 'Screens', desc: 'The screens of the product: the sign-in, the shell every screen lives in, the main screens, the letters it sends and the page a wrong address lands on.',
+        children: [
+          { id: 'signIn', path: 'screens/signIn.html', title: 'Sign-in layouts', desc: 'The first screen a user sees: the form, and an animated panel about the product beside it. Several layouts; one is selected.', sections: [] },
+          { id: 'appLayout', path: 'screens/appLayout.html', title: 'App layout', desc: 'The shell every screen lives in: a sidebar with grouped menus that folds, a top bar, the page under them. Several layouts; one is selected.', sections: [] },
+          { id: 'key', path: 'screens/key.html', title: 'Key screens', desc: 'The main screens of the product on the devices it is used on.', sections: [] },
+          {
+            id: 'emails', path: 'screens/emails.html', title: 'Emails', desc: 'The letters the product sends, as a mail client shows them: the common ones, and the ones the product’s own flows need.',
+            sections: [
+              { id: 'general', title: 'Common letters', desc: 'Invitation, verification code, password reset, welcome, digest, security alert.' },
+              { id: 'product', title: 'The product’s letters', desc: 'Letters its own flows send.' },
+            ],
+          },
+          { id: 'notFound', path: 'screens/notFound.html', title: 'Not found page', desc: 'The page an address no route matches lands on: several versions, each with a moving picture in the product’s style.', sections: [] },
         ],
       },
-      {
-        id: 'foundations', path: 'foundations/index.html', title: 'Foundations', desc: 'The color scheme and every token the product is drawn with: colors, type, spacing, radius, shadows, motion, sizes. Values are read from tokens.css in the browser.',
-        sections: [
-          { id: 'scheme', title: 'Color scheme', desc: 'The brand color and its companions; why these.' },
-          { id: 'colors', title: 'Colors', desc: 'Surfaces, text, borders, brand, feedback; light and dark; contrast computed from the tokens.' },
-          { id: 'typography', title: 'Typography', desc: 'The typefaces and the text styles with the classes that write them.' },
-          { id: 'spacing', title: 'Spacing', desc: 'The scale and how it is used.' },
-          { id: 'shape', title: 'Radius and shadows', desc: 'The radii and the elevations.' },
-          { id: 'motion', title: 'Motion', desc: 'Durations and easings, replayed on demand; what never moves.' },
-          { id: 'sizes', title: 'Sizes', desc: 'Controls, the shell, the form width.' },
-        ],
-      },
-      {
-        id: 'microcopy', path: 'microcopy/index.html', title: 'Microcopy and tone', desc: 'How the product speaks: its voice, and the patterns for buttons, errors, empty states, confirmations and notifications, in every language of the interface. The source of every string on this site.',
-        sections: [
-          { id: 'voice', title: 'Voice', desc: 'Who is speaking and how.' },
-          { id: 'buttons', title: 'Buttons and links', desc: 'Verbs, length, capitalisation.' },
-          { id: 'errors', title: 'Errors', desc: 'What went wrong, what to do; never whose fault.' },
-          { id: 'emptyStates', title: 'Empty states', desc: 'What this is for and the first thing to do.' },
-          { id: 'confirmations', title: 'Confirmations', desc: 'Before a destructive action; after a success.' },
-          { id: 'notifications', title: 'Notifications and emails', desc: 'Subject lines, the first sentence, the one action.' },
-          { id: 'languages', title: 'Languages', desc: 'The same message in every interface language, side by side.' },
-        ],
-      },
+      { id: 'flows', path: 'flows/index.html', title: 'Flows', desc: 'The product in use, step by step: signing in first, then the flows of the product itself. Each flow is a page of its own with a step player.', children: [] },
     ],
   },
   {
     id: 'project',
     title: 'Project',
-    desc: 'How the product is built, what was decided and what comes next.',
+    desc: 'What was decided, what changed, and what comes next.',
     pages: [
-      {
-        id: 'technology', path: 'technology/index.html', title: 'Technology', desc: 'The architecture as one picture, and the technologies chosen with what each is for.',
-        sections: [
-          { id: 'architecture', title: 'Architecture', desc: 'The parts of the system and how they talk.' },
-          { id: 'stack', title: 'The stack', desc: 'Every technology with its mark and what it is for.' },
-          { id: 'request', title: 'One request', desc: 'The path of one action through the system.' },
-        ],
-      },
       { id: 'decisions', path: 'decisions/index.html', title: 'Decisions', desc: 'Every choice made on this site — languages, stack, color scheme, logo, layouts — with the alternatives beside it and the reason.', sections: [] },
       { id: 'changelog', path: 'changelog/index.html', title: 'Changelog', desc: 'What changed on this site between showings, by date.', sections: [] },
       {
