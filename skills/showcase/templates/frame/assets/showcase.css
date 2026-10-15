@@ -710,6 +710,22 @@ a.sc-tile:hover {
     display: none;
   }
 
+  /* A narrow top bar keeps the menu button and the switches, and wraps them to a second row rather than
+     widening the page; the crumb gives way to the menu, the presentation button keeps its icon */
+  .sc-top {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: var(--size-header);
+    padding-top: 8px;
+    padding-bottom: 8px;
+    row-gap: 8px;
+  }
+
+  .sc-crumb,
+  .sc-present span {
+    display: none;
+  }
+
   .sc-grid-2,
   .sc-grid-3,
   .sc-grid-4 {

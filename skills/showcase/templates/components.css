@@ -179,7 +179,9 @@
 }
 
 /* ── Table — starter ── */
-.table-wrap { overflow: auto; border: 1px solid var(--color-default); border-radius: var(--radius-card); background: var(--color-surface); }
+/* position: an absolutely placed child (a screen-reader-only label in a cell) stays inside the scroller
+   instead of widening the page */
+.table-wrap { position: relative; overflow: auto; border: 1px solid var(--color-default); border-radius: var(--radius-card); background: var(--color-surface); }
 .table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .table th, .table td { padding: 10px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--color-default); }
 .table th { color: var(--color-muted); font-weight: 500; font-size: 12px; letter-spacing: 0.02em; background: var(--color-surface-muted); }
