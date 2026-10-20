@@ -114,9 +114,9 @@ describe('skill-resume', () => {
     writeState(root, 'docs/showcase', showcase('components', 'awaiting-approval', { pending: { question: 'Which buttons?' } }));
     const { systemMessage, hookSpecificOutput } = output(start(root));
     assert.equal(systemMessage,
-      '▸ /showcase · 8/21 Components · waits for the operator at its gate · a question waits for the operator · docs/showcase — /showcase resumes it');
+      '▸ /showcase · 8/22 Components · waits for the operator at its gate · a question waits for the operator · docs/showcase — /showcase resumes it');
     assert.match(hookSpecificOutput.additionalContext,
-      /\n- \/showcase in docs\/showcase: step "components" \(8\/21 Components · .*\); see phases\.md › A fresh context\n/);
+      /\n- \/showcase in docs\/showcase: step "components" \(8\/22 Components · .*\); see phases\.md › A fresh context\n/);
   });
 
   it('tells which mode a backlog left half-way', () => {
@@ -146,7 +146,7 @@ describe('skill-resume', () => {
     assert.deepEqual(lines.map((line) => line.split(' · ')[0]), ['▸ /blueprint', '▸ /blueprint', '▸ /showcase']);
     assert.ok(lines.includes('▸ /blueprint · 1/8 Intake · in progress · . — /blueprint resumes it'));
     assert.ok(lines.includes('▸ /blueprint · 2/8 Reading the input · not started · app/docs/blueprint — /blueprint resumes it'));
-    assert.ok(lines.includes('▸ /showcase · 1/21 Intake · in progress · docs/showcase — /showcase resumes it'));
+    assert.ok(lines.includes('▸ /showcase · 1/22 Intake · in progress · docs/showcase — /showcase resumes it'));
   });
 
   it('does not look into dot-folders, dependency folders or deeper than four levels', () => {
@@ -171,14 +171,14 @@ describe('skill-resume', () => {
 
   it('names the showcase\'s steps as its SKILL.md\'s stage table does', () => {
     const stages = stagesOf('showcase', '`init [dir]`, `continue`');
-    assert.equal(stages.length, 21);
-    // Every step key of the template, in order, with step 19's two keys on one stage
-    const stageOfKey = (i) => (i <= 19 ? i : i - 1);
-    assert.equal(STEPS.length, 22);
+    assert.equal(stages.length, 22);
+    // Every step key of the template, in order, with step 20's two keys on one stage
+    const stageOfKey = (i) => (i <= 20 ? i : i - 1);
+    assert.equal(STEPS.length, 23);
     STEPS.forEach((step, i) => {
       const root = makeTempDir();
       writeState(root, 'showcase', showcase(step));
-      assert.match(output(start(root)).systemMessage, new RegExp(`· ${stageOfKey(i) + 1}/21 ${escape(stages[stageOfKey(i)])} ·`), step);
+      assert.match(output(start(root)).systemMessage, new RegExp(`· ${stageOfKey(i) + 1}/22 ${escape(stages[stageOfKey(i)])} ·`), step);
     });
   });
 

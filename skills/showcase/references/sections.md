@@ -10,7 +10,7 @@ level down (the stack under Product, the pages of Design, the key screens, each 
 
 ### Product (`index.html`, the home page)
 What the customer reads first: the product, not the site. Written by `tools/genProduct.mjs` in the
-Frame step from `SOURCES.md` and `sample.mjs`, and again in step 19.
+Frame step from `SOURCES.md` and `sample.mjs`, and again in step 20.
 - **What it is**: the product in one paragraph — what it does, for whom, the problem it solves — and
   three or four promises it keeps (from the brief's goals), each a short line with an icon.
 - **Who uses it**: one card per role — the role, one line of what they do, where (web, phone, a
@@ -51,6 +51,30 @@ carry. Not a wiring diagram — what a customer can follow in a minute.
   has (entry → calculation → review → lock → report), with where each is stored.
 - **Where it runs**: the installation — hosting, regions, what runs where, what is backed up.
 - **One request**: one user action through the parts, numbered step by step.
+
+### Security (`security/index.html`)
+What keeps the customer's data safe, in the customer's words: the page a buyer's IT or a procurement
+questionnaire asks for, answered ahead. Written by `tools/genSecurity.mjs` from `plans/security.md`:
+a `block()` per part, each a few short paragraphs of what it means for them — the consequence, not the
+mechanism — with one drawing on tokens where it helps. Every claim comes from the documentation and is
+done, planned (the `ui.planned` tag) or not promised; no certification that was not obtained, no
+figure that was not set.
+- **Your data**: where it lives (the region; an installation per customer, or shared), who at the
+  vendor can reach it and when, encrypted on the way and at rest, kept how long, taken out how (an
+  export; deletion when they leave).
+- **Who gets in**: accounts by invitation only, the roles and the scope each one sees, passwords and
+  what they are checked against, the second step, single sign-on when it exists, sessions and devices,
+  the letters that warn of a sign-in or a change.
+- **Nothing is lost**: backups and how far back they reach, the restore, versioned files, what is
+  never deleted once reported or locked, undo where the product has it.
+- **Against attacks**: pauses and limits on sign-in and on requests, what every input and file is
+  checked for, how dependencies and the platform are kept current, how secrets are kept, who watches
+  and what happens when something is found.
+- **Every change on record**: who did what and when, kept and unchangeable, open to the roles that
+  need it and to an auditor; what a figure can be traced back to.
+- **What is promised, and what is not yet**: the certifications and checks held or not (a penetration
+  test, SOC 2, ISO 27001), what is planned and when, and whom to ask — the honest list in place of
+  silence.
 
 ## Design
 

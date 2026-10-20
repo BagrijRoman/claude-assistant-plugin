@@ -36,7 +36,7 @@ const BLUEPRINT_STATUS = {
 };
 
 // The steps of a showcase's STATE.json, each with the stage of the `init [dir]`, `continue` row in its
-// SKILL.md › Progress; step 19 is two keys
+// SKILL.md › Progress; step 20 is two keys
 const SHOWCASE_STAGES = [
   [['intake'], 'Intake'],
   [['scheme'], 'Color scheme'],
@@ -57,6 +57,7 @@ const SHOWCASE_STAGES = [
   [['emails'], 'Emails'],
   [['charts'], 'Charts'],
   [['architecture'], 'Architecture'],
+  [['security'], 'Security'],
   [['principles', 'project'], 'Principles, Decisions, Changelog, Next steps'],
   [['audit'], 'Audit'],
 ];

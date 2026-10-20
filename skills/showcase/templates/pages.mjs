@@ -19,7 +19,7 @@ export const BANDS = [
   {
     id: 'product',
     title: 'Product',
-    desc: 'What the product is, who it is for, what it is built with and how its parts fit together.',
+    desc: 'What the product is, who it is for, what it is built with, how its parts fit together, and what keeps its data safe.',
     pages: [
       {
         id: 'product', path: 'index.html', title: 'Product', desc: 'The product in a few minutes: what it is and for whom, the roles, the modules, how it works, the sample company — and how to read this site.',
@@ -54,6 +54,18 @@ export const BANDS = [
           { id: 'dataFlow', title: 'How data moves', desc: 'From the first entry to the reported figure.' },
           { id: 'deployment', title: 'Where it runs', desc: 'The installation: hosting, regions, what runs where.' },
           { id: 'request', title: 'One request', desc: 'The path of one user action through the system, numbered.' },
+        ],
+      },
+      {
+        // In the customer's words, not the team's: every claim from the documentation, done or planned
+        id: 'security', path: 'security/index.html', title: 'Security', desc: 'What keeps the customer’s data safe, in the customer’s words: where it lives and who can reach it, how it is kept from loss and from attack, what stays on record — and what is not promised yet.',
+        sections: [
+          { id: 'data', title: 'Your data', desc: 'Where it lives, who can reach it, encrypted on the way and at rest, kept how long, taken out how.' },
+          { id: 'access', title: 'Who gets in', desc: 'Accounts by invitation, roles and their scope, passwords, the second step, sessions, the letters that warn.' },
+          { id: 'loss', title: 'Nothing is lost', desc: 'Backups and restore, versioned files, what is never deleted once reported or locked.' },
+          { id: 'attacks', title: 'Against attacks', desc: 'Pauses and limits, what every input is checked for, dependencies kept current, who watches.' },
+          { id: 'trail', title: 'Every change on record', desc: 'Who did what and when, kept and unchangeable, open to an auditor.' },
+          { id: 'claims', title: 'What is promised, and what is not yet', desc: 'Certifications and checks held or not, what is planned, whom to ask.' },
         ],
       },
     ],

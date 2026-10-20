@@ -1,6 +1,6 @@
 ---
 name: showcase
-description: Builds the project's design showcase — a static site in docs/showcase/ that shows the customer the product before it exists (what it is and for whom, the technology stack with official marks, the architecture in diagrams, then the design — colors, type, logo, icons, words, states — illustrations, layouts — sign-in, the app's shell and the 404, led by animated pictures of the domain — components, key screens, flows with a step player, emails) and gives the team what every screen is drawn with (tokens, components, icons, microcopy, decisions). Reads the whole documentation folder; the operator decides every fork; theme and interface language switch everywhere. Human-invoked only.
+description: Builds the project's design showcase — a static site in docs/showcase/ that shows the customer the product before it exists (what it is and for whom, the technology stack with official marks, the architecture in diagrams, what keeps the data safe in the customer's words, then the design — colors, type, logo, icons, words, states — illustrations, layouts — sign-in, the app's shell and the 404, led by animated pictures of the domain — components, key screens, flows with a step player, emails) and gives the team what every screen is drawn with (tokens, components, icons, microcopy, decisions). Reads the whole documentation folder; the operator decides every fork; theme and interface language switch everywhere. Human-invoked only.
 argument-hint: "[init [dir] | continue | status | section <id> | flow <id> | pick <section> <variant> | add | audit | open]"
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(node:*), Bash(ls:*), Bash(mkdir:*), Bash(cp:*), Bash(find:*), AskUserQuestion, Agent, SendUserFile
@@ -121,7 +121,7 @@ order is the order of a customer's attention, not the order of making:
 
 | Group | Root sections, in order, with what unfolds under each |
 |-------|-------------------------------------------------------|
-| **Product** | **Product** (the home page: what it is · who uses it · modules · how it works · sample company · about this site; child page **Technology stack** — each technology with its official mark, one line, a link to its site) · **Architecture** (diagrams: the system in its world · its parts · modules · how data moves · where it runs · one request) |
+| **Product** | **Product** (the home page: what it is · who uses it · modules · how it works · sample company · about this site; child page **Technology stack** — each technology with its official mark, one line, a link to its site) · **Architecture** (diagrams: the system in its world · its parts · modules · how data moves · where it runs · one request) · **Security** (in the customer's words: your data · who gets in · nothing is lost · against attacks · every change on record · what is promised, and what is not yet) |
 | **Design** | **Design** (child pages: Principles · Colors · Typography · Spacing and layout · Radius and shadows · Motion · Logo · Loaders · Icons · Microcopy and tone · States · Charts when the product has figures) · **Illustrations** (for states · from the domain · in place · reserve) · **Layouts** (child pages: Auth layout · App layout · Not found page — variants led by animated pictures of the domain) · **Components** (one item per component) |
 | **The product in use** | **Screens** (child page: Key screens) · **Flows** (one page per flow, with the step player) · **Emails** (a root of its own: the Template, then one item per letter — the common letters, then the product's own) |
 | **Project** | Decisions · Changelog · Next steps |
@@ -157,8 +157,9 @@ and approves or sends it back. The key is the step's name in `STATE.json › ste
 | 16 Emails | `emails` | the root section Emails: the template, then the common letters and the product's own — each a menu item with a picture of its own in the product's colors; at every depth | 6, 9 |
 | 17 Charts | `charts` | only when the product has figures, with the library chosen in step 2 | 4 |
 | 18 Architecture | `architecture` | the architecture drawn for the customer: diagrams of the system in its world, its parts, modules, data, deployment, one request | 2 |
-| 19 Principles · Decisions · Changelog · Next | `principles`, `project` | the pages about the project | all |
-| 20 Audit | `audit` | both themes × every language; the checks in site.md | all |
+| 19 Security | `security` | the security page in the customer's words: where the data lives and who reaches it, what guards it from loss and from attack, what stays on record, what is not promised yet — every claim from the documentation, marked done or planned | 2, 18 |
+| 20 Principles · Decisions · Changelog · Next | `principles`, `project` | the pages about the project | all |
+| 21 Audit | `audit` | both themes × every language; the checks in site.md | all |
 
 ## Variants and picks
 
@@ -166,7 +167,7 @@ Logo and the three Layouts — auth, app, not found — are made as **several va
 a customer chooses better between things than from a description. Each variant is a section with
 an id; `/showcase pick <section> <variant>` marks the chosen one `Selected`, moves it first, writes
 `site.mjs › selected`, fills the group's row in `DECISIONS.md` and regenerates the Decisions page
-once it exists (step 19). The others stay as alternatives — the Decisions page is where the
+once it exists (step 20). The others stay as alternatives — the Decisions page is where the
 customer sees what was considered.
 
 ## Progress
@@ -181,7 +182,7 @@ The operator always sees which stage the run is in, what is done and what comes 
   keep the items current; without one, the checklist in the chat is enough.
 - **The line.** At every change of stage or step, one line:
   `▸ /showcase · <n>/<N> <stage> · <step>`, plus `· <k>/<m>` while units are counted —
-  `▸ /showcase · 8/21 Components · building · 3/5`. The marks, the numbers and the command are fixed;
+  `▸ /showcase · 8/22 Components · building · 3/5`. The marks, the numbers and the command are fixed;
   the stage and the step are in the operator's language.
 - **Units.** A stage that works through units — document groups read, component groups, marks,
   flows, letters, pages audited per theme and language — counts them in the line, and the task list
@@ -194,7 +195,7 @@ The operator always sees which stage the run is in, what is done and what comes 
 
 | Mode | Stages |
 |------|--------|
-| `init [dir]`, `continue` | Intake → Color scheme → Technology → Frame → Foundations → Logo → Microcopy and tone → Components → Icons → Illustrations → States → Auth layout → App layout → Not found page → Key screens → Flows → Emails → Charts → Architecture → Principles, Decisions, Changelog, Next steps → Audit |
+| `init [dir]`, `continue` | Intake → Color scheme → Technology → Frame → Foundations → Logo → Microcopy and tone → Components → Icons → Illustrations → States → Auth layout → App layout → Not found page → Key screens → Flows → Emails → Charts → Architecture → Security → Principles, Decisions, Changelog, Next steps → Audit |
 | `status` | Read the state → Report |
 | `section <id>` | Plan → Approval → Build → Gate |
 | `flow <id>` | Description → Approval → Build → Gate |

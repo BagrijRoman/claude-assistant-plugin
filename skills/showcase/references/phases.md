@@ -18,9 +18,9 @@ must have is in [sections.md](sections.md); how pages are written, in [site.md](
 - [Steps 7–9 — Components, Icons, Illustrations](#steps-79--components-icons-illustrations)
 - [Steps 10–14 — States, Layouts, Key screens](#steps-1014--states-layouts-key-screens)
 - [Step 15 — Flows](#step-15--flows)
-- [Steps 16–18 — Emails, Charts, Architecture](#steps-1618--emails-charts-architecture)
-- [Step 19 — Principles, Decisions, Changelog, Next steps](#step-19--principles-decisions-changelog-next-steps)
-- [Step 20 — Audit](#step-20--audit)
+- [Steps 16–19 — Emails, Charts, Architecture, Security](#steps-1619--emails-charts-architecture-security)
+- [Step 20 — Principles, Decisions, Changelog, Next steps](#step-20--principles-decisions-changelog-next-steps)
+- [Step 21 — Audit](#step-21--audit)
 - [Other modes](#other-modes)
 
 ---
@@ -43,7 +43,7 @@ words in it.
 
 **The gate.** At the end of a step: run `node build.mjs`, tell the operator what to open (the page,
 both themes, each language), show it as above, list the decisions taken and what is still open, add a dated entry to
-`CHANGELOG.md` (the Changelog page is made from it in step 19), then ask (`AskUserQuestion`, header
+`CHANGELOG.md` (the Changelog page is made from it in step 20), then ask (`AskUserQuestion`, header
 `Gate`): **Approve** (Recommended when nothing is pending) / **Revise** — they say what / **Stop
 here** — state saved. Never start the next step before approval; after it, the next step starts in a
 fresh context (`phases.md › A fresh context`).
@@ -52,7 +52,7 @@ fresh context (`phases.md › A fresh context`).
 choice, reason, a blueprint `D-` id when one applies. SC-001 to SC-008 are reserved in the template
 for the decisions every showcase takes — fill that row; any other decision (the depth, the fonts,
 the voice, the list of flows) is appended from SC-009 in the order taken. The Decisions page is
-generated from it by `tools/genDecisions.mjs`, written in step 19 and run again after every later
+generated from it by `tools/genDecisions.mjs`, written in step 20 and run again after every later
 `pick`.
 
 **Plans before work.** Every section that is a set of things — marks, cases, components, screens,
@@ -66,7 +66,7 @@ resumes from it; the list of flows is `plans/flows.md`, each approved flow descr
 **Subagents** (`Agent`, `general-purpose`) for the reading in Intake and for building a section's
 pieces in parallel — one per component group, per flow, per letter. Pass `model: "sonnet"` in the
 call for the readers and for the builders of components, icons, states, key screens, flows, emails,
-charts and the technology page: their work follows an approved plan and the conventions of `site.md`,
+charts, the technology page and the security page: their work follows an approved plan and the conventions of `site.md`,
 and you look at every result before the gate. The marks of the Logo, the pictures of Illustrations and
 the variants of the Layouts (Auth, App, Not found) are built on the session's model:
 there the drawing is what the customer chooses between. A brief names: the files to
@@ -144,9 +144,10 @@ site itself — so it can start from the files instead. Nothing in the procedure
    - **Sample company and cast**: propose a fictional company fitting the domain and one person
      per actor; the operator renames or accepts.
    - **Depth**: full (every section, Recommended) · essentials (Product with the stack,
-     Architecture, Foundations, Logo, Microcopy, Illustrations, Layouts — Auth and App, Components,
+     Architecture, Security, Foundations, Logo, Microcopy, Illustrations, Layouts — Auth and App, Components,
      Flows, Emails; the rest planned). Emails are in at every depth: every product sends letters,
-     and the customer sees them before most screens. Under essentials a step
+     and the customer sees them before most screens. Security too: a buyer asks where their data
+     lives and who sees it before they ask about a feature. Under essentials a step
      that needs a planned one draws what it needs in place — a sign-in panel without the
      Illustrations page, a flow's screens without the Key screens page.
 4. Write `STATE.json` (a product without figures: `steps.charts` is `skipped`), `DECISIONS.md`
@@ -344,7 +345,7 @@ Two approvals, by design.
    switch for free.
 4. Gate per flow or per batch of flows, as the operator prefers.
 
-## Steps 16–18 — Emails, Charts, Architecture
+## Steps 16–19 — Emails, Charts, Architecture, Security
 
 - **Emails (16).** Plan: the common letters (invitation, verification code, password reset,
   welcome, digest, security alert) and the product's own, proposed from the flows and the
@@ -389,8 +390,24 @@ Two approvals, by design.
   two or three sentences beside it of what it shows; the one-request section numbered step by step.
   Load the `artifact-diagramming` skill when it is available for how to draw a diagram that shows
   the real mechanism and stays legible in both themes.
+- **Security (19).** A root section after Architecture, in the customer's words — for the buyer,
+  their IT and the procurement questionnaire that asks "where does our data live and who can see
+  it" before anyone asks about a feature. Plan from what the documentation already decided — the
+  blueprint's cross-cutting concerns (access control, audit and history, review and locking,
+  personal data), its access module (sign-in, roles and scopes, invitations), the Architecture's
+  *Where it runs*, the security letters of Emails: one line per claim under the six parts of
+  `sections.md › Security`, each marked *done*, *planned* or *not promised*. A claim the
+  documentation does not support is an open point with a recommendation, not a sentence on the
+  page. Approve (`plans/security.md`). `tools/genSecurity.mjs`: a `block()` per part, each a few
+  short paragraphs of what it means for the customer — the consequence, not the mechanism: no
+  library names, no acronym without the thing it does — with one drawing on tokens where it helps
+  (the data's path with its locks, the roles over the structure; the `artifact-diagramming` skill
+  as for Architecture); a planned claim carries the `ui.planned` tag. The last part says what is not
+  promised — a certification not held, a check not yet run, a figure not yet set — and whom to ask.
+  Never a certification that was not obtained, never a figure (a recovery time, a retention period)
+  the documentation did not set.
 
-## Step 19 — Principles, Decisions, Changelog, Next steps
+## Step 20 — Principles, Decisions, Changelog, Next steps
 
 - **Principles.** 5–7, from the brief's goals and the decisions: each a sentence, a reason, a
   *do* and a *don't* drawn with the components. Ask the operator to confirm the list first.
@@ -405,7 +422,7 @@ Two approvals, by design.
   documentation — each a title, one paragraph of what and why, where it came from. Ask the
   operator which ideas to keep.
 
-## Step 20 — Audit
+## Step 21 — Audit
 
 The checks in [site.md › Audit](site.md#audit), run on both themes and every language. The
 mechanical ones — every page there, build idempotent, no values outside tokens, the dark sets
@@ -438,6 +455,6 @@ to SC-007; a group made with `add` gets the next `SC-nnn`); regenerate the Decis
 **`add`** — a page or a section outside the standard list: ask what, where in the menu, a
 generator or hand-written; add to `pages.mjs`; `genPages` for the start; build.
 
-**`audit`** — step 20 alone, at any time.
+**`audit`** — step 21 alone, at any time.
 
 **`open`** — `node open.mjs` from the showcase folder (background), tell the operator the address.

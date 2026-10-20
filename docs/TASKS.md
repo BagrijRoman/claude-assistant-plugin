@@ -1187,6 +1187,37 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T37 — `/showcase` Security: a root section after Architecture, in the customer's words · `done` (0.21.0)
+
+On ETC.V2, during the Flows step (2026-10-21), the operator asked whether a Security section after
+Architecture — the decisions that guard the product against data loss, unauthorised access and attacks —
+would attract a potential customer, and, on the assessment that it would (a buyer asks where their data
+lives and who sees it before asking about a feature; procurement sends a security questionnaire; the word
+in the menu is a signal in itself), asked for it to be queued on ETC.V2 and added to the skill.
+
+What was done (0.21.0):
+- A step **19 Security** (`security`) after Architecture, needing the stack and the Architecture:
+  `SKILL.md` (the site table, the step table, the stages; the later steps renumbered 20 and 21),
+  `phases.md › Steps 16–19` (plan one line per claim from the blueprint's cross-cutting concerns, its
+  access module, the Architecture's *Where it runs* and the security letters, each marked done, planned
+  or not promised; approve into `plans/security.md`; `tools/genSecurity.mjs`, a `block()` per part in
+  the customer's words — the consequence, not the mechanism — a planned claim tagged `ui.planned`; never
+  a certification not obtained or a figure not set), `sections.md › Security` (the six parts: your data ·
+  who gets in · nothing is lost · against attacks · every change on record · what is promised, and what
+  is not yet). In at the essentials depth, as Emails are. Its builder runs on Sonnet, as the
+  architecture's does.
+- `templates/pages.mjs`: the `security` root after `architecture` with its six sections; the Product
+  band's line ends with what keeps the data safe. `templates/STATE.json`: the `security` step.
+  `bin/skillResume.mjs`: the stage in its list. `docs/skills/showcase.md`, the index and the root README
+  say so.
+- ETC.V2: the root planned in `pages.mjs` (no path until the step lays the page), the step in
+  `STATE.json`, SC-041, a Changelog entry, `nav.security` in the Ukrainian dictionary, and the item in
+  `plans/next.md › Queue` after the remaining flows.
+
+Done when:
+- `npm test` passes; `bin/showcase.mjs check` on ETC.V2 reports no error.
+- The ETC.V2 Security page is built from its approved plan and the operator approves its gate.
+
 ## T36 — `/showcase` Icons: the base standard set and the domain's own, nothing else · `done` (0.20.0)
 
 At the Components gate on ETC.V2 (2026-10-15) the operator asked that the Icons step generate only the

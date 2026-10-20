@@ -78,7 +78,7 @@ customer's attention:
 
 | Group | Root sections, with what unfolds under each |
 |-------|---------------------------------------------|
-| Product | **Product**, the home page (what it is · who uses it · modules · how it works · sample company · about this site; child page **Technology stack**: each technology with its official mark, one line and a link to its site) · **Architecture** (diagrams for the customer: the system in its world · its parts · modules · how data moves · where it runs · one request) |
+| Product | **Product**, the home page (what it is · who uses it · modules · how it works · sample company · about this site; child page **Technology stack**: each technology with its official mark, one line and a link to its site) · **Architecture** (diagrams for the customer: the system in its world · its parts · modules · how data moves · where it runs · one request) · **Security** (in the customer's words, every claim from the documentation and marked done or planned: your data · who gets in · nothing is lost · against attacks · every change on record · what is promised, and what is not yet) |
 | Design | **Design** (child pages: Principles · Colors · Typography · Spacing and layout · Radius and shadows · Motion · Logo · Loaders · Icons · Microcopy and tone · States · Charts) · **Illustrations** (for states · from the domain · in place · reserve) · **Layouts** (Auth layout · App layout · Not found page — the variants led by animated pictures of the domain) · **Components** (one item per component) |
 | The product in use | **Screens** (child page: Key screens) · **Flows** (a page per flow with the step player) · **Emails** (a root of its own: the Template, then one item per letter — the common letters, then the product's own; a click scrolls to the letter and the menu marks the one in view) |
 | Project | Decisions · Changelog · Next steps |
@@ -98,7 +98,9 @@ page with the official marks, a starting page for every other section — the si
 every language, so before the first step that writes words) → Components → Icons (two groups only: the base
 standard icons the components and screens use, and the icons of the product's domain) → Illustrations
 → States → **Layouts** (Auth layout → App layout → Not found page) → Key screens → **Flows** → Emails → Charts →
-**Architecture** → Principles, Decisions, Changelog, Next steps → **Audit**.
+**Architecture** → **Security** (one line per claim from what the documentation decided, then a page in
+the customer's words — the consequence, not the mechanism — that says what is not promised yet) →
+Principles, Decisions, Changelog, Next steps → **Audit**.
 
 ### How it decides with the operator
 
@@ -113,7 +115,7 @@ one `Selected` and keeps the others as alternatives for the Decisions page.
 
 ### Tokens
 
-A showcase is twenty steps with a gate each, and every turn sends the whole context again; a step built
+A showcase is twenty-two steps with a gate each, and every turn sends the whole context again; a step built
 on top of the ones before pays for their readings, plans, builders' replies and generated pages, none of
 which it reads. So the skill cuts only what the next step does not use:
 
@@ -124,7 +126,7 @@ which it reads. So the skill cuts only what the next step does not use:
   `SOURCES.md` when it plans from the reading — never the pages already built. The operator may go on
   in the same context instead.
 - **Builders on Sonnet where the plan decides.** The readers of Intake and the builders of components,
-  icons, states, key screens, flows, emails, charts and the architecture work from an approved plan
+  icons, states, key screens, flows, emails, charts, the architecture and the security page work from an approved plan
   and the conventions of `site.md`, and every result is looked at before the gate, so they run on
   Sonnet. The marks of the Logo, the pictures of Illustrations and the variants of the sign-in layouts,
   the app layout and the not-found page — what the customer chooses between — stay on the session's
@@ -157,7 +159,7 @@ and how many; and, on `continue` or `status`, the checklist rebuilt from its sta
 
 | Mode | Stages |
 |------|--------|
-| `init [dir]`, `continue` | Intake → Color scheme → Technology → Frame → Foundations → Logo → Microcopy and tone → Components → Icons → Illustrations → States → Auth layout → App layout → Not found page → Key screens → Flows → Emails → Charts → Architecture → Principles, Decisions, Changelog, Next steps → Audit |
+| `init [dir]`, `continue` | Intake → Color scheme → Technology → Frame → Foundations → Logo → Microcopy and tone → Components → Icons → Illustrations → States → Auth layout → App layout → Not found page → Key screens → Flows → Emails → Charts → Architecture → Security → Principles, Decisions, Changelog, Next steps → Audit |
 | `status` | Read the state → Report |
 | `section <id>` | Plan → Approval → Build → Gate |
 | `flow <id>` | Description → Approval → Build → Gate |
@@ -209,7 +211,7 @@ still to come (T19).
 - **Guidance plus a template, not enforcement.** The frame is tested code; the content is prose
   the model follows. A hand edit to a generated page is lost on the next generator run — the
   README of the site says so.
-- **Long.** A full showcase is twenty steps with a gate each; it spans sessions. `continue`
+- **Long.** A full showcase is twenty-two steps with a gate each; it spans sessions. `continue`
   resumes from `STATE.json`.
 - **Illustrations and animated panels are where the model's taste shows.** Variants and picks
   exist so the operator chooses between drawn things rather than from descriptions; expect to
