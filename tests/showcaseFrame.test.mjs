@@ -8,7 +8,9 @@
 // Flows step does: the Flows index lists it after the next build, under a key of its own. The Color
 // scheme step's scratch page survives a build until STATE.json records the scheme chosen, and not after.
 // The tab's icon (assets/favicon.svg, from the mark and the brand tokens, linked from every head) and
-// nav.js's refresh of the stylesheets at each in-place move are held to what they promise too.
+// nav.js's refresh of the stylesheets at each in-place move are held to what they promise too. The
+// template's pages.mjs is held to its shape for the product in use: Screens, Flows, then Emails as a
+// root of its own whose menu items are the Template and a section per letter.
 
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -108,6 +110,72 @@ describe('showcase frame', () => {
     assert.match(html, /href="flows\/signIn\.html"[^>]*><span data-i18n="nav\.flows\.signIn">Sign in<\/span>/);
     assert.match(html, /href="layouts\/signIn\.html"[^>]*><span data-i18n="nav\.layouts\.signIn">Auth layout<\/span>/);
     assert.doesNotMatch(html, /data-i18n="nav\.layouts\.signIn">Sign in</);
+  });
+});
+
+// The product in use: Screens (Key screens only), Flows, then Emails — a root of its own whose menu items
+// are its sections, the Template first and a section per letter; the letters are not a child of Screens.
+describe('showcase frame, Emails as a root section after Flows', () => {
+  const group = BANDS.find((band) => band.id === 'inUse');
+  const entry = (id) => group.pages.find((page) => page.id === id);
+  let dir;
+  before(() => {
+    dir = scaffold();
+    assert.equal(run(dir, 'tools/genPages.mjs').status, 0);
+    assert.equal(run(dir, 'build.mjs').status, 0);
+  });
+  after(removeTempDirs);
+
+  // The foldable root whose title links to `href`, as the build writes it into the page: its summary and its items
+  const rootOf = (html, href) =>
+    [...html.matchAll(/<details class="sc-side__group"[^>]*>[^]*?<\/details>/g)]
+      .map(([block]) => block)
+      .find((block) => block.match(/<summary[^]*?href="([^"]+)"/)?.[1] === href);
+
+  it('puts Emails among the roots of the group, after Flows, and not under Screens', () => {
+    assert.deepEqual(group.pages.map((page) => page.id), ['screens', 'flows', 'emails']);
+    assert.deepEqual((entry('screens').children ?? []).map((child) => child.id), ['key']);
+    for (const page of group.pages) {
+      assert.ok(!(page.children ?? []).some((child) => child.id === 'emails' || child.path === 'screens/emails.html'), `${page.id} holds Emails as a child`);
+    }
+  });
+
+  it('gives Emails a page of its own and the Template first, then the common letters, as its sections', () => {
+    const emails = entry('emails');
+    assert.equal(emails.path, 'emails/index.html');
+    assert.equal(emails.children, undefined, 'the letters are sections of the page, not pages');
+    const ids = emails.sections.map((section) => section.id);
+    assert.equal(ids[0], 'template');
+    assert.ok(ids.length > 1, 'the common letters are the starting sections');
+    assert.equal(new Set(ids).size, ids.length, 'a section id is the letter\'s anchor and cannot repeat');
+    for (const section of emails.sections) assert.ok(section.title && section.desc, `${section.id} needs a title and a line`);
+  });
+
+  it('lays the page with a block per section, and no page under Screens for the letters', () => {
+    const page = readFileSync(join(dir, 'emails/index.html'), 'utf8');
+    for (const section of entry('emails').sections) assert.match(page, new RegExp(`<article class="sc-block" id="${section.id}"`));
+    assert.ok(!existsSync(join(dir, 'screens/emails.html')), 'screens/emails.html was laid');
+  });
+
+  it('lists the Template and every letter under the Emails root, after Flows, with Screens holding Key screens only', () => {
+    const html = readFileSync(join(dir, 'index.html'), 'utf8');
+    const emails = rootOf(html, 'emails/index.html');
+    assert.ok(emails, 'no Emails root in the menu');
+    const items = [...emails.matchAll(/<a [^>]*href="emails\/index\.html#([^"]+)"[^>]*data-section="([^"]+)"/g)].map(([, anchor, section]) => [anchor, section]);
+    assert.deepEqual(items, entry('emails').sections.map((section) => [section.id, section.id]));
+    assert.ok(html.indexOf('href="flows/index.html"') < html.indexOf('href="emails/index.html"'), 'Emails is not after Flows');
+    assert.ok(html.indexOf('href="screens/index.html"') < html.indexOf('href="flows/index.html"'), 'Screens is not before Flows');
+    const screens = rootOf(html, 'screens/index.html');
+    assert.ok(screens, 'no Screens root in the menu');
+    assert.match(screens, /href="screens\/key\.html"/);
+    assert.doesNotMatch(screens, /emails/);
+  });
+
+  it('opens the Emails root on its page and marks the first section as the one on show', () => {
+    const html = readFileSync(join(dir, 'emails/index.html'), 'utf8');
+    const emails = rootOf(html, '../emails/index.html');
+    assert.match(emails, /^<details class="sc-side__group" name="sc-side" open>/);
+    assert.match(emails, /href="\.\.\/emails\/index\.html#template"[^>]*aria-current="page"/);
   });
 });
 
@@ -371,6 +439,16 @@ describe('showcase frame, the Product page and the stack from their template gen
     for (const id of ['about', 'roles', 'modules', 'loop', 'sample', 'site']) assert.match(html, new RegExp(`<article class="sc-block" id="${id}"`));
     assert.match(html, /<!-- catalog:start[^]*?href="architecture\/index\.html"/);
     assert.match(html, /<!-- children:start[^]*?<a class="card sc-tile" href="product\/stack\.html">/);
+  });
+
+  it('draws How it works as .sc-cycle cards, a name no other stage of the site takes', () => {
+    const html = readFileSync(join(dir, 'index.html'), 'utf8');
+    assert.match(html, /<ol class="sc-cycle">\s*<li class="card sc-cycle__step">/);
+    assert.doesNotMatch(html, /sc-loop/);
+    const css = readFileSync(join(dir, 'assets/showcase.css'), 'utf8');
+    assert.match(css, /^\.sc-cycle \{[^}]*counter-reset: cycle;/m);
+    assert.match(css, /^\.sc-cycle__step::before \{\s*content: counter\(cycle\);/m);
+    assert.doesNotMatch(css.replace(/\/\*[^]*?\*\//g, ''), /sc-loop/);
   });
 
   it('writes the stack page, a technology without a mark on an initials tile, and the build stays idempotent', () => {

@@ -349,7 +349,14 @@ Two approvals, by design.
 - **Emails (16).** Plan: the common letters (invitation, verification code, password reset,
   welcome, digest, security alert) and the product's own, proposed from the flows and the
   documentation's notifications (what is sent, to whom, when) — each with its subject, its one
-  action and its picture, one line each. Approve (`plans/emails.md`). Then:
+  action and its picture, one line each. Approve (`plans/emails.md`). Emails is a root section of its
+  own after Flows, not a page under Screens: the letters stand on one page, `emails/index.html`,
+  each a section of it (`sections.md › Emails`). Right after the approval make the `sections` of the
+  `emails` entry in `pages.mjs` match the plan, in the order of the page — the Template, then one
+  `{ id, title, desc }` for each approved letter, the common letters first, then the product's own;
+  the id is the letter's anchor, the desc one line — and add the `nav.emails.<letter id>` keys to
+  every dictionary. The frame starts with the Template and the common letters; take out the ones the
+  plan drops. Then:
   1. **The template** first — the one layout every letter is filled into: the brand header with
      the mark, the picture, the heading, the message, the one action button, a secondary detail
      (a code, a list, a figure), the footer with the sender and why they received it. Its parts
@@ -362,8 +369,13 @@ Two approvals, by design.
      all the same.
   3. `tools/genEmails.mjs` with `mail(...)`: every letter in the template, 600 px, shown as a mail
      client shows it, with subject and sender, the sample cast and company; words from Microcopy,
-     or — when Microcopy is skipped — in the tone the requirements set. Letters may be built by
-     subagents per group, each writing `tools/parts/emails/<group>.mjs`.
+     or — when Microcopy is skipped — in the tone the requirements set. It writes
+     `emails/index.html`: the Template, a heading *Common letters* over those letters, a heading
+     *The product's own* over the rest, each letter a `block()` whose id is the letter's. Letters
+     may be built by subagents per group, each writing `tools/parts/emails/<group>.mjs`. A flow
+     that shows a letter imports `letter(id, marks)` from this generator instead of drawing it
+     again. `node build.mjs` — the menu lists the Template and every letter, and marks the one in
+     view as the page scrolls.
 - **Charts (17).** Only when the product has figures. The library is SC-008, chosen in step 2
   (ask now only if it was left open): **static SVG on tokens** (Recommended: no dependency, exact
   style, both themes free) · a vendored UMD library (Chart.js, ECharts, uPlot) when the operator

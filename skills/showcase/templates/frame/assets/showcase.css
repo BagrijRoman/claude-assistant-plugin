@@ -771,10 +771,11 @@ a.sc-tile:hover {
 }
 .sc-tile--muted { opacity: 0.72; }
 
-.sc-loop { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-3); counter-reset: loop; }
-.sc-loop__step { position: relative; padding: var(--space-4); counter-increment: loop; display: flex; flex-direction: column; gap: var(--space-2); }
-.sc-loop__step::before {
-  content: counter(loop);
+/* How it works on the Product page: the main loop as numbered cards (not .sc-loop, a name the Motion page's stage of looping animations takes) */
+.sc-cycle { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-3); counter-reset: cycle; }
+.sc-cycle__step { position: relative; padding: var(--space-4); counter-increment: cycle; display: flex; flex-direction: column; gap: var(--space-2); }
+.sc-cycle__step::before {
+  content: counter(cycle);
   display: grid; place-items: center;
   width: 28px; height: 28px;
   border-radius: var(--radius-full);
@@ -782,7 +783,7 @@ a.sc-tile:hover {
   color: var(--color-primary-foreground);
   font-weight: 600;
 }
-.sc-loop__step p { margin: 0; color: var(--color-muted); }
+.sc-cycle__step p { margin: 0; color: var(--color-muted); }
 
 .sc-tree, .sc-tree ul { list-style: none; margin: 0; padding: 0; }
 .sc-tree ul { margin-left: var(--space-4); padding-left: var(--space-4); border-left: 1px solid var(--color-default); }

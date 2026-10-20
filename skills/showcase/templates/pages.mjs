@@ -5,11 +5,12 @@
 // Shape: a band is a group of root sections. The menu shows no label for it, only a gap before the
 // next group; the catalog on the Product page uses its title and description as headings. A root
 // section folds in the menu and shows two kinds of items under it: its `sections`, the anchors of its
-// own page (the menu marks the one on screen as the page scrolls), and its `children`, pages of their
-// own one level down (Design's pages, the stack under Product, each flow under Flows). A child may have
-// `sections` of its own; they are anchors on its page, not menu items. An entry without a path is
-// planned: listed in the menu and the catalog, not a link. Every id is also the i18n key: nav.<page>,
-// nav.<page>.<section>, nav.<root>.<child>, nav.<root>.<child>.<section>, nav.band.<band>.
+// own page (the menu marks the one on screen as the page scrolls; Components and Emails have one per
+// item of a list that grows), and its `children`, pages of their own one level down (Design's pages,
+// the stack under Product, each flow under Flows). A child may have `sections` of its own; they are
+// anchors on its page, not menu items. An entry without a path is planned: listed in the menu and the
+// catalog, not a link. Every id is also the i18n key: nav.<page>, nav.<page>.<section>,
+// nav.<root>.<child>, nav.<root>.<child>.<section>, nav.band.<band>.
 //
 // The order is the order of attention for the customer — the product and how it is built first, then
 // its design, its pictures and its components, then the product in use, then the project. It is not
@@ -204,23 +205,29 @@ export const BANDS = [
   {
     id: 'inUse',
     title: 'The product in use',
-    desc: 'The product as its users meet it: its screens, its letters, and its flows step by step.',
+    desc: 'The product as its users meet it: its screens, its flows step by step, and its letters.',
     pages: [
       {
-        id: 'screens', path: 'screens/index.html', title: 'Screens', desc: 'The screens of the product in its picked shell, and the letters it sends.',
+        id: 'screens', path: 'screens/index.html', title: 'Screens', desc: 'The screens of the product in its picked shell.',
         children: [
           { id: 'key', path: 'screens/key.html', title: 'Key screens', desc: 'The main screens of the product on the devices it is used on.', sections: [] },
-          {
-            id: 'emails', path: 'screens/emails.html', title: 'Emails', desc: 'The letters the product sends, as a mail client shows them: the common ones, and the ones the product’s own flows need.',
-            sections: [
-              { id: 'template', title: 'Template', desc: 'The one layout every letter uses, its parts named, and what a mail client changes.' },
-              { id: 'general', title: 'Common letters', desc: 'Invitation, verification code, password reset, welcome, digest, security alert.' },
-              { id: 'product', title: 'The product’s letters', desc: 'Letters its own flows send.' },
-            ],
-          },
         ],
       },
       { id: 'flows', path: 'flows/index.html', title: 'Flows', desc: 'The product in use, step by step: signing in first, then the flows of the product itself. Each flow is a page of its own with a step player.', children: [] },
+      {
+        // One page, a section per letter: the Template, then the common letters, then the product’s own —
+        // the Emails step adds a section for each letter it approves, so the menu grows with the list
+        id: 'emails', path: 'emails/index.html', title: 'Emails', desc: 'The letters the product sends, as a mail client shows them: the one template, the common letters, and the ones the product’s own flows need.',
+        sections: [
+          { id: 'template', title: 'Template', desc: 'The one layout every letter uses, its parts named, and what a mail client changes.' },
+          { id: 'invitation', title: 'Invitation', desc: 'Asks a person to join: who invited them, and the one button to accept.' },
+          { id: 'verificationCode', title: 'Verification code', desc: 'The code that confirms an address or a sign-in, and how long it lasts.' },
+          { id: 'passwordReset', title: 'Password reset', desc: 'The link to choose a new password, and what to do if it was not asked for.' },
+          { id: 'welcome', title: 'Welcome', desc: 'The first letter after joining: what to do first.' },
+          { id: 'digest', title: 'Digest', desc: 'What happened in a period, in a few lines, with the one thing that needs a look.' },
+          { id: 'securityAlert', title: 'Security alert', desc: 'A sign-in from a new device or a changed password, and the way to secure the account.' },
+        ],
+      },
     ],
   },
   {

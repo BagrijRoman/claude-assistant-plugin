@@ -64,7 +64,7 @@ docs/showcase/
 ├── sample.mjs · i18n/<lang>.js                       the fictional company and cast; dictionaries
 ├── tools/lib/html.mjs · tools/gen*.mjs · tools/parts/ the page shell; one generator per heavy page or flow; a page's pieces
 ├── assets/ · assets/tech/                            the frame: showcase.css/js, site.css, nav.js, i18n.js, flow.js, favicon.svg (written by the build); the stack's official marks
-├── index.html · <root>/index.html · <root>/<child>.html  the Product page; one page per root section; one per child page (stack, design pages, screens, flows)
+├── index.html · <root>/index.html · <root>/<child>.html  the Product page; one page per root section; one per child page (stack, design pages, key screens, flows)
 ├── plans/                                            the approved plans and flow descriptions
 └── STATE.json · DECISIONS.md · CHANGELOG.md · SOURCES.md · README.md
 ```
@@ -80,7 +80,7 @@ customer's attention:
 |-------|---------------------------------------------|
 | Product | **Product**, the home page (what it is · who uses it · modules · how it works · sample company · about this site; child page **Technology stack**: each technology with its official mark, one line and a link to its site) · **Architecture** (diagrams for the customer: the system in its world · its parts · modules · how data moves · where it runs · one request) |
 | Design | **Design** (child pages: Principles · Colors · Typography · Spacing and layout · Radius and shadows · Motion · Logo · Loaders · Icons · Microcopy and tone · States · Charts) · **Illustrations** (for states · from the domain · in place · reserve) · **Layouts** (Auth layout · App layout · Not found page — the variants led by animated pictures of the domain) · **Components** (one item per component) |
-| The product in use | **Screens** (Key screens · Emails) · **Flows** (a page per flow with the step player) |
+| The product in use | **Screens** (child page: Key screens) · **Flows** (a page per flow with the step player) · **Emails** (a root of its own: the Template, then one item per letter — the common letters, then the product's own; a click scrolls to the letter and the menu marks the one in view) |
 | Project | Decisions · Changelog · Next steps |
 
 On every page: a theme switch (light · dark · system) that the whole site follows, hex codes and
@@ -236,7 +236,10 @@ still to come (T19).
   wired in, a second genPages run writing nothing, a flow keyed apart from the root section with its
   id. A second scaffold has no flow at first, as the Frame step leaves it: the Flows index says it
   is being prepared, lists the flow after it is added and the build runs, and a `pages.mjs` with two
-  entries on one key stops the build. The tab's icon: the build writes `assets/favicon.svg` and every
+  entries on one key stops the build. The template's `pages.mjs` has Emails as a root after Flows,
+  with the Template and the common letters as its sections and no children, and Screens holds Key
+  screens only; the menu lists the Template and each letter as a link to its anchor, and the page
+  is laid with a block per section. The tab's icon: the build writes `assets/favicon.svg` and every
   page's head links it with its folder's prefix; a letter mark gives a brand tile with the letter (escaped,
   the name's first when the mark is empty or a placeholder); a picked mark is written as it is, in the
   brand color of both themes, with the ground of each theme for its knockouts and no namespace twice;

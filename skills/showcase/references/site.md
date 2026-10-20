@@ -67,6 +67,11 @@ apart from the next by a gap, and a heading of the catalog on the Product page. 
 the home page, `index.html` — the Product page; build.mjs writes the catalog into it. A section's element on the page has the section's id. After any
 change: `node build.mjs`, which stops with the two entries named when two would share a key.
 
+A root whose sections are a list that grows has its step add one section per item: Components, one
+per component; Emails (`emails/index.html`, after Flows), the Template and one per letter, the
+letter's id being its anchor and `nav.emails.<letter id>` its key. Emails has no `children` — its
+letters are not pages — so its page lists none.
+
 ## Writing a page
 
 Always through `tools/lib/html.mjs`, from a generator:
@@ -174,7 +179,10 @@ menu and on the Flows index.
 ## Device frames and letters
 
 `device('phone' | 'tablet' | 'desktop', screenHtml)` draws the frame; `.devices` lays several side
-by side. `mail({ from, to, subject, body })` shows a 600 px letter as a mail client does.
+by side. `mail({ from, to, subject, body })` shows a 600 px letter as a mail client does. The letters
+stand on `emails/index.html`, written by `tools/genEmails.mjs`: a `block()` per letter with the
+letter's id, under two headings, *Common letters* and *The product's own*. A flow that shows a letter
+imports `letter(id, marks)` from that generator.
 
 ## Illustrations and marks
 

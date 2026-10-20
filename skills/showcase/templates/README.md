@@ -61,6 +61,8 @@ alone and larger. **Escape** leaves it.
   id on the page, `node build.mjs`.
 - **A flow:** `tools/gen<Flow>.mjs` with `flowPlayer(...)`, an entry in `children` of Flows, build —
   the menu and the Flows index list it.
+- **A letter:** a `block()` with the letter's id in `tools/genEmails.mjs`, an entry in `sections` of
+  Emails in `pages.mjs`, build — the menu lists it and scrolls to it.
 - **A language:** the code in `site.mjs › languages`, a copy of `i18n/<lang>.js` translated, build,
   then `/showcase audit` for the keys still missing.
 - **A pick among variants:** `site.mjs › selected`, the `Selected` mark on the variant, a row on the

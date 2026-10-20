@@ -3,7 +3,7 @@
 The content each section must have, in the order of the menu. A root section is one page whose parts
 are the `sections` of its entry in `pages.mjs` — an element with that id, written with `block()` from
 `tools/lib/html.mjs` so the menu can scroll to it. A root's `children` are pages of their own one
-level down (the stack under Product, the pages of Design, the screens, each flow); a child's own
+level down (the stack under Product, the pages of Design, the key screens, each flow); a child's own
 `sections` are anchors on its page. "Variants" means several alternatives, one marked `Selected`.
 
 ## Product
@@ -177,23 +177,14 @@ a table; its source in the product's code or `proposed`. Samples use the cast an
 ## The product in use
 
 ### Screens (`screens/index.html`)
-The list of its pages (`<div data-children>`), each its own page, every screen in the shell picked on
-Layouts:
+Its one child page is listed on it (`<div data-children>`); every screen is drawn in the shell picked
+on Layouts. Screens stays a root while Key screens is still planned.
 
 - **Key screens** (`screens/key.html`): the main screens of the product, each in the device frames
   of the surfaces its actors use. For each: who looks at it and when, what it is for, the screen
   filled with the sample data, and its empty state small beside it. Grouped by module or by actor
   as the documentation suggests.
-- **Emails** (`screens/emails.html`), made at every depth: *Template* — the one layout every letter
-  uses, drawn once with its parts named (brand header with the mark, picture, heading, message,
-  action button, secondary detail, footer) and their sizes, and what a mail client changes: the
-  pictures go out as images in the brand colors, a dark mail client may recolor the letter;
-  *Common letters* — invitation, verification code, password reset, welcome, digest, security
-  alert; *The product's letters* — what its flows send, each named after the moment it is sent.
-  Each letter 600 px, in `mail()`, filled into the template: subject and sender as a mail client
-  shows them; a picture of its own about that moment, in the product's colors and from its domain;
-  one message in the voice of Microcopy; one action button; the footer with why they received it.
-  Light theme is the letter's own; the dark theme shows how a dark mail client renders it.
+
 ### Flows (`flows/index.html` + `flows/<flow>.html`)
 The index: the flows as tiles, sign-in first, each with its actor and goal — build.mjs writes them
 from `children` in `pages.mjs`, in that order, the text of a tile being the flow's `desc`. Each
@@ -203,6 +194,27 @@ ringed and numbered in the order of acting, the note under it (what the user did
 controls by their numbers, and what they see), the counter "Step n of N", the step's title, ← →,
 *All steps*, *Full screen*. Alternative paths (an error, a cancel) are steps too, marked in the
 note. A control on a screen may lead on (`data-go="step-n"`).
+
+### Emails (`emails/index.html`)
+A root of its own after Flows, made at every depth, not a child of Screens. The letters stand on
+the one page, each a section of its own — its anchor is the letter's id, written with `block()` —
+so the menu lists the *Template* and every letter, a click scrolls to it, and the menu marks the one
+in view as it does for any root with sections. The page has two headings over the letters, *Common
+letters* and *The product's own*, which are not menu items. `tools/genEmails.mjs` writes it.
+- *Template* — the one layout every letter uses, drawn once with its parts named (brand header with
+  the mark, picture, heading, message, action button, secondary detail, footer) and their sizes,
+  and what a mail client changes: the pictures go out as images in the brand colors, a dark mail
+  client may recolor the letter.
+- *Common letters* — invitation, verification code, password reset, welcome, digest, security
+  alert; *The product's own* — what its flows send, each named after the moment it is sent.
+  Each letter 600 px, in `mail()`, filled into the template: subject and sender as a mail client
+  shows them; a picture of its own about that moment, in the product's colors and from its domain;
+  one message in the voice of Microcopy; one action button; the footer with why they received it.
+  Light theme is the letter's own; the dark theme shows how a dark mail client renders it.
+- The `sections` of its entry in `pages.mjs` are the Template, then one per letter in the order of
+  the page — the common letters, then the product's own. A planned showcase starts with the Template
+  and the common letters the skill always proposes; the Emails step adds one section for each
+  letter the operator approves (id, title, one line), so the menu grows with the list.
 
 ## Project
 

@@ -108,8 +108,8 @@ const body = [
   block({
     ...head('loop', 'How it works', 'The product’s main loop, drawn step by step.'),
     body: [
-      '      <ol class="sc-loop">',
-      ...LOOP.map(([id, title, text]) => `        <li class="card sc-loop__step">${t(`product.loop.${id}.title`, title, 'h3', 't-card-title')}${t(`product.loop.${id}.text`, text, 'p')}</li>`),
+      '      <ol class="sc-cycle">',
+      ...LOOP.map(([id, title, text]) => `        <li class="card sc-cycle__step">${t(`product.loop.${id}.title`, title, 'h3', 't-card-title')}${t(`product.loop.${id}.text`, text, 'p')}</li>`),
       '      </ol>',
       `      <p class="sc-note" data-i18n="product.loop.note">${escapeHtml(LOOP_NOTE)}</p>`,
     ].join('\n'),
