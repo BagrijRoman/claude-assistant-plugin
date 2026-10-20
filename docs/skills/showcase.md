@@ -63,7 +63,7 @@ docs/showcase/
 ├── tokens.css · base.css · components.css            every value; the type scale; the components
 ├── sample.mjs · i18n/<lang>.js                       the fictional company and cast; dictionaries
 ├── tools/lib/html.mjs · tools/gen*.mjs · tools/parts/ the page shell; one generator per heavy page or flow; a page's pieces
-├── assets/ · assets/tech/                            the frame: showcase.css/js, site.css, nav.js, i18n.js, flow.js; the stack's official marks
+├── assets/ · assets/tech/                            the frame: showcase.css/js, site.css, nav.js, i18n.js, flow.js, favicon.svg (written by the build); the stack's official marks
 ├── index.html · <root>/index.html · <root>/<child>.html  the Product page; one page per root section; one per child page (stack, design pages, screens, flows)
 ├── plans/                                            the approved plans and flow descriptions
 └── STATE.json · DECISIONS.md · CHANGELOG.md · SOURCES.md · README.md
@@ -134,8 +134,10 @@ which it reads. So the skill cuts only what the next step does not use:
 
 ### What the frame gives for free
 
-In-place navigation between pages without reloading the menu; a menu that keeps one root section
-open at a time and keeps keyboard focus in it, and on a narrow screen a drawer the Tab key skips
+In-place navigation between pages without reloading the menu, the stylesheets re-read at each move so a
+page opened after an edit to them is drawn with it; the tab's icon drawn from the picked mark (a letter
+on the brand tile until one is picked) in the brand color of the light and the dark theme; a menu that
+keeps one root section open at a time and keeps keyboard focus in it, and on a narrow screen a drawer the Tab key skips
 while it is closed; scroll-spy on long pages; breadcrumbs that name the section on screen; previous
 / next and ← → keys; live token values and WCAG contrast rows that follow the theme, whatever CSS
 color form a token is written in; the flow player (step counter, title, ← →, all steps, full screen,
@@ -178,7 +180,7 @@ and how many; and, on `continue` or `status`, the checklist rebuilt from its sta
 
 ## The script
 
-The template ships the site's own code — `build.mjs` (navigation, idempotent), `open.mjs` (the
+The template ships the site's own code — `build.mjs` (navigation and the tab's icon, idempotent), `open.mjs` (the
 server), `tools/genPages.mjs` (starting pages), `tools/fetchTechMarks.mjs` (the stack's official marks
 from Simple Icons, or a project's own site, into `assets/tech/` with `marks.json`), `tools/genProduct.mjs` and
 `tools/genStack.mjs` (the Product page and the stack: the rendering fixed, the content filled per project),
@@ -234,7 +236,15 @@ still to come (T19).
   wired in, a second genPages run writing nothing, a flow keyed apart from the root section with its
   id. A second scaffold has no flow at first, as the Frame step leaves it: the Flows index says it
   is being prepared, lists the flow after it is added and the build runs, and a `pages.mjs` with two
-  entries on one key stops the build.
+  entries on one key stops the build. The tab's icon: the build writes `assets/favicon.svg` and every
+  page's head links it with its folder's prefix; a letter mark gives a brand tile with the letter (escaped,
+  the name's first when the mark is empty or a placeholder); a picked mark is written as it is, in the
+  brand color of both themes, with the ground of each theme for its knockouts and no namespace twice;
+  a token that names another is followed, a missing, empty or placeholder one is left out — never
+  "undefined" — and so is a missing `tokens.css`; a mention of dark in a comment is not the dark set;
+  an unchanged icon is not written again. `nav.js` is held to parsing and to what the in-place move
+  promises (the site's own stylesheets read uncached at load and at each swap, a changed one loaded
+  beside the old, which leaves on load) — there is no DOM in the suite to run it.
 - The frame was smoke-tested by hand: a scaffold with two languages, `genPages` for 19 pages,
   `build.mjs` idempotent, and a Playwright pass over the menu, the language and theme switches,
   presentation mode and the scroll-spy with no console errors. A second Playwright pass, in the

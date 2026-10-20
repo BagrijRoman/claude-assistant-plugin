@@ -23,9 +23,9 @@ a hand-written page breaks without noticing.
 
 | File | Role |
 |------|------|
-| `site.mjs` | name, mark, port, languages, fonts, `selected` picks |
+| `site.mjs` | name, mark (the menu's tile and the tab's icon), port, languages, fonts, `selected` picks |
 | `pages.mjs` | the menu: bands → root sections → sections or children |
-| `build.mjs` | writes menu, breadcrumbs, pager, catalog, the Flows index's tiles, head (fonts, language scripts) and the language switch into every page, between its markers; refuses two entries of `pages.mjs` that would share a key; idempotent |
+| `build.mjs` | writes menu, breadcrumbs, pager, catalog, the Flows index's tiles, head (the tab icon's link, fonts, language scripts) and the language switch into every page, between its markers, and `assets/favicon.svg` beside them; refuses two entries of `pages.mjs` that would share a key; idempotent |
 | `open.mjs` | the server; runs the build first; `SHOWCASE_PORT`, `SHOWCASE_NO_OPEN` |
 | `tokens.css` | every value, light and dark |
 | `base.css` | reset and the text classes `.t-page-title .t-section-title .t-card-title .t-body .t-body-strong .t-label .t-caption .t-figure .mono .tnum` |
@@ -33,7 +33,8 @@ a hand-written page breaks without noticing.
 | `assets/showcase.css` | the frame: `.sc-side .sc-top .sc-main .sc-hero .sc-section .sc-section__head .sc-block .sc-row .sc-row__items .sc-state .sc-sample .sc-stage .sc-grid-2/3/4 .sc-tiles .sc-tile .sc-source .sc-proposed .sc-note .sc-list .swatch .sc-swatches .sc-diagram .frame .shell-sample .sc-motion .table-wrap` |
 | `assets/site.css` | the gaps between groups, root links, `.tech-mark` (`--mono`, `--initials`), language switch, presentation mode, the flow player, `.variant`, `.tag--selected`, `.device--phone/tablet/desktop`, `.mail`, reduced motion |
 | `assets/showcase.js` | the icon sprite (`<use href="#i-…">`), live swatches and contrast, tabs, switches, modals, toasts, motion replay; `window.showcase.enhance(root)` |
-| `assets/nav.js` | menu on narrow screens, one root open at a time (fallback), root-title clicks, in-place page swaps, scroll-spy, theme, presentation, keys; fires `pageswap` |
+| `assets/nav.js` | menu on narrow screens, one root open at a time (fallback), root-title clicks, in-place page swaps that keep the site's stylesheets as the server has them now, scroll-spy, theme, presentation, keys; fires `pageswap` |
+| `assets/favicon.svg` | the tab's icon, written by `build.mjs` — never by hand: the selected mark (a letter on the brand tile until one is picked) in `--color-primary`, light and dark |
 | `assets/i18n.js` | translates `[data-i18n]` and `[data-i18n-attr]`; the language switch; `window.showcaseI18n` |
 | `assets/flow.js` | the step player |
 | `tools/lib/html.mjs` | `renderPage`, `section`, `block`, `variant`, `flowPlayer`, `flowMark`, `device`, `mail`, `t`, `escapeHtml` |
@@ -182,9 +183,9 @@ Illustrations: SVG `<symbol>`s in `assets/illustrations.js`, used as
 (line, fill, soft, accent — added to `tokens.css` from the scheme, both themes); animation in CSS
 keyframes on classes inside the symbol, stopped by the reduced-motion rule in `site.css`. Marks:
 SVG on a 64-unit grid, `currentColor` ink, `var(--lg-ground)` knockouts; the picked mark's SVG goes
-to `site.mjs › mark`. `--lg-ground` is the color behind the mark: `tokens.css` sets it for the
-page, the brand tile in `components.css` to its own fill, and every ground the Logo page shows a
-mark on (light, dark, the brand color) sets it again.
+to `site.mjs › mark`, where `build.mjs` also draws the tab's icon from it. `--lg-ground` is the color
+behind the mark: `tokens.css` sets it for the page, the brand tile in `components.css` to its own
+fill, and every ground the Logo page shows a mark on (light, dark, the brand color) sets it again.
 
 ## Menu, theme, presentation, keys
 
@@ -196,11 +197,15 @@ plain link ends with every root folded, as a reload does). nav.js never scrolls 
 inside a folded root, and keeps keyboard focus in the menu when a fold would hide it. A folded root
 still marks the page on show on its title — `aria-current="page"`, or `"true"` on the root of a flow.
 On a narrow screen the menu is a drawer behind *All pages*, inert while closed, so the Tab key
-skips it.
+skips it. The styles stay as fresh as the menu: an in-place swap asks the server again (`cache: 'no-store'`)
+for the site's own stylesheets and loads one that changed since the tab took it beside the old copy,
+which leaves once the new one has loaded — so a page opened after `tokens.css` or `components.css`
+was edited is drawn with the edit, with no reload.
 
 `data-theme="light|dark"` on `<html>`, or none for the device's choice; tokens.css carries both
-sets. Presentation: `html.present`, toggled by **P**, the top-bar button or `?present=1`; Escape
-leaves. Keys: ← → step sections, then pages; in a flow they step the flow.
+sets. The tab's icon follows only the device's choice (`prefers-color-scheme`), as a browser gives an
+icon no page to read the switch from. Presentation: `html.present`, toggled by **P**, the top-bar
+button or `?present=1`; Escape leaves. Keys: ← → step sections, then pages; in a flow they step the flow.
 
 ## Audit
 

@@ -416,6 +416,45 @@
     return chain;
   }
 
+  // The styles outlive the page they came with, as the menu does: a stylesheet edited while the tab is
+  // open would not reach the pages opened after the edit, and a new page would be drawn with the old
+  // rules. Each swap asks the server for the site's own stylesheets again and loads anew one that has
+  // changed since the tab took it; the new copy goes in beside the old, which leaves once it has loaded.
+  var sheetTexts = {};
+
+  function ownSheets() {
+    return Array.prototype.filter.call(document.querySelectorAll('link[rel="stylesheet"]'), function (link) {
+      return new URL(link.href).origin === location.origin;
+    });
+  }
+
+  function readSheet(path) {
+    return fetch(path, { cache: 'no-store' }).then(function (response) {
+      return response.ok ? response.text() : null;
+    });
+  }
+
+  if (swaps) {
+    ownSheets().forEach(function (link) {
+      var path = new URL(link.href).pathname;
+      readSheet(path).then(function (text) { sheetTexts[path] = text; }).catch(function () {});
+    });
+  }
+
+  function refreshStyles() {
+    ownSheets().forEach(function (link) {
+      var path = new URL(link.href).pathname;
+      readSheet(path).then(function (text) {
+        if (text === null || !(path in sheetTexts) || sheetTexts[path] === text) return;
+        sheetTexts[path] = text;
+        var fresh = link.cloneNode();
+        fresh.href = path + '?v=' + Date.now();
+        fresh.addEventListener('load', function () { link.remove(); });
+        link.after(fresh);
+      }).catch(function () {});
+    });
+  }
+
   function go(href, push) {
     var url = new URL(href, location.href);
     if (!swaps) {
@@ -449,6 +488,7 @@
         if (crumb && nextCrumb) crumb.innerHTML = nextCrumb.innerHTML;
         markCurrent();
         closeNav();
+        refreshStyles();
         var target = url.hash ? document.getElementById(url.hash.slice(1)) : null;
         if (target) target.scrollIntoView();
         else window.scrollTo(0, 0);

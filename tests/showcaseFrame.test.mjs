@@ -7,14 +7,17 @@
 // A second scaffold lays the frame with no flow, as the Frame step does, and adds one later, as the
 // Flows step does: the Flows index lists it after the next build, under a key of its own. The Color
 // scheme step's scratch page survives a build until STATE.json records the scheme chosen, and not after.
+// The tab's icon (assets/favicon.svg, from the mark and the brand tokens, linked from every head) and
+// nav.js's refresh of the stylesheets at each in-place move are held to what they promise too.
 
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { after, before, describe, it } from 'node:test';
+import { after, before, beforeEach, describe, it } from 'node:test';
+import vm from 'node:vm';
 import { BANDS } from '../skills/showcase/templates/pages.mjs';
 import { removeTempDirs } from './helpers.mjs';
-import { FLOW, run, scaffold, withFlow } from './showcaseFixture.mjs';
+import { FLOW, run, scaffold, TEMPLATES, withFlow } from './showcaseFixture.mjs';
 
 // Every page that has a path, a root's children right after it — the pages build.mjs writes into
 const PAGES = BANDS
@@ -173,6 +176,182 @@ describe('showcase frame, a flow added after the frame', () => {
     assert.notEqual(result.status, 0);
     assert.match(result.stderr, /share the i18n key nav\.design\.logo\.sideBySide/);
     writeFileSync(join(dir, 'pages.mjs'), pages);
+  });
+});
+
+// The tab's icon: build.mjs writes assets/favicon.svg from site.mjs's mark and tokens.css's brand colors
+// and links it from every page's head. These tests change the mark and the tokens of one scaffold and
+// build again; the originals come back before each test.
+describe('showcase frame, the tab icon', () => {
+  let dir;
+  let site;
+  before(() => {
+    dir = scaffold({ flow: false });
+    site = readFileSync(join(dir, 'site.mjs'), 'utf8');
+    assert.equal(run(dir, 'tools/genPages.mjs').status, 0);
+  });
+  after(removeTempDirs);
+  beforeEach(() => {
+    writeFileSync(join(dir, 'site.mjs'), site);
+    writeFileSync(join(dir, 'tokens.css'), readFileSync(join(TEMPLATES, 'tokens.css'), 'utf8'));
+  });
+
+  const setMark = (mark) => writeFileSync(join(dir, 'site.mjs'), site.replace("mark: 'F'", `mark: ${JSON.stringify(mark)}`));
+  const setTokens = (css) => writeFileSync(join(dir, 'tokens.css'), css);
+  const favicon = () => join(dir, 'assets/favicon.svg');
+  const icon = () => {
+    const result = run(dir, 'build.mjs');
+    assert.equal(result.status, 0, result.stderr);
+    return readFileSync(favicon(), 'utf8');
+  };
+  // Neither "undefined" nor an unfilled {{placeholder}} nor an empty declaration may reach the file
+  const clean = (svg) => {
+    assert.doesNotMatch(svg, /undefined|null|NaN|\{\{|:\s*[;}]/);
+    assert.match(svg, /^<svg [^>]*xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
+    assert.match(svg, /<\/svg>\n$/);
+  };
+
+  it('writes the favicon and links it from every page\'s head, with the prefix of its folder', () => {
+    icon();
+    assert.ok(existsSync(favicon()), 'no assets/favicon.svg');
+    for (const page of PAGES) {
+      const head = readFileSync(join(dir, page.path), 'utf8').match(/<!-- head:start[^]*?<!-- head:end -->/)?.[0] ?? '';
+      const prefix = '../'.repeat(page.path.split('/').length - 1);
+      assert.ok(head.includes(`<link rel="icon" type="image/svg+xml" href="${prefix}assets/favicon.svg">`), `${page.path}: the head does not link the icon`);
+    }
+  });
+
+  it('draws the letter of the mark on a brand tile, in the brand colors of both themes, until a mark is picked', () => {
+    const svg = icon();
+    clean(svg);
+    assert.match(svg, /<rect width="64" height="64" rx="14" style="fill:currentColor"\/>/);
+    assert.match(svg, />F<\/text>/);
+    // The starter tokens: --color-primary #18181b and its foreground #ffffff, then #fafafa and #18181b in the dark set
+    assert.match(svg, /<style>svg\{color:#18181b;--on-brand:#ffffff\}@media \(prefers-color-scheme:dark\)\{svg\{color:#fafafa;--on-brand:#18181b\}\}<\/style>/);
+    assert.match(svg, /style="fill:var\(--on-brand,#fff\)"/);
+  });
+
+  it('writes the picked mark itself, in the brand color of each theme', () => {
+    setMark('<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="20" style="fill:currentColor"/></svg>');
+    const svg = icon();
+    clean(svg);
+    assert.doesNotMatch(svg, /aria-hidden|<rect|<text|--lg-ground/);
+    assert.equal(svg, '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><style>svg{color:#18181b}@media (prefers-color-scheme:dark){svg{color:#fafafa}}</style><circle cx="32" cy="32" r="20" style="fill:currentColor"/></svg>\n');
+  });
+
+  it('gives a mark with knockouts the page\'s ground of each theme, which a file on its own has no page to inherit', () => {
+    setMark('<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="20" style="fill:currentColor"/><circle cx="32" cy="32" r="8" style="fill:var(--lg-ground)"/></svg>');
+    const svg = icon();
+    clean(svg);
+    assert.match(svg, /<style>svg\{color:#18181b;--lg-ground:#ffffff\}@media \(prefers-color-scheme:dark\)\{svg\{color:#fafafa;--lg-ground:#09090b\}\}<\/style>/);
+    assert.match(svg, /style="fill:var\(--lg-ground\)"\/><\/svg>\n$/);
+  });
+
+  it('does not repeat a namespace the picked mark already has', () => {
+    setMark('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="20"/></svg>');
+    const svg = icon();
+    assert.equal(svg.split('xmlns=').length - 1, 1);
+  });
+
+  it('escapes a mark that is a letter the file would otherwise mistake for markup', () => {
+    setMark('<');
+    assert.match(icon(), />&lt;<\/text>/);
+    setMark('&');
+    assert.match(icon(), />&amp;<\/text>/);
+  });
+
+  it('takes the name\'s first letter when the mark is empty or still a placeholder', () => {
+    setMark('');
+    assert.match(icon(), />F<\/text>/);
+    setMark('{{MARK}}');
+    const svg = icon();
+    clean(svg);
+    assert.match(svg, />F<\/text>/);
+  });
+
+  it('follows a token that names another, and takes the light value where the dark set has none', () => {
+    setTokens(`:root { --color-primary: var(--brand); --brand: #047857; --color-primary-foreground: #ffffff; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) { --brand: #34d399; } }`);
+    const svg = icon();
+    clean(svg);
+    assert.match(svg, /svg\{color:#047857;--on-brand:#ffffff\}/);
+    assert.match(svg, /@media \(prefers-color-scheme:dark\)\{svg\{color:#34d399\}\}/);
+  });
+
+  it('writes no style, and no "undefined", when the tokens are missing, empty or placeholders', () => {
+    const cases = {
+      'no brand token': ':root { --color-page: #fafafa; }',
+      'placeholders': ':root { --color-primary: {{PRIMARY}}; --color-primary-foreground: {{ON_PRIMARY}}; }',
+      'a value that leads nowhere': ':root { --color-primary: var(--missing); }',
+      'an empty file': '',
+    };
+    for (const [name, css] of Object.entries(cases)) {
+      setTokens(css);
+      const svg = icon();
+      clean(svg);
+      assert.doesNotMatch(svg, /<style>/, name);
+      assert.match(svg, /<rect [^>]*\/>.*>F<\/text>/, `${name}: the tile with its letter`);
+    }
+    setMark('<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="20"/></svg>');
+    setTokens(':root { --color-primary: {{PRIMARY}}; }');
+    const svg = icon();
+    clean(svg);
+    assert.doesNotMatch(svg, /<style>/);
+  });
+
+  it('keeps the light value when there is no dark set, and builds with no tokens.css at all', () => {
+    setTokens(':root { --color-primary: #047857; }');
+    const svg = icon();
+    clean(svg);
+    assert.match(svg, /svg\{color:#047857\}/);
+    assert.doesNotMatch(svg, /@media/);
+    rmSync(join(dir, 'tokens.css'));
+    const bare = icon();
+    clean(bare);
+    assert.doesNotMatch(bare, /<style>/);
+  });
+
+  it('does not read a mention of dark in a comment as the dark set', () => {
+    setTokens(`/* the dark set applies under prefers-color-scheme: dark; --color-primary: #ff0000 is only an example */
+:root { --color-primary: #047857; }
+@media (prefers-color-scheme: dark) { :root { --color-primary: #34d399; } }`);
+    const svg = icon();
+    assert.match(svg, /svg\{color:#047857\}/);
+    assert.match(svg, /dark\)\{svg\{color:#34d399\}\}/);
+    assert.doesNotMatch(svg, /ff0000/);
+  });
+
+  it('writes the file only when it changed', () => {
+    icon();
+    const before = statSync(favicon()).mtimeMs;
+    const second = run(dir, 'build.mjs');
+    assert.match(second.stdout, /Navigation is up to date/);
+    assert.equal(statSync(favicon()).mtimeMs, before, 'the unchanged icon was written again');
+    setMark('Q');
+    assert.match(icon(), />Q<\/text>/);
+  });
+});
+
+// nav.js is browser code with no DOM here to run it in; what a test can hold it to is that it parses and
+// that a page swapped in asks for the stylesheets afresh
+describe('showcase frame, nav.js keeps the styles fresh across in-place moves', () => {
+  const source = readFileSync(join(TEMPLATES, 'frame/assets/nav.js'), 'utf8');
+
+  it('parses', () => {
+    assert.doesNotThrow(() => new vm.Script(source, { filename: 'nav.js' }));
+  });
+
+  it('reads the site\'s own stylesheets at load and again, uncached, at each swap', () => {
+    assert.match(source, /function readSheet\(path\)[^]*?fetch\(path, \{ cache: 'no-store' \}\)/);
+    assert.match(source, /new URL\(link\.href\)\.origin === location\.origin/, 'only the site\'s own sheets');
+    assert.match(source, /if \(swaps\) \{\s*ownSheets\(\)\.forEach/, 'read once at load, only where swaps happen');
+    const go = source.match(/function go\(href, push\) \{[^]*?\n  \}\n/)?.[0] ?? '';
+    assert.match(go, /\brefreshStyles\(\);/, 'go() does not refresh the styles');
+  });
+
+  it('loads a changed sheet beside the old one, which leaves once the new one has loaded', () => {
+    assert.match(source, /link\.after\(fresh\)/);
+    assert.match(source, /fresh\.addEventListener\('load', function \(\) \{ link\.remove\(\); \}\)/);
   });
 });
 

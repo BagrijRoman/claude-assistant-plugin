@@ -421,7 +421,7 @@ for a new one and adds it to the list.
 on the page: the chosen variant first with the `Selected` mark, the others `Alternative`; for
 `logo`, `site.mjs › mark` becomes the mark's SVG; fill the group's row in `DECISIONS.md` (SC-004
 to SC-007; a group made with `add` gets the next `SC-nnn`); regenerate the Decisions page once
-`tools/genDecisions.mjs` exists; `node build.mjs`; an entry in `CHANGELOG.md`.
+`tools/genDecisions.mjs` exists; `node build.mjs` (for `logo` it redraws the tab's icon from the mark); an entry in `CHANGELOG.md`.
 
 **`add`** — a page or a section outside the standard list: ask what, where in the menu, a
 generator or hand-written; add to `pages.mjs`; `genPages` for the start; build.
