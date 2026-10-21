@@ -68,9 +68,9 @@ the home page, `index.html` — the Product page; build.mjs writes the catalog i
 change: `node build.mjs`, which stops with the two entries named when two would share a key.
 
 A root whose sections are a list that grows has its step add one section per item: Components, one
-per component; Emails (`emails/index.html`, after Flows), the Template and one per letter, the
-letter's id being its anchor and `nav.emails.<letter id>` its key. Emails has no `children` — its
-letters are not pages — so its page lists none.
+per component; Email templates (`emails/index.html`, in Design after Layouts, key `emails`), the
+Template and one per letter, the letter's id being its anchor and `nav.emails.<letter id>` its key.
+Email templates has no `children` — its letters are not pages — so its page lists none.
 
 ## Writing a page
 

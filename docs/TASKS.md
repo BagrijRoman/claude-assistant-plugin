@@ -1187,6 +1187,61 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T38 — `/showcase` Flows: right after Security, in the first group · `done`
+
+On ETC.V2, right after the Monthly data flow's gate (2026-10-21), the operator asked for the Flows root to
+stand next after Security: it must be more visible and easier to reach for the customer, as the weightiest
+section of the whole showcase — and for the skill to lay every showcase so.
+
+What was done:
+- `templates/pages.mjs`: the `flows` root moved from the *product in use* band into the first band, after
+  `security`; the first band's line ends with "the product in use, step by step", the *in use* band's line
+  is its screens and letters; the comment on the order says why. The Flows index is laid with the first
+  band's overline (genPages takes it from the band).
+- `SKILL.md` (the site table), `sections.md` (Flows under *Product*, after Security; Emails "after
+  Screens"), `phases.md › Emails` and `site.md` ("after Screens"), `docs/skills/showcase.md` (the table,
+  the tests' summary); the template's `genProduct.mjs` "About this site" names the flows before the design.
+  The order of making is unchanged: Flows are still step 15.
+- `tests/showcaseFrame.test.mjs`: Flows in the first band after Security and in no other, the menu
+  listing them after Security and before Design, the Flows index headed by the first band; the Emails
+  tests hold Emails after Screens.
+- ETC.V2: the same move in `pages.mjs`, the bands' lines and "About this site" in both languages, the
+  Flows index's overline; SC-045.
+
+Done when:
+- `npm test` passes (428).
+- The ETC.V2 menu shows Product · Architecture · Security · Flows, then Design.
+
+## T39 — `/showcase` Screens after Flows; Email templates after Layouts; «Лейаути» · `done`
+
+On ETC.V2, the same day (2026-10-21), the operator asked for three more changes to the menu, and for the
+skill to lay every showcase so: Screens right after Flows; Emails renamed Email templates and put right
+after Layouts; Layouts in Ukrainian «Лейаути», not «Макети».
+
+What was done:
+- `templates/pages.mjs`: `screens` moved into the first band after `flows`; `emails`, titled *Email
+  templates* (the key stays `emails`), moved into the Design band after `layouts`; the band *The product
+  in use* is gone; the first and Design bands' lines and the comment on the order follow.
+- `SKILL.md` (the site table, with the rule on the names: «Лейаути», «Імейл-темплейти», never «Макети»
+  or «Листи»; step 16 and the stage list read *Email templates*), `sections.md` (Screens under *Product*
+  after Flows; Email templates under *Design* after Layouts; no *The product in use*), `phases.md`
+  (step 16 and its heading, the depth list), `site.md`, `templates/README.md`, `docs/skills/showcase.md`
+  (the table, the names, the order of making, the stages, the tests' summary); the template's
+  `genProduct.mjs` "About this site"; `bin/skillResume.mjs` labels the `emails` stage *Email templates*.
+  The order of making is unchanged: Key screens 14, Flows 15, Email templates 16.
+- `tests/showcaseFrame.test.mjs`: Flows then Screens in the first band and in no other, no *in use* band,
+  the menu listing them after Security and before Design, both indexes headed by the first band; Email
+  templates in Design between Layouts and Components, titled so, its page headed by Design.
+- ETC.V2: the same in `pages.mjs`, the bands' lines and "About this site" in both languages, the
+  overlines of Screens and Email templates (`genEmails.mjs`), «Лейаути» / «Лейаут входу» / «Лейаут
+  застосунку» / «Імейл-темплейти» in the menu and in every caption and flow note that points at them, in
+  the generators and in `uk.js`; SC-046.
+
+Done when:
+- `npm test` passes (429).
+- The ETC.V2 menu shows Product · Architecture · Security · Flows · Screens, then Design · Illustrations ·
+  Layouts · Email templates · Components, then the project.
+
 ## T37 — `/showcase` Security: a root section after Architecture, in the customer's words · `done` (0.21.0)
 
 On ETC.V2, during the Flows step (2026-10-21), the operator asked whether a Security section after

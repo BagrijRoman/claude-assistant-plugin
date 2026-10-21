@@ -9,8 +9,9 @@
 // scheme step's scratch page survives a build until STATE.json records the scheme chosen, and not after.
 // The tab's icon (assets/favicon.svg, from the mark and the brand tokens, linked from every head) and
 // nav.js's refresh of the stylesheets at each in-place move are held to what they promise too. The
-// template's pages.mjs is held to its shape for the product in use: Screens, Flows, then Emails as a
-// root of its own whose menu items are the Template and a section per letter.
+// template's pages.mjs is held to its order — Flows, then Screens, in the first group right after
+// Security; Email templates in Design right after Layouts — and to the shape of Email templates: a root
+// of its own whose menu items are the Template and a section per letter.
 
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -113,11 +114,46 @@ describe('showcase frame', () => {
   });
 });
 
-// The product in use: Screens (Key screens only), Flows, then Emails — a root of its own whose menu items
-// are its sections, the Template first and a section per letter; the letters are not a child of Screens.
-describe('showcase frame, Emails as a root section after Flows', () => {
-  const group = BANDS.find((band) => band.id === 'inUse');
-  const entry = (id) => group.pages.find((page) => page.id === id);
+// Flows stand right after Security in the first group: the weightiest part for the customer, in reach
+// from the home page; Screens follow them. The menu shows them in that order, before Design.
+describe('showcase frame, Flows and Screens right after Security', () => {
+  let dir;
+  before(() => {
+    dir = scaffold();
+    assert.equal(run(dir, 'tools/genPages.mjs').status, 0);
+    assert.equal(run(dir, 'build.mjs').status, 0);
+  });
+  after(removeTempDirs);
+
+  it('puts Flows, then Screens, in the first group, after Security', () => {
+    assert.deepEqual(BANDS[0].pages.map((page) => page.id), ['product', 'architecture', 'security', 'flows', 'screens']);
+    for (const band of BANDS.slice(1)) {
+      assert.ok(!band.pages.some((page) => page.id === 'flows' || page.id === 'screens'), `${band.id} holds Flows or Screens too`);
+    }
+    assert.ok(!BANDS.some((band) => band.id === 'inUse'), 'the group The product in use is back');
+  });
+
+  it('lists Flows and Screens in the menu after Security and before Design', () => {
+    const html = readFileSync(join(dir, 'index.html'), 'utf8');
+    const at = (href) => html.indexOf(`class="navlink navlink--page" href="${href}"`);
+    assert.ok(at('security/index.html') > 0 && at('flows/index.html') > at('security/index.html'), 'Flows after Security');
+    assert.ok(at('screens/index.html') > at('flows/index.html'), 'Screens after Flows');
+    assert.ok(at('design/index.html') > at('screens/index.html'), 'Design after Screens');
+  });
+
+  it('heads the Flows and Screens indexes with the first group', () => {
+    for (const path of ['flows/index.html', 'screens/index.html']) {
+      const html = readFileSync(join(dir, path), 'utf8');
+      assert.match(html, /sc-hero__overline"><span data-i18n="nav\.band\.product">/, path);
+    }
+  });
+});
+
+// Email templates stand in Design right after Layouts — a root of its own whose menu items are its
+// sections, the Template first and a section per letter; the letters are not a child of Screens.
+describe('showcase frame, Email templates as a root section after Layouts', () => {
+  const group = BANDS.find((band) => band.id === 'design');
+  const entry = (id) => BANDS.flatMap((band) => band.pages).find((page) => page.id === id);
   let dir;
   before(() => {
     dir = scaffold();
@@ -132,12 +168,18 @@ describe('showcase frame, Emails as a root section after Flows', () => {
       .map(([block]) => block)
       .find((block) => block.match(/<summary[^]*?href="([^"]+)"/)?.[1] === href);
 
-  it('puts Emails among the roots of the group, after Flows, and not under Screens', () => {
-    assert.deepEqual(group.pages.map((page) => page.id), ['screens', 'flows', 'emails']);
+  it('puts Email templates among the roots of Design, right after Layouts, and not under Screens', () => {
+    assert.deepEqual(group.pages.map((page) => page.id), ['design', 'illustrations', 'layouts', 'emails', 'components']);
+    assert.equal(entry('emails').title, 'Email templates');
     assert.deepEqual((entry('screens').children ?? []).map((child) => child.id), ['key']);
-    for (const page of group.pages) {
+    for (const page of BANDS.flatMap((band) => band.pages)) {
       assert.ok(!(page.children ?? []).some((child) => child.id === 'emails' || child.path === 'screens/emails.html'), `${page.id} holds Emails as a child`);
     }
+  });
+
+  it('heads the Email templates page with Design', () => {
+    const html = readFileSync(join(dir, 'emails/index.html'), 'utf8');
+    assert.match(html, /sc-hero__overline"><span data-i18n="nav\.band\.design">/);
   });
 
   it('gives Emails a page of its own and the Template first, then the common letters, as its sections', () => {
@@ -157,21 +199,22 @@ describe('showcase frame, Emails as a root section after Flows', () => {
     assert.ok(!existsSync(join(dir, 'screens/emails.html')), 'screens/emails.html was laid');
   });
 
-  it('lists the Template and every letter under the Emails root, after Flows, with Screens holding Key screens only', () => {
+  it('lists the Template and every letter under the Email templates root, after Layouts, with Screens holding Key screens only', () => {
     const html = readFileSync(join(dir, 'index.html'), 'utf8');
     const emails = rootOf(html, 'emails/index.html');
-    assert.ok(emails, 'no Emails root in the menu');
+    assert.ok(emails, 'no Email templates root in the menu');
     const items = [...emails.matchAll(/<a [^>]*href="emails\/index\.html#([^"]+)"[^>]*data-section="([^"]+)"/g)].map(([, anchor, section]) => [anchor, section]);
     assert.deepEqual(items, entry('emails').sections.map((section) => [section.id, section.id]));
-    assert.ok(html.indexOf('href="flows/index.html"') < html.indexOf('href="emails/index.html"'), 'Emails is not after Flows');
-    assert.ok(html.indexOf('href="screens/index.html"') < html.indexOf('href="flows/index.html"'), 'Screens is not before Flows');
+    const at = (href) => html.indexOf(`class="navlink navlink--page" href="${href}"`);
+    assert.ok(at('layouts/index.html') > 0 && at('emails/index.html') > at('layouts/index.html'), 'Email templates is not after Layouts');
+    assert.ok(at('components/index.html') > at('emails/index.html'), 'Components is not after Email templates');
     const screens = rootOf(html, 'screens/index.html');
     assert.ok(screens, 'no Screens root in the menu');
     assert.match(screens, /href="screens\/key\.html"/);
     assert.doesNotMatch(screens, /emails/);
   });
 
-  it('opens the Emails root on its page and marks the first section as the one on show', () => {
+  it('opens the Email templates root on its page and marks the first section as the one on show', () => {
     const html = readFileSync(join(dir, 'emails/index.html'), 'utf8');
     const emails = rootOf(html, '../emails/index.html');
     assert.match(emails, /^<details class="sc-side__group" name="sc-side" open>/);

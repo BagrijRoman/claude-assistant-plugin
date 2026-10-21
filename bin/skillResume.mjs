@@ -54,7 +54,7 @@ const SHOWCASE_STAGES = [
   [['notFound'], 'Not found page'],
   [['screens'], 'Key screens'],
   [['flows'], 'Flows'],
-  [['emails'], 'Emails'],
+  [['emails'], 'Email templates'],
   [['charts'], 'Charts'],
   [['architecture'], 'Architecture'],
   [['security'], 'Security'],

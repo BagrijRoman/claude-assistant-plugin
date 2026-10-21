@@ -124,7 +124,7 @@ const body = [
   block({
     ...head('site', 'About this site', 'Every page of this site, where its content comes from, and how to read it.'),
     body: [
-      '      <p class="t-body" data-i18n="product.site.about">This site shows the product before it is built: what it is and how it is built, its design, its pictures and components, its screens and its flows step by step. It is the reference the product is held against; where it proposes something the product does not have yet, it says “proposed”.</p>',
+      '      <p class="t-body" data-i18n="product.site.about">This site shows the product before it is built: what it is, how it is built and what keeps its data safe, how it is used — its flows, step by step, and its screens — then its design: its pictures, layouts, email templates and components. It is the reference the product is held against; where it proposes something the product does not have yet, it says “proposed”.</p>',
       '      <div data-catalog></div>',
       ...(rows.length ? [
         '      <h3 class="t-card-title" data-i18n="overview.sources.title">Where this comes from</h3>',

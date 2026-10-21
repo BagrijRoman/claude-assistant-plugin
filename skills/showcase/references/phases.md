@@ -18,7 +18,7 @@ must have is in [sections.md](sections.md); how pages are written, in [site.md](
 - [Steps 7–9 — Components, Icons, Illustrations](#steps-79--components-icons-illustrations)
 - [Steps 10–14 — States, Layouts, Key screens](#steps-1014--states-layouts-key-screens)
 - [Step 15 — Flows](#step-15--flows)
-- [Steps 16–19 — Emails, Charts, Architecture, Security](#steps-1619--emails-charts-architecture-security)
+- [Steps 16–19 — Email templates, Charts, Architecture, Security](#steps-1619--email-templates-charts-architecture-security)
 - [Step 20 — Principles, Decisions, Changelog, Next steps](#step-20--principles-decisions-changelog-next-steps)
 - [Step 21 — Audit](#step-21--audit)
 - [Other modes](#other-modes)
@@ -145,7 +145,7 @@ site itself — so it can start from the files instead. Nothing in the procedure
      per actor; the operator renames or accepts.
    - **Depth**: full (every section, Recommended) · essentials (Product with the stack,
      Architecture, Security, Foundations, Logo, Microcopy, Illustrations, Layouts — Auth and App, Components,
-     Flows, Emails; the rest planned). Emails are in at every depth: every product sends letters,
+     Flows, Email templates; the rest planned). Email templates are in at every depth: every product sends letters,
      and the customer sees them before most screens. Security too: a buyer asks where their data
      lives and who sees it before they ask about a feature. Under essentials a step
      that needs a planned one draws what it needs in place — a sign-in panel without the
@@ -345,14 +345,14 @@ Two approvals, by design.
    switch for free.
 4. Gate per flow or per batch of flows, as the operator prefers.
 
-## Steps 16–19 — Emails, Charts, Architecture, Security
+## Steps 16–19 — Email templates, Charts, Architecture, Security
 
-- **Emails (16).** Plan: the common letters (invitation, verification code, password reset,
+- **Email templates (16).** Plan: the common letters (invitation, verification code, password reset,
   welcome, digest, security alert) and the product's own, proposed from the flows and the
   documentation's notifications (what is sent, to whom, when) — each with its subject, its one
-  action and its picture, one line each. Approve (`plans/emails.md`). Emails is a root section of its
-  own after Flows, not a page under Screens: the letters stand on one page, `emails/index.html`,
-  each a section of it (`sections.md › Emails`). Right after the approval make the `sections` of the
+  action and its picture, one line each. Approve (`plans/emails.md`). Email templates is a root section of
+  its own in Design, right after Layouts, not a page under Screens: the letters stand on one page,
+  `emails/index.html`, each a section of it (`sections.md › Email templates`). Right after the approval make the `sections` of the
   `emails` entry in `pages.mjs` match the plan, in the order of the page — the Template, then one
   `{ id, title, desc }` for each approved letter, the common letters first, then the product's own;
   the id is the letter's anchor, the desc one line — and add the `nav.emails.<letter id>` keys to
@@ -395,7 +395,7 @@ Two approvals, by design.
   it" before anyone asks about a feature. Plan from what the documentation already decided — the
   blueprint's cross-cutting concerns (access control, audit and history, review and locking,
   personal data), its access module (sign-in, roles and scopes, invitations), the Architecture's
-  *Where it runs*, the security letters of Emails: one line per claim under the six parts of
+  *Where it runs*, the security letters of Email templates: one line per claim under the six parts of
   `sections.md › Security`, each marked *done*, *planned* or *not promised*. A claim the
   documentation does not support is an open point with a recommendation, not a sentence on the
   page. Approve (`plans/security.md`). `tools/genSecurity.mjs`: a `block()` per part, each a few

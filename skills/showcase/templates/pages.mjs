@@ -5,21 +5,23 @@
 // Shape: a band is a group of root sections. The menu shows no label for it, only a gap before the
 // next group; the catalog on the Product page uses its title and description as headings. A root
 // section folds in the menu and shows two kinds of items under it: its `sections`, the anchors of its
-// own page (the menu marks the one on screen as the page scrolls; Components and Emails have one per
+// own page (the menu marks the one on screen as the page scrolls; Components and Email templates have one per
 // item of a list that grows), and its `children`, pages of their own one level down (Design's pages,
 // the stack under Product, each flow under Flows). A child may have `sections` of its own; they are
 // anchors on its page, not menu items. An entry without a path is planned: listed in the menu and the
 // catalog, not a link. Every id is also the i18n key: nav.<page>, nav.<page>.<section>,
 // nav.<root>.<child>, nav.<root>.<child>.<section>, nav.band.<band>.
 //
-// The order is the order of attention for the customer — the product and how it is built first, then
-// its design, its pictures and its components, then the product in use, then the project. It is not
-// the order the sections are made in. The first page is the home page: the Product page, index.html.
+// The order is the order of attention for the customer — the product, how it is built, what keeps it
+// safe, its flows step by step and its screens first (the flows are the weightiest part, the screens
+// follow them); then its design, its pictures, its layouts, its email templates and its components;
+// then the project. It is not the order the sections are made in. The first page is the home page:
+// the Product page, index.html.
 export const BANDS = [
   {
     id: 'product',
     title: 'Product',
-    desc: 'What the product is, who it is for, what it is built with, how its parts fit together, and what keeps its data safe.',
+    desc: 'What the product is, who it is for, what it is built with, how its parts fit together, what keeps its data safe — and the product in use: its flows step by step, then its screens.',
     pages: [
       {
         id: 'product', path: 'index.html', title: 'Product', desc: 'The product in a few minutes: what it is and for whom, the roles, the modules, how it works, the sample company — and how to read this site.',
@@ -68,12 +70,22 @@ export const BANDS = [
           { id: 'claims', title: 'What is promised, and what is not yet', desc: 'Certifications and checks held or not, what is planned, whom to ask.' },
         ],
       },
+      // Right after Security: the flows are the weightiest part for the customer — the product working, step
+      // by step — so they stand in the first group, in reach from the home page, not after the design
+      { id: 'flows', path: 'flows/index.html', title: 'Flows', desc: 'The product in use, step by step: signing in first, then the flows of the product itself. Each flow is a page of its own with a step player.', children: [] },
+      // Right after Flows: the screens are the product in use too, one click on from the flows
+      {
+        id: 'screens', path: 'screens/index.html', title: 'Screens', desc: 'The screens of the product in its picked shell.',
+        children: [
+          { id: 'key', path: 'screens/key.html', title: 'Key screens', desc: 'The main screens of the product on the devices it is used on.', sections: [] },
+        ],
+      },
     ],
   },
   {
     id: 'design',
     title: 'Design',
-    desc: 'The design system: the basics every screen is drawn with, the pictures, and the components.',
+    desc: 'The design system: the basics every screen is drawn with, the pictures, the layouts, the email templates and the components.',
     pages: [
       {
         id: 'design', path: 'design/index.html', title: 'Design', desc: 'The basics of the design — principles, colors, type, spacing, shape, motion, the logo and its loaders, icons, words and states — each on a page of its own.',
@@ -185,6 +197,21 @@ export const BANDS = [
         ],
       },
       {
+        // Right after Layouts, named Email templates. One page, a section per letter: the Template, then the
+        // common letters, then the product’s own — the Email templates step adds a section for each letter it
+        // approves, so the menu grows with the list
+        id: 'emails', path: 'emails/index.html', title: 'Email templates', desc: 'The letters the product sends, as a mail client shows them: the one template, the common letters, and the ones the product’s own flows need.',
+        sections: [
+          { id: 'template', title: 'Template', desc: 'The one layout every letter uses, its parts named, and what a mail client changes.' },
+          { id: 'invitation', title: 'Invitation', desc: 'Asks a person to join: who invited them, and the one button to accept.' },
+          { id: 'verificationCode', title: 'Verification code', desc: 'The code that confirms an address or a sign-in, and how long it lasts.' },
+          { id: 'passwordReset', title: 'Password reset', desc: 'The link to choose a new password, and what to do if it was not asked for.' },
+          { id: 'welcome', title: 'Welcome', desc: 'The first letter after joining: what to do first.' },
+          { id: 'digest', title: 'Digest', desc: 'What happened in a period, in a few lines, with the one thing that needs a look.' },
+          { id: 'securityAlert', title: 'Security alert', desc: 'A sign-in from a new device or a changed password, and the way to secure the account.' },
+        ],
+      },
+      {
         id: 'components', path: 'components/index.html', title: 'Components', desc: 'Every component on one page, one section each: what it is for, its variations and states, its sizes. The standard set, the product’s own, and a reserve for later.',
         sections: [
           { id: 'button', title: 'Button', desc: 'Variants and sizes; hover, focus, disabled and loading; with an icon.' },
@@ -210,34 +237,6 @@ export const BANDS = [
           { id: 'fileUpload', title: 'File upload', desc: 'Drop zone, progress, the file list, an error.' },
           { id: 'stepper', title: 'Stepper', desc: 'Steps done, current and to come.' },
           { id: 'appShell', title: 'App shell', desc: 'The sidebar, the top bar and the page, as components.' },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'inUse',
-    title: 'The product in use',
-    desc: 'The product as its users meet it: its screens, its flows step by step, and its letters.',
-    pages: [
-      {
-        id: 'screens', path: 'screens/index.html', title: 'Screens', desc: 'The screens of the product in its picked shell.',
-        children: [
-          { id: 'key', path: 'screens/key.html', title: 'Key screens', desc: 'The main screens of the product on the devices it is used on.', sections: [] },
-        ],
-      },
-      { id: 'flows', path: 'flows/index.html', title: 'Flows', desc: 'The product in use, step by step: signing in first, then the flows of the product itself. Each flow is a page of its own with a step player.', children: [] },
-      {
-        // One page, a section per letter: the Template, then the common letters, then the product’s own —
-        // the Emails step adds a section for each letter it approves, so the menu grows with the list
-        id: 'emails', path: 'emails/index.html', title: 'Emails', desc: 'The letters the product sends, as a mail client shows them: the one template, the common letters, and the ones the product’s own flows need.',
-        sections: [
-          { id: 'template', title: 'Template', desc: 'The one layout every letter uses, its parts named, and what a mail client changes.' },
-          { id: 'invitation', title: 'Invitation', desc: 'Asks a person to join: who invited them, and the one button to accept.' },
-          { id: 'verificationCode', title: 'Verification code', desc: 'The code that confirms an address or a sign-in, and how long it lasts.' },
-          { id: 'passwordReset', title: 'Password reset', desc: 'The link to choose a new password, and what to do if it was not asked for.' },
-          { id: 'welcome', title: 'Welcome', desc: 'The first letter after joining: what to do first.' },
-          { id: 'digest', title: 'Digest', desc: 'What happened in a period, in a few lines, with the one thing that needs a look.' },
-          { id: 'securityAlert', title: 'Security alert', desc: 'A sign-in from a new device or a changed password, and the way to secure the account.' },
         ],
       },
     ],

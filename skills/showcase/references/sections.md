@@ -76,6 +76,28 @@ figure that was not set.
   test, SOC 2, ISO 27001), what is planned and when, and whom to ask — the honest list in place of
   silence.
 
+### Flows (`flows/index.html` + `flows/<flow>.html`)
+Right after Security, in the first group: the product working, step by step, is the weightiest part
+for the customer, so it is one click from the home page and comes before the design. The index: the
+flows as tiles, sign-in first, each with its actor and goal — build.mjs writes them
+from `children` in `pages.mjs`, in that order, the text of a tile being the flow's `desc`. Each
+flow page: the hero (actor, start, end), then the player (`flowPlayer()`): one step at a time — the
+screen drawn with the picked shell and the components, the controls the user acts on in that step
+ringed and numbered in the order of acting, the note under it (what the user did, naming those
+controls by their numbers, and what they see), the counter "Step n of N", the step's title, ← →,
+*All steps*, *Full screen*. Alternative paths (an error, a cancel) are steps too, marked in the
+note. A control on a screen may lead on (`data-go="step-n"`).
+
+### Screens (`screens/index.html`)
+Right after Flows, in the first group: the screens are the product in use too. Its one child page is
+listed on it (`<div data-children>`); every screen is drawn in the shell picked on Layouts. Screens
+stays a root while Key screens is still planned.
+
+- **Key screens** (`screens/key.html`): the main screens of the product, each in the device frames
+  of the surfaces its actors use. For each: who looks at it and when, what it is for, the screen
+  filled with the sample data, and its empty state small beside it. Grouped by module or by actor
+  as the documentation suggests.
+
 ## Design
 
 ### Design (`design/index.html`)
@@ -191,40 +213,14 @@ Under each variant: the idea of its picture in one line, what moves, and the sti
   shell: a picture from the product's world with one moving detail, the 404 worked into it, a
   sentence and the way back. One `Selected`.
 
-### Components (`components/index.html`)
-One block per component, in the order of `pages.mjs`; the menu unfolds into the list. Each block:
-what it is for and the one rule that matters; *Variants* with a table (variant, look in tokens, used
-for); *States* (default, hover, focus, disabled, loading, error as applies); *Sizes*; *Properties* as
-a table; its source in the product's code or `proposed`. Samples use the cast and data of
-`sample.mjs`. The reserve components are marked *reserve* with one line of why they may be needed.
-
-## The product in use
-
-### Screens (`screens/index.html`)
-Its one child page is listed on it (`<div data-children>`); every screen is drawn in the shell picked
-on Layouts. Screens stays a root while Key screens is still planned.
-
-- **Key screens** (`screens/key.html`): the main screens of the product, each in the device frames
-  of the surfaces its actors use. For each: who looks at it and when, what it is for, the screen
-  filled with the sample data, and its empty state small beside it. Grouped by module or by actor
-  as the documentation suggests.
-
-### Flows (`flows/index.html` + `flows/<flow>.html`)
-The index: the flows as tiles, sign-in first, each with its actor and goal — build.mjs writes them
-from `children` in `pages.mjs`, in that order, the text of a tile being the flow's `desc`. Each
-flow page: the hero (actor, start, end), then the player (`flowPlayer()`): one step at a time — the
-screen drawn with the picked shell and the components, the controls the user acts on in that step
-ringed and numbered in the order of acting, the note under it (what the user did, naming those
-controls by their numbers, and what they see), the counter "Step n of N", the step's title, ← →,
-*All steps*, *Full screen*. Alternative paths (an error, a cancel) are steps too, marked in the
-note. A control on a screen may lead on (`data-go="step-n"`).
-
-### Emails (`emails/index.html`)
-A root of its own after Flows, made at every depth, not a child of Screens. The letters stand on
+### Email templates (`emails/index.html`)
+A root of its own in Design, right after Layouts, made at every depth; its name is Email templates
+(in Ukrainian «Імейл-темплейти», never «Листи»), its key stays `emails`. The letters stand on
 the one page, each a section of its own — its anchor is the letter's id, written with `block()` —
 so the menu lists the *Template* and every letter, a click scrolls to it, and the menu marks the one
 in view as it does for any root with sections. The page has two headings over the letters, *Common
-letters* and *The product's own*, which are not menu items. `tools/genEmails.mjs` writes it.
+letters* and *The product's own*, which are not menu items. `tools/genEmails.mjs` writes it, with
+the Design group over its title.
 - *Template* — the one layout every letter uses, drawn once with its parts named (brand header with
   the mark, picture, heading, message, action button, secondary detail, footer) and their sizes,
   and what a mail client changes: the pictures go out as images in the brand colors, a dark mail
@@ -237,8 +233,15 @@ letters* and *The product's own*, which are not menu items. `tools/genEmails.mjs
   Light theme is the letter's own; the dark theme shows how a dark mail client renders it.
 - The `sections` of its entry in `pages.mjs` are the Template, then one per letter in the order of
   the page — the common letters, then the product's own. A planned showcase starts with the Template
-  and the common letters the skill always proposes; the Emails step adds one section for each
-  letter the operator approves (id, title, one line), so the menu grows with the list.
+  and the common letters the skill always proposes; the Email templates step adds one section for
+  each letter the operator approves (id, title, one line), so the menu grows with the list.
+
+### Components (`components/index.html`)
+One block per component, in the order of `pages.mjs`; the menu unfolds into the list. Each block:
+what it is for and the one rule that matters; *Variants* with a table (variant, look in tokens, used
+for); *States* (default, hover, focus, disabled, loading, error as applies); *Sizes*; *Properties* as
+a table; its source in the product's code or `proposed`. Samples use the cast and data of
+`sample.mjs`. The reserve components are marked *reserve* with one line of why they may be needed.
 
 ## Project
 

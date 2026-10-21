@@ -78,10 +78,12 @@ customer's attention:
 
 | Group | Root sections, with what unfolds under each |
 |-------|---------------------------------------------|
-| Product | **Product**, the home page (what it is · who uses it · modules · how it works · sample company · about this site; child page **Technology stack**: each technology with its official mark, one line and a link to its site) · **Architecture** (diagrams for the customer: the system in its world · its parts · modules · how data moves · where it runs · one request) · **Security** (in the customer's words, every claim from the documentation and marked done or planned: your data · who gets in · nothing is lost · against attacks · every change on record · what is promised, and what is not yet) |
-| Design | **Design** (child pages: Principles · Colors · Typography · Spacing and layout · Radius and shadows · Motion · Logo · Loaders · Icons · Microcopy and tone · States · Charts) · **Illustrations** (for states · from the domain · in place · reserve) · **Layouts** (Auth layout · App layout · Not found page — the variants led by animated pictures of the domain) · **Components** (one item per component) |
-| The product in use | **Screens** (child page: Key screens) · **Flows** (a page per flow with the step player) · **Emails** (a root of its own: the Template, then one item per letter — the common letters, then the product's own; a click scrolls to the letter and the menu marks the one in view) |
+| Product | **Product**, the home page (what it is · who uses it · modules · how it works · sample company · about this site; child page **Technology stack**: each technology with its official mark, one line and a link to its site) · **Architecture** (diagrams for the customer: the system in its world · its parts · modules · how data moves · where it runs · one request) · **Security** (in the customer's words, every claim from the documentation and marked done or planned: your data · who gets in · nothing is lost · against attacks · every change on record · what is promised, and what is not yet) · **Flows** (a page per flow with the step player — right after Security, since the product working step by step is the weightiest part for the customer) · **Screens** (child page: Key screens — right after Flows) |
+| Design | **Design** (child pages: Principles · Colors · Typography · Spacing and layout · Radius and shadows · Motion · Logo · Loaders · Icons · Microcopy and tone · States · Charts) · **Illustrations** (for states · from the domain · in place · reserve) · **Layouts** (Auth layout · App layout · Not found page — the variants led by animated pictures of the domain) · **Email templates** (a root of its own right after Layouts: the Template, then one item per letter — the common letters, then the product's own; a click scrolls to the letter and the menu marks the one in view) · **Components** (one item per component) |
 | Project | Decisions · Changelog · Next steps |
+
+The names are the team's words in every language: in Ukrainian Layouts is «Лейаути» and Email
+templates «Імейл-темплейти», never «Макети» or «Листи».
 
 On every page: a theme switch (light · dark · system) that the whole site follows, hex codes and
 contrast ratios included; a language switch when the operator named more than one interface
@@ -97,7 +99,7 @@ scaffolded, tokens from the scheme, the Product page from the reading and the Te
 page with the official marks, a starting page for every other section — the site opens) → Foundations → Logo (and the Loaders made from the picked mark) → **Microcopy and tone** (the source of every string that follows, in
 every language, so before the first step that writes words) → Components → Icons (two groups only: the base
 standard icons the components and screens use, and the icons of the product's domain) → Illustrations
-→ States → **Layouts** (Auth layout → App layout → Not found page) → Key screens → **Flows** → Emails → Charts →
+→ States → **Layouts** (Auth layout → App layout → Not found page) → Key screens → **Flows** → Email templates → Charts →
 **Architecture** → **Security** (one line per claim from what the documentation decided, then a page in
 the customer's words — the consequence, not the mechanism — that says what is not promised yet) →
 Principles, Decisions, Changelog, Next steps → **Audit**.
@@ -159,7 +161,7 @@ and how many; and, on `continue` or `status`, the checklist rebuilt from its sta
 
 | Mode | Stages |
 |------|--------|
-| `init [dir]`, `continue` | Intake → Color scheme → Technology → Frame → Foundations → Logo → Microcopy and tone → Components → Icons → Illustrations → States → Auth layout → App layout → Not found page → Key screens → Flows → Emails → Charts → Architecture → Security → Principles, Decisions, Changelog, Next steps → Audit |
+| `init [dir]`, `continue` | Intake → Color scheme → Technology → Frame → Foundations → Logo → Microcopy and tone → Components → Icons → Illustrations → States → Auth layout → App layout → Not found page → Key screens → Flows → Email templates → Charts → Architecture → Security → Principles, Decisions, Changelog, Next steps → Audit |
 | `status` | Read the state → Report |
 | `section <id>` | Plan → Approval → Build → Gate |
 | `flow <id>` | Description → Approval → Build → Gate |
@@ -238,9 +240,10 @@ still to come (T19).
   wired in, a second genPages run writing nothing, a flow keyed apart from the root section with its
   id. A second scaffold has no flow at first, as the Frame step leaves it: the Flows index says it
   is being prepared, lists the flow after it is added and the build runs, and a `pages.mjs` with two
-  entries on one key stops the build. The template's `pages.mjs` has Emails as a root after Flows,
-  with the Template and the common letters as its sections and no children, and Screens holds Key
-  screens only; the menu lists the Template and each letter as a link to its anchor, and the page
+  entries on one key stops the build. The template's `pages.mjs` has Flows and then Screens in the first group right after Security — the
+  menu lists them before Design and their index pages are headed by that group — no group *The
+  product in use*, and Email templates (`emails`) in Design right after Layouts, with the Template
+  and the common letters as its sections and no children, and Screens holds Key screens only; the menu lists the Template and each letter as a link to its anchor, and the page
   is laid with a block per section. The tab's icon: the build writes `assets/favicon.svg` and every
   page's head links it with its folder's prefix; a letter mark gives a brand tile with the letter (escaped,
   the name's first when the mark is empty or a placeholder); a picked mark is written as it is, in the

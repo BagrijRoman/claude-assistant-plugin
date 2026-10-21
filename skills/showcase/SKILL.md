@@ -121,10 +121,13 @@ order is the order of a customer's attention, not the order of making:
 
 | Group | Root sections, in order, with what unfolds under each |
 |-------|-------------------------------------------------------|
-| **Product** | **Product** (the home page: what it is · who uses it · modules · how it works · sample company · about this site; child page **Technology stack** — each technology with its official mark, one line, a link to its site) · **Architecture** (diagrams: the system in its world · its parts · modules · how data moves · where it runs · one request) · **Security** (in the customer's words: your data · who gets in · nothing is lost · against attacks · every change on record · what is promised, and what is not yet) |
-| **Design** | **Design** (child pages: Principles · Colors · Typography · Spacing and layout · Radius and shadows · Motion · Logo · Loaders · Icons · Microcopy and tone · States · Charts when the product has figures) · **Illustrations** (for states · from the domain · in place · reserve) · **Layouts** (child pages: Auth layout · App layout · Not found page — variants led by animated pictures of the domain) · **Components** (one item per component) |
-| **The product in use** | **Screens** (child page: Key screens) · **Flows** (one page per flow, with the step player) · **Emails** (a root of its own: the Template, then one item per letter — the common letters, then the product's own) |
+| **Product** | **Product** (the home page: what it is · who uses it · modules · how it works · sample company · about this site; child page **Technology stack** — each technology with its official mark, one line, a link to its site) · **Architecture** (diagrams: the system in its world · its parts · modules · how data moves · where it runs · one request) · **Security** (in the customer's words: your data · who gets in · nothing is lost · against attacks · every change on record · what is promised, and what is not yet) · **Flows** (one page per flow, with the step player — right after Security: the product working, step by step, is the weightiest part for the customer, so it stands in the first group) · **Screens** (child page: Key screens — right after Flows) |
+| **Design** | **Design** (child pages: Principles · Colors · Typography · Spacing and layout · Radius and shadows · Motion · Logo · Loaders · Icons · Microcopy and tone · States · Charts when the product has figures) · **Illustrations** (for states · from the domain · in place · reserve) · **Layouts** (child pages: Auth layout · App layout · Not found page — variants led by animated pictures of the domain) · **Email templates** (a root of its own right after Layouts: the Template, then one item per letter — the common letters, then the product's own) · **Components** (one item per component) |
 | **Project** | Decisions · Changelog · Next steps |
+
+The names are the team's words in every language: in Ukrainian Layouts is «Лейаути» (Auth layout
+«Лейаут входу», App layout «Лейаут застосунку») and Email templates «Імейл-темплейти» — never
+«Макети» or «Листи»; a caption or a note that points at a section uses the same name.
 
 Everywhere: a theme switch (light · dark · system) that every page follows, hex codes and contrast
 ratios included; a language switch when there is more than one language; presentation mode
@@ -154,7 +157,7 @@ and approves or sends it back. The key is the step's name in `STATE.json › ste
 | 13 Not found page | `notFound` | Layouts: several, each a moving picture with the 404 in it; one picked | 9 |
 | 14 Key screens | `screens` | the main screens in device frames per surface, in the picked shell | 7, 10, 12 |
 | 15 Flows | `flows` | list approved → each description approved → built with the step player, the controls of each step highlighted in the order they are used | 14 |
-| 16 Emails | `emails` | the root section Emails: the template, then the common letters and the product's own — each a menu item with a picture of its own in the product's colors; at every depth | 6, 9 |
+| 16 Email templates | `emails` | the root section Email templates (in Design, after Layouts): the template, then the common letters and the product's own — each a menu item with a picture of its own in the product's colors; at every depth | 6, 9 |
 | 17 Charts | `charts` | only when the product has figures, with the library chosen in step 2 | 4 |
 | 18 Architecture | `architecture` | the architecture drawn for the customer: diagrams of the system in its world, its parts, modules, data, deployment, one request | 2 |
 | 19 Security | `security` | the security page in the customer's words: where the data lives and who reaches it, what guards it from loss and from attack, what stays on record, what is not promised yet — every claim from the documentation, marked done or planned | 2, 18 |
@@ -195,7 +198,7 @@ The operator always sees which stage the run is in, what is done and what comes 
 
 | Mode | Stages |
 |------|--------|
-| `init [dir]`, `continue` | Intake → Color scheme → Technology → Frame → Foundations → Logo → Microcopy and tone → Components → Icons → Illustrations → States → Auth layout → App layout → Not found page → Key screens → Flows → Emails → Charts → Architecture → Security → Principles, Decisions, Changelog, Next steps → Audit |
+| `init [dir]`, `continue` | Intake → Color scheme → Technology → Frame → Foundations → Logo → Microcopy and tone → Components → Icons → Illustrations → States → Auth layout → App layout → Not found page → Key screens → Flows → Email templates → Charts → Architecture → Security → Principles, Decisions, Changelog, Next steps → Audit |
 | `status` | Read the state → Report |
 | `section <id>` | Plan → Approval → Build → Gate |
 | `flow <id>` | Description → Approval → Build → Gate |
