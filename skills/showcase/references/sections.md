@@ -159,10 +159,6 @@ status — then the list of its pages (`<div data-children>`). Its child pages, 
   connection; changes waiting — only when the product works offline; otherwise what a lost
   connection shows), **done**. Each: the picture (from Illustrations), the words (from Microcopy),
   the one action, where it appears in the product, drawn in place.
-- **Charts** (`design/charts.html`, only when the product has figures): the chart forms the product
-  needs (by category, over time, a share, a target line, a gauge), each in both themes, with the
-  categorical colors, labelled never by hue alone; the empty and loading states of a chart; the
-  library decided in SC-008.
 
 ### Illustrations (`illustrations/index.html`)
 A root section of its own: the pictures are what makes the product feel like itself.
@@ -242,6 +238,32 @@ what it is for and the one rule that matters; *Variants* with a table (variant, 
 for); *States* (default, hover, focus, disabled, loading, error as applies); *Sizes*; *Properties* as
 a table; its source in the product's code or `proposed`. Samples use the cast and data of
 `sample.mjs`. The reserve components are marked *reserve* with one line of why they may be needed.
+
+### Charts (`charts/index.html`)
+A root of its own in Design, right after Components, and only when the product has figures; its key
+is `charts`. It is **not a gallery of chart types**: it shows the *uses* of a chart in the product,
+each as the product would show it — on the home screen, in a report, beside a target, in a card of
+the shell — so the customer sees a figure in its place and not a chart in a vacuum.
+- **Intro** (the top of the page, not a menu item): the library from the Technology step (SC-008)
+  and how the site draws it (inline SVG on tokens); the colors from tokens — the categorical colors
+  of the domain (scopes, categories), the sequential ramp, the feedback tones for a target, never
+  hue alone (a label, a pattern or a marker beside every color); the rules of axes (units on the
+  axis or in the title, a zero baseline for bars, tick counts), legend (direct labels where they
+  fit), tooltip (what it shows, how it opens by keyboard); the empty and the loading state of a
+  chart, in the words of Microcopy and the look of States; reduced motion (a chart that draws
+  itself stands finished).
+- **One section per use**, in the order of the plan; its anchor is the use's id, written with
+  `block()`, and the menu lists it. Each section has: *who looks at it* (the role); *where it stands*
+  (the screen or the card — drawn in the picked shell of App layout, or as the card on its own, at
+  its real size); *the question it answers* in one line; *the chart* drawn with the sample data of
+  `sample.mjs` in tokens, as inline SVG, light and dark; *its empty state* (no data yet, a period
+  not yet reported); and *where it appears* — the flows and screens that show it, linked.
+- The uses come from the documentation — the dashboards, reports, targets and comparisons of the
+  blueprint or the requirements — and are approved as a plan first (`plans/charts.md`); a use the
+  documentation does not support is an open point with a recommendation, not a section.
+- The `sections` of the `charts` entry in `pages.mjs` are the approved uses, in the order of the
+  page (`{ id, title, desc }`, the desc one line), with their `nav.charts.<use id>` keys in every
+  dictionary; `tools/genCharts.mjs` writes the page.
 
 ## Project
 

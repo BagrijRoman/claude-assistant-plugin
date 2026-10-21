@@ -71,6 +71,10 @@ A root whose sections are a list that grows has its step add one section per ite
 per component; Email templates (`emails/index.html`, in Design after Layouts, key `emails`), the
 Template and one per letter, the letter's id being its anchor and `nav.emails.<letter id>` its key.
 Email templates has no `children` — its letters are not pages — so its page lists none.
+Charts (`charts/index.html`, in Design right after Components, key `charts`, only when the product has
+figures) is the same: a section per use of a chart in the product, the use's id its anchor and
+`nav.charts.<use id>` its key; it is planned (no path) until the Charts step lays it, and has no
+`children`.
 
 ## Writing a page
 

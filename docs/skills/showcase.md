@@ -79,7 +79,7 @@ customer's attention:
 | Group | Root sections, with what unfolds under each |
 |-------|---------------------------------------------|
 | Product | **Product**, the home page (what it is · who uses it · modules · how it works · sample company · about this site; child page **Technology stack**: each technology with its official mark, one line and a link to its site) · **Architecture** (diagrams for the customer: the system in its world · its parts · modules · how data moves · where it runs · one request) · **Security** (in the customer's words, every claim from the documentation and marked done or planned: your data · who gets in · nothing is lost · against attacks · every change on record · what is promised, and what is not yet) · **Flows** (a page per flow with the step player — right after Security, since the product working step by step is the weightiest part for the customer) · **Screens** (child page: Key screens — right after Flows) |
-| Design | **Design** (child pages: Principles · Colors · Typography · Spacing and layout · Radius and shadows · Motion · Logo · Loaders · Icons · Microcopy and tone · States · Charts) · **Illustrations** (for states · from the domain · in place · reserve) · **Layouts** (Auth layout · App layout · Not found page — the variants led by animated pictures of the domain) · **Email templates** (a root of its own right after Layouts: the Template, then one item per letter — the common letters, then the product's own; a click scrolls to the letter and the menu marks the one in view) · **Components** (one item per component) |
+| Design | **Design** (child pages: Principles · Colors · Typography · Spacing and layout · Radius and shadows · Motion · Logo · Loaders · Icons · Microcopy and tone · States) · **Illustrations** (for states · from the domain · in place · reserve) · **Layouts** (Auth layout · App layout · Not found page — the variants led by animated pictures of the domain) · **Email templates** (a root of its own right after Layouts: the Template, then one item per letter — the common letters, then the product's own; a click scrolls to the letter and the menu marks the one in view) · **Components** (one item per component) · **Charts** (a root of its own right after Components, only when the product has figures: one section per use of a chart in the product, each drawn where the product shows it — not a gallery of chart types) |
 | Project | Decisions · Changelog · Next steps |
 
 The names are the team's words in every language: in Ukrainian Layouts is «Лейаути» and Email
@@ -224,7 +224,9 @@ still to come (T19).
   (CC0 files of trademarked marks) once, with the network; a technology Simple Icons lacks needs a URL
   from its own site, or its card shows the initials on a tile.
 - **Charts** are static SVG by default; live tooltips need a vendored library, decided
-  explicitly.
+  explicitly. They are a root of their own after Components, one section per use in the product
+  (on the home screen, in a report, beside a target), planned and approved first — never a gallery
+  of chart types.
 
 ## Tests
 
@@ -243,7 +245,7 @@ still to come (T19).
   entries on one key stops the build. The template's `pages.mjs` has Flows and then Screens in the first group right after Security — the
   menu lists them before Design and their index pages are headed by that group — no group *The
   product in use*, and Email templates (`emails`) in Design right after Layouts, with the Template
-  and the common letters as its sections and no children, and Screens holds Key screens only; the menu lists the Template and each letter as a link to its anchor, and the page
+  and the common letters as its sections and no children, Screens holds Key screens only, and Charts (`charts`) is a planned root right after Components with no child under Design; the menu lists the Template and each letter as a link to its anchor, and the page
   is laid with a block per section. The tab's icon: the build writes `assets/favicon.svg` and every
   page's head links it with its folder's prefix; a letter mark gives a brand tile with the letter (escaped,
   the name's first when the mark is empty or a placeholder); a picked mark is written as it is, in the

@@ -150,7 +150,7 @@ site itself — so it can start from the files instead. Nothing in the procedure
      lives and who sees it before they ask about a feature. Under essentials a step
      that needs a planned one draws what it needs in place — a sign-in panel without the
      Illustrations page, a flow's screens without the Key screens page.
-4. Write `STATE.json` (a product without figures: `steps.charts` is `skipped`), `DECISIONS.md`
+4. Write `STATE.json` (a product without figures: `steps.charts` is `skipped` and the `charts` root is taken out of `pages.mjs`), `DECISIONS.md`
    (SC-001 languages), the reading's summary as `SOURCES.md` in the showcase folder (what was read,
    what each gave). Gate — light: "this is what I know; anything missing?"
 
@@ -381,8 +381,25 @@ Two approvals, by design.
   (ask now only if it was left open): **static SVG on tokens** (Recommended: no dependency, exact
   style, both themes free) · a vendored UMD library (Chart.js, ECharts, uPlot) when the operator
   wants live tooltips · none.
-  Load the `dataviz` skill for the palette and the choice of chart forms. Draw the product's
-  figures in both themes; the `charts` entry in `pages.mjs` gets its `path`.
+  Charts is a root section of its own in Design, right after Components, not a page under Design:
+  `charts/index.html`, a section per **use** of a chart in the product (`sections.md › Charts`) —
+  never a gallery of chart types. Needs the foundations (tokens), the stack's chart library
+  (SC-008), and Components and the App layout (a use is drawn in the picked shell or as its card).
+  1. **Plan the uses** from the documentation — the dashboards, reports, targets and comparisons of
+     the blueprint or the requirements, and the key screens already drawn: one line each — name ·
+     who looks at it · where it stands (screen or card) · the question it answers · chart kind ·
+     the data it shows (from `sample.mjs`). A use the documentation does not support is an open
+     point with a recommendation. Approve (`plans/charts.md`).
+  2. Right after the approval make the `sections` of the `charts` entry in `pages.mjs` match the
+     plan (`{ id, title, desc }` per use, in the order of the page) and add the `nav.charts.<use id>`
+     keys to every dictionary; the entry gets its `path` (`charts/index.html`).
+  3. Load the `dataviz` skill for the palette and the choice of chart forms.
+     `tools/genCharts.mjs`: the intro, then a `block()` per use — the chart as inline SVG on
+     tokens in the picked shell or the card, with the sample data, light and dark, and its empty
+     state. Uses may be built by subagents (sonnet), several to a builder, each writing
+     `tools/parts/charts/<group>.mjs`. `node build.mjs` — the menu lists the uses.
+  A product without figures: `steps.charts` is `skipped` and the `charts` entry is taken out of
+  `pages.mjs`.
 - **Architecture (18).** A root section, drawn for the customer, not for the team. Plan: the
   diagrams the reading supports (`sections.md › Architecture`), one line each. Approve.
   `tools/genArchitecture.mjs`: each diagram an inline SVG on tokens — boxes with the technology's

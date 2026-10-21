@@ -11,7 +11,8 @@
 // nav.js's refresh of the stylesheets at each in-place move are held to what they promise too. The
 // template's pages.mjs is held to its order — Flows, then Screens, in the first group right after
 // Security; Email templates in Design right after Layouts — and to the shape of Email templates: a root
-// of its own whose menu items are the Template and a section per letter.
+// of its own whose menu items are the Template and a section per letter; Charts a planned root right after
+// Components, with no child under Design.
 
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -169,7 +170,7 @@ describe('showcase frame, Email templates as a root section after Layouts', () =
       .find((block) => block.match(/<summary[^]*?href="([^"]+)"/)?.[1] === href);
 
   it('puts Email templates among the roots of Design, right after Layouts, and not under Screens', () => {
-    assert.deepEqual(group.pages.map((page) => page.id), ['design', 'illustrations', 'layouts', 'emails', 'components']);
+    assert.deepEqual(group.pages.map((page) => page.id), ['design', 'illustrations', 'layouts', 'emails', 'components', 'charts']);
     assert.equal(entry('emails').title, 'Email templates');
     assert.deepEqual((entry('screens').children ?? []).map((child) => child.id), ['key']);
     for (const page of BANDS.flatMap((band) => band.pages)) {
@@ -219,6 +220,40 @@ describe('showcase frame, Email templates as a root section after Layouts', () =
     const emails = rootOf(html, '../emails/index.html');
     assert.match(emails, /^<details class="sc-side__group" name="sc-side" open>/);
     assert.match(emails, /href="\.\.\/emails\/index\.html#template"[^>]*aria-current="page"/);
+  });
+});
+
+// Charts stand in Design right after Components — a root of its own, planned until the Charts step lays
+// it; the uses of a chart are its sections, so Design holds no Charts child page.
+describe('showcase frame, Charts as a root section after Components', () => {
+  const group = BANDS.find((band) => band.id === 'design');
+  const roots = BANDS.flatMap((band) => band.pages);
+  let dir;
+  before(() => {
+    dir = scaffold();
+    assert.equal(run(dir, 'tools/genPages.mjs').status, 0);
+    assert.equal(run(dir, 'build.mjs').status, 0);
+  });
+  after(removeTempDirs);
+
+  it('puts Charts among the roots of Design, right after Components', () => {
+    const ids = group.pages.map((page) => page.id);
+    assert.equal(ids.at(-1), 'charts');
+    assert.equal(ids.at(-2), 'components');
+    assert.equal(roots.find((page) => page.id === 'charts').title, 'Charts');
+  });
+
+  it('keeps Charts planned and without children: its sections are uses, laid when the step approves them', () => {
+    const charts = roots.find((page) => page.id === 'charts');
+    assert.equal(charts.path, undefined, 'a planned root has no path until the Charts step lays it');
+    assert.equal(charts.children, undefined);
+    assert.ok(!existsSync(join(dir, 'charts/index.html')) && !existsSync(join(dir, 'design/charts.html')), 'a charts page was laid');
+  });
+
+  it('holds no Charts child under Design or any other root', () => {
+    for (const page of roots) {
+      assert.ok(!(page.children ?? []).some((child) => child.id === 'charts' || child.path === 'design/charts.html'), `${page.id} holds Charts as a child`);
+    }
   });
 });
 

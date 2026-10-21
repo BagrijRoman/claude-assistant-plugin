@@ -5,8 +5,8 @@
 // Shape: a band is a group of root sections. The menu shows no label for it, only a gap before the
 // next group; the catalog on the Product page uses its title and description as headings. A root
 // section folds in the menu and shows two kinds of items under it: its `sections`, the anchors of its
-// own page (the menu marks the one on screen as the page scrolls; Components and Email templates have one per
-// item of a list that grows), and its `children`, pages of their own one level down (Design's pages,
+// own page (the menu marks the one on screen as the page scrolls; Components, Email templates and Charts have
+// one per item of a list that grows), and its `children`, pages of their own one level down (Design's pages,
 // the stack under Product, each flow under Flows). A child may have `sections` of its own; they are
 // anchors on its page, not menu items. An entry without a path is planned: listed in the menu and the
 // catalog, not a link. Every id is also the i18n key: nav.<page>, nav.<page>.<section>,
@@ -14,7 +14,7 @@
 //
 // The order is the order of attention for the customer — the product, how it is built, what keeps it
 // safe, its flows step by step and its screens first (the flows are the weightiest part, the screens
-// follow them); then its design, its pictures, its layouts, its email templates and its components;
+// follow them); then its design, its pictures, its layouts, its email templates, its components and its charts;
 // then the project. It is not the order the sections are made in. The first page is the home page:
 // the Product page, index.html.
 export const BANDS = [
@@ -85,7 +85,7 @@ export const BANDS = [
   {
     id: 'design',
     title: 'Design',
-    desc: 'The design system: the basics every screen is drawn with, the pictures, the layouts, the email templates and the components.',
+    desc: 'The design system: the basics every screen is drawn with, the pictures, the layouts, the email templates, the components and the charts.',
     pages: [
       {
         id: 'design', path: 'design/index.html', title: 'Design', desc: 'The basics of the design — principles, colors, type, spacing, shape, motion, the logo and its loaders, icons, words and states — each on a page of its own.',
@@ -176,7 +176,6 @@ export const BANDS = [
               { id: 'success', title: 'Done', desc: 'A thing completed.' },
             ],
           },
-          { id: 'charts', title: 'Charts', desc: 'The product’s figures drawn in its palette, in both themes.' },
         ],
       },
       {
@@ -239,6 +238,11 @@ export const BANDS = [
           { id: 'appShell', title: 'App shell', desc: 'The sidebar, the top bar and the page, as components.' },
         ],
       },
+      // Right after Components, a root of its own, and only when the product has figures. Planned (no path)
+      // until the Charts step lays it. Its sections are the uses of a chart in the product, each drawn where
+      // the product shows it — none until the step's plan is approved, then one per use, as Components and
+      // Email templates grow: `{ id, title, desc }` each, and `nav.charts.<use id>` in every dictionary.
+      { id: 'charts', title: 'Charts', desc: 'The product’s figures drawn as the product shows them — each use of a chart on its screen or card, in the palette, in both themes.' },
     ],
   },
   {

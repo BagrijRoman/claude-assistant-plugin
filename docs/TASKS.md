@@ -1187,6 +1187,36 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T40 — `/showcase` Charts: a root section after Components, the uses of a chart in the product · `done`
+
+On ETC.V2 (2026-10-21) the operator asked for Charts to be a root section of its own, on the level of
+Components, and not a child page of Design: the page shows the different *uses* of a chart in the
+context of the application — each as the product would show it (on the home screen, in a report,
+beside a target; in the picked shell or as a card of it) — not a gallery of chart types. Applied to the
+skill; no release, the version stays.
+
+What was done:
+- `templates/pages.mjs`: `charts` is out of Design's children; a planned root `charts` (no path, no
+  sections until the plan is approved) stands in the Design band right after `components`; the
+  comments and the band's line follow.
+- `SKILL.md` (the site table; step 17 makes the root section, needs 4, 7 and 12), `sections.md`
+  (`### Charts (charts/index.html)` after Components: the intro — library, colors, axes, legend,
+  tooltip, empty and loading states, reduced motion — and one section per use: who looks, where it
+  stands, the question, the chart in inline SVG on tokens, its empty state, where it appears),
+  `phases.md` (the Charts step: plan the uses, one line each → approve into `plans/charts.md` → the
+  `sections` of the entry and the `nav.charts.<use id>` keys → `tools/genCharts.mjs`, a `block()` per
+  use, builders on sonnet; a product without figures takes the `charts` root out of `pages.mjs`),
+  `site.md`, `docs/skills/showcase.md`. The order of making and the stage names are unchanged, so
+  `bin/skillResume.mjs` is untouched.
+- `tests/showcaseFrame.test.mjs`: Charts is the last root of Design right after Components, planned
+  and without children, and no root holds a Charts child.
+- ETC.V2: the same in `pages.mjs` and `uk.js`, `steps.charts` back to `pending`, SC-049 and a draft
+  `plans/charts.md` for the operator to approve.
+
+Done when:
+- `npm test` passes (432).
+- The template menu shows Design · Illustrations · Layouts · Email templates · Components · Charts.
+
 ## T38 — `/showcase` Flows: right after Security, in the first group · `done`
 
 On ETC.V2, right after the Monthly data flow's gate (2026-10-21), the operator asked for the Flows root to
