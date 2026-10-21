@@ -111,6 +111,10 @@ function renderRoot(page, current, prefix) {
 }
 
 // The menu is the root sections and nothing above them: a band shows only as the gap before its group
+// The mark carries its size as attributes too (components.css › .brand__mark svg draws it at 18 px): a page
+// painted before its stylesheets arrive would otherwise show the mark as wide as the window
+const brandMark = SITE.mark.includes(' width=') ? SITE.mark : SITE.mark.replace('<svg ', '<svg width="18" height="18" ');
+
 function renderSide(current, prefix) {
   const bands = BANDS.map((band, index) => [
     ...(index > 0 ? ['    <hr class="sc-side__gap">'] : []),
@@ -118,7 +122,7 @@ function renderSide(current, prefix) {
   ].join('\n'));
   return [
     '  <aside class="sc-side" id="sc-side" aria-label="All pages">',
-    `    <a class="brand" href="${prefix}${overview.path}"><span class="brand__mark" aria-hidden="true">${SITE.mark}</span><span>${escapeHtml(SITE.name)}</span></a>`,
+    `    <a class="brand" href="${prefix}${overview.path}"><span class="brand__mark" aria-hidden="true">${brandMark}</span><span>${escapeHtml(SITE.name)}</span></a>`,
     ...bands,
     '    <p class="t-caption sc-side__hint" data-i18n="ui.keysHint">The ← → keys step through the sections and pages.</p>',
     '  </aside>',

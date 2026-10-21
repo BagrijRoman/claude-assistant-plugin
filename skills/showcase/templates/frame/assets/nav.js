@@ -28,9 +28,14 @@
   var THEME_KEY = 'showcase:theme:' + root.pathname;
   var PRESENT_KEY = 'showcase:present:' + root.pathname;
 
+  // One page, one key: a host with clean addresses (Cloudflare Pages) answers flows/signIn.html with a redirect
+  // to flows/signIn, and charts/index.html with charts/ — all three name the same page
   function normalize(pathname) {
-    return pathname.replace(/\/index\.html$/, '/');
+    return pathname.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
   }
+  // Served from this machine (open.mjs) the files keep their names; a public host is asked for the clean
+  // address at once, so a move in the menu costs no redirect and the page is swapped in, never reloaded
+  var local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 
   function remember(key, value) {
     try {
@@ -457,6 +462,7 @@
 
   function go(href, push) {
     var url = new URL(href, location.href);
+    if (!local) url.pathname = normalize(url.pathname);
     if (!swaps) {
       location.href = url.href;
       return;
@@ -471,7 +477,7 @@
         if (!response.ok) throw new Error('HTTP ' + response.status);
         // The page has moved (it became a section of a long page): load it in full, so the browser
         // follows the redirect to the section and the address bar shows where it went
-        if (response.redirected) throw new Error('the page has moved to ' + response.url);
+        if (response.redirected && normalize(new URL(response.url).pathname) !== normalize(url.pathname)) throw new Error('the page has moved to ' + response.url);
         return response.text();
       })
       .then(function (html) {
