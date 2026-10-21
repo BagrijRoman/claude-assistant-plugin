@@ -421,11 +421,17 @@
     return chain;
   }
 
+  // The page whose content is on show: a move between places on it is not a page to swap in
+  var shownPage = normalize(location.pathname);
+
   // The styles outlive the page they came with, as the menu does: a stylesheet edited while the tab is
   // open would not reach the pages opened after the edit, and a new page would be drawn with the old
   // rules. Each swap asks the server for the site's own stylesheets again and loads anew one that has
   // changed since the tab took it; the new copy goes in beside the old, which leaves once it has loaded.
+  // Only while served from this machine: on a public host nobody edits the files under an
+  // open tab, and each swap would download every stylesheet again
   var sheetTexts = {};
+  var watchSheets = swaps && local;
 
   function ownSheets() {
     return Array.prototype.filter.call(document.querySelectorAll('link[rel="stylesheet"]'), function (link) {
@@ -439,7 +445,7 @@
     });
   }
 
-  if (swaps) {
+  if (watchSheets) {
     ownSheets().forEach(function (link) {
       var path = new URL(link.href).pathname;
       readSheet(path).then(function (text) { sheetTexts[path] = text; }).catch(function () {});
@@ -447,6 +453,7 @@
   }
 
   function refreshStyles() {
+    if (!watchSheets) return;
     ownSheets().forEach(function (link) {
       var path = new URL(link.href).pathname;
       readSheet(path).then(function (text) {
@@ -472,6 +479,8 @@
     Array.prototype.forEach.call(document.scripts, function (existing) {
       if (existing.getAttribute('src')) existing.setAttribute('src', existing.src);
     });
+    // A stylesheet the same: from flows/ its "components.css" would name flows/components.css
+    ownSheets().forEach(function (link) { link.setAttribute('href', link.href); });
     fetch(url.href)
       .then(function (response) {
         if (!response.ok) throw new Error('HTTP ' + response.status);
@@ -489,6 +498,7 @@
         if (push) history.pushState(null, '', url.href);
         document.title = next.title;
         main.innerHTML = nextMain.innerHTML;
+        shownPage = normalize(url.pathname);
         var crumb = document.querySelector('.sc-crumb');
         var nextCrumb = next.querySelector('.sc-crumb');
         if (crumb && nextCrumb) crumb.innerHTML = nextCrumb.innerHTML;
@@ -521,7 +531,10 @@
       event.preventDefault();
       go(link.href, true);
     });
+    // Back and forward between pages; a move to another place on the page on show (#section, a flow's
+    // step) is the browser's own, and the page's scripts follow it, so nothing is swapped
     window.addEventListener('popstate', function () {
+      if (normalize(location.pathname) === shownPage) return;
       go(location.href, false);
     });
   }

@@ -490,9 +490,13 @@ describe('showcase frame, nav.js keeps the styles fresh across in-place moves', 
   it('reads the site\'s own stylesheets at load and again, uncached, at each swap', () => {
     assert.match(source, /function readSheet\(path\)[^]*?fetch\(path, \{ cache: 'no-store' \}\)/);
     assert.match(source, /new URL\(link\.href\)\.origin === location\.origin/, 'only the site\'s own sheets');
-    assert.match(source, /if \(swaps\) \{\s*ownSheets\(\)\.forEach/, 'read once at load, only where swaps happen');
+    assert.match(source, /var watchSheets = swaps && local;/, 'watched only where swaps happen and the site is served locally');
+    assert.match(source, /if \(watchSheets\) \{\s*ownSheets\(\)\.forEach/, 'read once at load, only while watched');
+    assert.match(source, /function refreshStyles\(\) \{\s*if \(!watchSheets\) return;/, 'a public host is not asked for every sheet at each swap');
     const go = source.match(/function go\(href, push\) \{[^]*?\n  \}\n/)?.[0] ?? '';
     assert.match(go, /\brefreshStyles\(\);/, 'go() does not refresh the styles');
+    assert.match(go, /ownSheets\(\)\.forEach\(function \(link\) \{ link\.setAttribute\('href', link\.href\); \}\);/, 'go() does not pin the stylesheets before the address changes');
+    assert.ok(go.indexOf("link.setAttribute('href', link.href)") < go.indexOf('history.pushState'), 'the sheets are pinned after the address changed');
   });
 
   it('loads a changed sheet beside the old one, which leaves once the new one has loaded', () => {
