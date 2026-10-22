@@ -54,7 +54,10 @@ colors, fetched once by `tools/fetchTechMarks.mjs`, never redrawn.
 only decide what is visible. A heavy page is written by a generator in `tools/` from data, never
 by hand: the texts can then carry their language keys, and a change is made once.
 
-**The operator decides.** The color scheme, the stack, which mark, which layout, which flows and
+**The operator decides.** Before every section is made — steps 1 to 20 — they say whether they
+want it at all: **full**, **simplified** or **skipped**, and what to take into account in making it
+(`phases.md › Section intake`); nothing of a step starts before that answer. The color scheme, the
+stack, which mark, which layout, which flows and
 what each shows — every one is a question with your recommendation first, and every answer a row in
 `DECISIONS.md`. Before a section is built, its plan (the list of marks, cases, components, flows)
 is shown and approved; a flow's description is approved before its screens are drawn. And the
@@ -80,7 +83,9 @@ exists (a token file, a component library). Use subagents for the reading, one p
 returning what bears on design: what the product is and for whom; the actors and the surfaces they
 use; the categories of the domain that need telling apart (they become categorical colors); brand
 hints, an existing palette, a logo; the main flows and the screens they name; constraints; design
-decisions already taken. A blueprint shortens this: its brief gives the actors, surfaces and
+decisions already taken. A design in the documentation — a design-system page extracted from Figma,
+tokens, drawn screens, exported icons or a logo — is the **design baseline**: the showcase follows it
+and proposes only where it is silent (`phases.md › Common mechanics`). A blueprint shortens this: its brief gives the actors, surfaces and
 glossary; its architecture the flows; its modules the capabilities the components must serve.
 
 ## The output folder
@@ -136,8 +141,9 @@ honoured by every animation.
 
 ## The order of making
 
-Dependencies decide it, not the menu. Each step ends with a gate: the operator looks at the site,
-and approves or sends it back. The key is the step's name in `STATE.json › steps`.
+Dependencies decide it, not the menu. Each step from 1 to 20 starts with its section intake — full,
+simplified or skipped, and the operator's wishes — and ends with a gate: the operator looks at the
+site, and approves or sends it back. A skipped step has no gate. The key is the step's name in `STATE.json › steps`.
 
 | Step | Key | Makes | Needs |
 |------|-----|-------|-------|
@@ -157,7 +163,7 @@ and approves or sends it back. The key is the step's name in `STATE.json › ste
 | 13 Not found page | `notFound` | Layouts: several, each a moving picture with the 404 in it; one picked | 9 |
 | 14 Key screens | `screens` | the main screens in device frames per surface, in the picked shell | 7, 10, 12 |
 | 15 Flows | `flows` | list approved → each description approved → built with the step player, the controls of each step highlighted in the order they are used | 14 |
-| 16 Email templates | `emails` | the root section Email templates (in Design, after Layouts): the template, then the common letters and the product's own — each a menu item with a picture of its own in the product's colors; at every depth | 6, 9 |
+| 16 Email templates | `emails` | the root section Email templates (in Design, after Layouts): the template, then the common letters and the product's own — each a menu item with a picture of its own in the product's colors | 6, 9 |
 | 17 Charts | `charts` | only when the product has figures: the root section Charts (in Design, after Components) — one section per use of a chart in the product, each drawn where the product shows it (in the picked shell or as the card), from an approved plan, with the library chosen in step 2 | 4, 7, 12 |
 | 18 Architecture | `architecture` | the architecture drawn for the customer: diagrams of the system in its world, its parts, modules, data, deployment, one request | 2 |
 | 19 Security | `security` | the security page in the customer's words: where the data lives and who reaches it, what guards it from loss and from attack, what stays on record, what is not promised yet — every claim from the documentation, marked done or planned | 2, 18 |
@@ -179,7 +185,7 @@ The operator always sees which stage the run is in, what is done and what comes 
 
 - **The checklist.** When a mode starts, show its stages from the table below, one per line: `✓`
   done, `▸` the current one, `·` still to come, `–` skipped (a step `STATE.json` marks `skipped`, a
-  section the depth planned away), `✗` failed. Show it again at every gate and at the end, with the
+  section its intake skipped), `✗` failed. Show it again at every gate and at the end, with the
   marks brought up to date and where the result is. When the session has a task-list tool
   (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), mirror the stages there, one item per stage, and
   keep the items current; without one, the checklist in the chat is enough.
@@ -200,7 +206,7 @@ The operator always sees which stage the run is in, what is done and what comes 
 |------|--------|
 | `init [dir]`, `continue` | Intake → Color scheme → Technology → Frame → Foundations → Logo → Microcopy and tone → Components → Icons → Illustrations → States → Auth layout → App layout → Not found page → Key screens → Flows → Email templates → Charts → Architecture → Security → Principles, Decisions, Changelog, Next steps → Audit |
 | `status` | Read the state → Report |
-| `section <id>` | Plan → Approval → Build → Gate |
+| `section <id>` | Section intake → Plan → Approval → Build → Gate |
 | `flow <id>` | Description → Approval → Build → Gate |
 | `flow new` | List → Description → Approval → Build → Gate |
 | `pick <section> <variant>` | Check the variant → Mark it → Decisions → Build |
@@ -224,7 +230,7 @@ The operator always sees which stage the run is in, what is done and what comes 
 ## Done when
 
 - `STATE.json` shows every step `done` or `skipped`, and `audit` done.
-- Every root section in `pages.mjs` has content; every flow in `children` has a page with a working
+- Every root section in `pages.mjs` has content, or is planned because its intake skipped it; every flow in `children` has a page with a working
   player and a tile on the Flows index; the overview catalog lists every root section.
 - `tokens.css` is the only file with values; `node build.mjs` changes nothing; every `data-i18n` key
   has an entry in every dictionary.

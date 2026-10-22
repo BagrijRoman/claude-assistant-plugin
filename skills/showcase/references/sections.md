@@ -210,7 +210,7 @@ Under each variant: the idea of its picture in one line, what moves, and the sti
   sentence and the way back. One `Selected`.
 
 ### Email templates (`emails/index.html`)
-A root of its own in Design, right after Layouts, made at every depth; its name is Email templates
+A root of its own in Design, right after Layouts, made unless its section intake skips it; its name is Email templates
 (in Ukrainian «Імейл-темплейти», never «Листи»), its key stays `emails`. The letters stand on
 the one page, each a section of its own — its anchor is the letter's id, written with `block()` —
 so the menu lists the *Template* and every letter, a click scrolls to it, and the menu marks the one

@@ -35,6 +35,7 @@
     "audit": "pending"
   },
   "step": "intake",
+  "scope": {},
   "flows": [],
   "selected": {},
   "pending": null

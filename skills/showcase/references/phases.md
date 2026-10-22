@@ -8,6 +8,7 @@ must have is in [sections.md](sections.md); how pages are written, in [site.md](
 ## Contents
 
 - [Common mechanics](#common-mechanics)
+- [Section intake](#section-intake)
 - [A fresh context](#a-fresh-context)
 - [Step 0 — Intake](#step-0--intake)
 - [Step 1 — Color scheme](#step-1--color-scheme)
@@ -30,9 +31,11 @@ must have is in [sections.md](sections.md); how pages are written, in [site.md](
 **STATE.json** (template `templates/STATE.json`): `step` and `steps.<key>` (the keys of the table
 in `SKILL.md`) move `pending → in-progress → awaiting-approval → done` (or `skipped`); `flows`
 lists each flow as `{ id, title, stage }`, the stage `listed / described / approved / built`;
-`selected` mirrors `site.mjs`; `pending` holds the question put to the operator and not answered
-yet, so `continue` asks it again instead of guessing the answer. Update it at every change of
-state; on `continue` read it first and resume exactly there.
+`selected` mirrors `site.mjs`; `scope.<key>` holds the answer of the step's section intake
+(`{ "mode": "full" | "simple" | "skipped", "wishes": "…" }`, see [Section intake](#section-intake));
+`pending` holds the question put to the operator and not answered yet, so `continue` asks it again
+instead of guessing the answer. Update it at every change of state; on `continue` read it first and
+resume exactly there.
 
 **Show, do not describe.** Whatever the operator chooses or approves, they see first: open the page
 (`node open.mjs`, or the scratch page from disk) and, when Playwright is available, take
@@ -50,8 +53,8 @@ fresh context (`phases.md › A fresh context`).
 
 **Decisions** go to `DECISIONS.md` as `SC-nnn` the moment they are taken: topic, options offered,
 choice, reason, a blueprint `D-` id when one applies. SC-001 to SC-008 are reserved in the template
-for the decisions every showcase takes — fill that row; any other decision (the depth, the fonts,
-the voice, the list of flows) is appended from SC-009 in the order taken. The Decisions page is
+for the decisions every showcase takes — fill that row; any other decision (a section simplified
+or skipped, the wishes for one, the fonts, the voice, the list of flows) is appended from SC-009 in the order taken. The Decisions page is
 generated from it by `tools/genDecisions.mjs`, written in step 20 and run again after every later
 `pick`.
 
@@ -81,6 +84,70 @@ entries in, run the page's generator and `node build.mjs`, look at the result, a
 
 **Sample world.** `sample.mjs` is filled in Intake and never contradicted: the company, one person
 per actor (the cast), the data of the domain, a `today`. Every generator imports it.
+
+**Design baseline.** When the documentation holds a design — a design-system page extracted from
+Figma, a token file, screenshots of drawn screens, exported icons or a logo — it is the baseline, not
+a hint: the scheme, the fonts and type scale, the radii and shadows, the shell, the component shapes
+and the icon style follow it, and a step proposes something else only where the baseline is silent
+(a dark theme, a phone layout, states, illustrations) or the operator asks for it. Its assets are
+copied into the showcase folder, not linked. Each step's section intake names what the baseline
+already decides for it.
+
+## Section intake
+
+Before every step from 1 to 20 makes anything, the operator says whether they want the section, how
+much of it, and what to take into account. Nothing of a step — no plan, no proposal, no subagent — starts
+before this answer. Intake (0) and Audit (21) have none.
+
+1. **Ask** (`AskUserQuestion`, two questions in one call, header `Section` and `Wishes`), the first
+   question's text in three short lines: what the full section shows, what the simplified one shows
+   (from the table below, fitted to this product), and what later steps take from it.
+   - *Section*: **Full** (Recommended, unless the reading or an earlier answer argues for less) ·
+     **Simplified** · **Skip**. Steps 1–3 (Color scheme, Technology, Frame) cannot be skipped — every
+     later step stands on them — so for them the options are Full and Simplified.
+   - *Wishes*: **None — follow the documentation** (Recommended) · **From the design baseline** (only
+     when the documentation has one: name what it fixes for this section) · the operator's own text
+     (the free answer). A wish narrows or redirects the section; it never adds a claim the
+     documentation does not support.
+2. **Record** `scope.<key>` in `STATE.json`, and an `SC-nnn` row in `DECISIONS.md` for every answer
+   other than *Full* with no wishes — topic, the choice, the wishes in the operator's words.
+3. **Apply.**
+   - *Full* — the step as written below.
+   - *Simplified* — the step's shape stays (plan → approve → build → gate), with the simplified scope
+     of the table; its plan says in its first line that it is simplified and what is left out. A
+     variant section (Logo, Layouts) makes one variant, so its pick is a confirmation.
+   - *Skip* — `steps.<key>` becomes `skipped` and the entry in `pages.mjs` loses its `path`, so the
+     menu shows it as planned; a later step that needs what it would have made draws that in place (a
+     sign-in panel without the Illustrations page, a flow's screens without Key screens). Add it to
+     Next steps. The gate is skipped too: say in one line what was skipped and go on to the next
+     step's intake.
+   - *Wishes* — carried into the step's plan (each wish a line under *Wishes* at its top) and into
+     every builder's brief, word for word.
+4. `section <id>` and `flow new` ask the intake of their step again, with the current answer as the
+   recommended option; the operator may change it.
+
+| Step | Full | Simplified |
+|------|------|------------|
+| 1 Color scheme | three proposals on a scratch page, picked | one proposal from the design baseline or the brand hints, confirmed in one question |
+| 2 Technology | a dialog per layer | one proposed stack, confirmed or edited in one question |
+| 3 Frame | the Product page and the Technology stack page with official marks | the Product page; the stack as a plain list without marks |
+| 4 Foundations | Colors, Typography, Spacing and layout, Radius and shadows, Motion, each with live values and contrast | Colors and Typography; spacing, radius, shadows and motion as one token table on the Design page |
+| 5 Logo | 6–12 marks at every size, one picked; the Loaders page | the baseline's mark, or three marks to pick from; one loader in Components, no Loaders page |
+| 6 Microcopy and tone | voice options, every pattern, every language side by side | the voice in one paragraph and the twenty strings the screens use most, in every language |
+| 7 Components | the standard set, the product's own, a reserve; variants, states, sizes, properties | the components the planned screens and flows use, default and one state each, no properties table, no reserve |
+| 8 Icons | the base and domain groups on their grid, with the rules | the icons the screens use, on one sheet |
+| 9 Illustrations | for states, from the domain, in place, a reserve; some moving | one still picture per state and one domain scene |
+| 10 States | a section per state: picture, words, action, where it appears | one table of states with words and actions; pictures for empty and error only |
+| 11 Auth layout | 3–5 variants, each with a moving scene, one picked | one layout, its scene still |
+| 12 App layout | 2–4 shells, folded and unfolded, tablet and phone, one picked | one shell (the baseline's when there is one), desktop and phone |
+| 13 Not found page | 3–5 variants, one picked | one |
+| 14 Key screens | every screen the flows need, on every surface of its actors | the screens the flows need, on the main surface |
+| 15 Flows | the list, a description per flow, each built and gated | the one to three main flows, their descriptions approved together |
+| 16 Email templates | the template, the common letters and the product's own, a picture each | the template and the product's own letters, one shared picture |
+| 17 Charts | a section per use of a chart in the product | the one or two uses the key screens show |
+| 18 Architecture | the six diagrams | one diagram: the system in its world, with its parts |
+| 19 Security | the six parts, with drawings | one page of short paragraphs per part, done / planned tags, no drawings |
+| 20 Principles · Decisions · Changelog · Next | all four pages | Decisions and Next steps |
 
 **Languages.** The pages are written in the default language. Every translatable text carries
 `data-i18n`; every dictionary `i18n/<lang>.js` gets the key as soon as the text exists, with the
@@ -115,7 +182,8 @@ site itself — so it can start from the files instead. Nothing in the procedure
   operator says to go on here, go on.
 - **After `/clear`.** The `skill-resume` hook tells the new session which showcase is unfinished and at
   which step; `/showcase` then runs `continue`.
-- **What `continue` reads.** `STATE.json` first (its `pending` question is asked again), then
+- **What `continue` reads.** `STATE.json` first (its `pending` question is asked again; a step with
+  no `scope.<key>` yet starts with its section intake), then
   `phases.md › Common mechanics`, the section of the step it resumes, and what that step names: its
   plan in `plans/`, the parts of `site.md` and `sections.md` it points to, `SOURCES.md` when the step
   plans from the reading. Never the pages already built just to have them in mind: builders read the
@@ -143,13 +211,9 @@ site itself — so it can start from the files instead. Nothing in the procedure
    - **Name and short name** of the product as the site should show them.
    - **Sample company and cast**: propose a fictional company fitting the domain and one person
      per actor; the operator renames or accepts.
-   - **Depth**: full (every section, Recommended) · essentials (Product with the stack,
-     Architecture, Security, Foundations, Logo, Microcopy, Illustrations, Layouts — Auth and App, Components,
-     Flows, Email templates; the rest planned). Email templates are in at every depth: every product sends letters,
-     and the customer sees them before most screens. Security too: a buyer asks where their data
-     lives and who sees it before they ask about a feature. Under essentials a step
-     that needs a planned one draws what it needs in place — a sign-in panel without the
-     Illustrations page, a flow's screens without the Key screens page.
+   - No depth question: whether a section is made, simplified or skipped is asked before that
+     section, in its intake ([Section intake](#section-intake)). Say so in one line, so the operator
+     knows the questions will come.
 4. Write `STATE.json` (a product without figures: `steps.charts` is `skipped` and the `charts` root is taken out of `pages.mjs`), `DECISIONS.md`
    (SC-001 languages), the reading's summary as `SOURCES.md` in the showcase folder (what was read,
    what each gave). Gate — light: "this is what I know; anything missing?"
@@ -195,8 +259,8 @@ shows each with its mark, one line and that link; the Architecture page (step 18
 1. Copy `templates/frame/` into the folder as it is.
 2. Copy `site.mjs` with `{{NAME}}`, `{{MARK}}` (the first letter until a logo is picked),
    `{{PORT}}` (pick a free one, 4330 up), `{{LANGUAGES}}` (a JS array), `{{DEFAULT_LANGUAGE}}`.
-3. Copy `pages.mjs`; remove what the depth decision planned away (keep the entry without `path`
-   so it shows as planned — a child page too), add domain components to the Components sections if
+3. Copy `pages.mjs` whole — a section is made planned only when its intake skips it (its entry
+   loses its `path`, a child page too) — add domain components to the Components sections if
    the reading named them, and fit the Stack page's sections to the layers the stack has. Copy `tokens.css` and write the scheme's values into the brand block (light and dark; the
    dark brand is lighter and the foreground on it darker — check contrast; the dark values stand
    twice, under the media query and under `[data-theme='dark']`, and must be the same). Copy
@@ -457,8 +521,9 @@ a question or a Next steps entry. Final gate; `STATE.json.step = "done"`.
 **`status`** — read `STATE.json`, `DECISIONS.md`, `pages.mjs`; report steps and states, flows and
 their stage, picks made and pending, planned sections. Write nothing.
 
-**`section <id>`** — the step for that section, alone: plan (or re-plan, keeping what the operator
-approved unless they say otherwise) → build → gate.
+**`section <id>`** — the step for that section, alone: its section intake again (the current
+answer recommended) → plan (or re-plan, keeping what the operator approved unless they say
+otherwise) → build → gate.
 
 **`flow <id>`** — the description and build of one flow; `flow new` runs step 15's two approvals
 for a new one and adds it to the list.

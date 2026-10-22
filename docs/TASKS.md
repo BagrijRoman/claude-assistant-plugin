@@ -1187,6 +1187,34 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T41 — `/showcase` section intake: every section asked for before it is made; a design baseline followed · `done` (0.22.0)
+
+On STS-apiko-esg-core (2026-10-22) the operator asked that, before each section is generated, the skill
+ask whether the section is needed at all, whether to make it in a simplified form, and what wishes to
+take into account; and that a design already in the documentation (the Figma's design system extracted
+into `docs/initial-data/`) be what the showcase follows.
+
+What was done:
+- `phases.md`: a `## Section intake` after Common mechanics — before steps 1–20 make anything, one
+  `AskUserQuestion` call with two questions: *Section* (Full · Simplified · Skip; steps 1–3 cannot be
+  skipped) and *Wishes* (none · from the design baseline · the operator's text); the answer in
+  `STATE.json › scope.<key>`, an `SC-nnn` row unless it is Full with no wishes; *Simplified* keeps the
+  step's shape with the reduced scope of a table (one row per step, full vs simplified), a variant
+  section makes one variant; *Skip* marks the step `skipped`, takes the entry's `path` out of
+  `pages.mjs`, adds it to Next steps and has no gate; wishes go word for word into the plan and every
+  builder's brief; `section <id>` and `flow new` ask it again. A **Design baseline** paragraph in Common
+  mechanics. Intake no longer asks the depth; Frame copies `pages.mjs` whole; `continue` starts a step
+  with no `scope.<key>` with its intake.
+- `SKILL.md` (The operator decides, What goes in, the order of making, the progress marks, the
+  `section` stages, Done when), `sections.md` (Email templates no longer "at every depth"),
+  `templates/STATE.json` (`"scope": {}`), `docs/skills/showcase.md`. The stage names are unchanged, so
+  `bin/skillResume.mjs` is untouched.
+- `tests/showcaseFrame.test.mjs`: the intake table has rows 1–20 in order, each with a distinct full and
+  simplified scope; no Depth question; the template's `scope` is empty.
+
+Done when:
+- `npm test` passes (434).
+
 ## T40 — `/showcase` Charts: a root section after Components, the uses of a chart in the product · `done`
 
 On ETC.V2 (2026-10-21) the operator asked for Charts to be a root section of its own, on the level of

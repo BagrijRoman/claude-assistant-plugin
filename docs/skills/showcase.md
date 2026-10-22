@@ -91,8 +91,8 @@ language; presentation mode (**P** or `?present=1`); `prefers-reduced-motion` ho
 
 ### The order of making
 
-Dependencies, not the menu, decide it; each step ends with a gate where the operator looks at the
-site and approves: **Intake** (the reading, languages, name, the sample company and cast) →
+Dependencies, not the menu, decide it; each step starts with its section intake and ends with a
+gate where the operator looks at the site and approves: **Intake** (the reading, languages, name, the sample company and cast) →
 **Color scheme** (confirmed from the design, or three proposals shown side by side on mini-UI
 before anything is drawn) → **Technology** (a dialog per layer) → **Frame** (the folder
 scaffolded, tokens from the scheme, the Product page from the reading and the Technology stack
@@ -105,6 +105,15 @@ the customer's words — the consequence, not the mechanism — that says what i
 Principles, Decisions, Changelog, Next steps → **Audit**.
 
 ### How it decides with the operator
+
+Before every section is made (steps 1–20) the skill asks whether it is wanted: **full**,
+**simplified** (a reduced scope per section, written in `phases.md › Section intake` — one mark
+instead of twelve, the components the screens use instead of the whole set, one diagram instead of
+six) or **skipped** (planned in the menu, a later step draws what it needs in place), and what to take
+into account; the wishes go word for word into the step's plan and every builder's brief. Color
+scheme, Technology and Frame can be simplified but not skipped. There is no depth question at
+Intake any more. A design found in the documentation — a design-system page from Figma, tokens,
+drawn screens, icons, a logo — is the baseline the showcase follows.
 
 Every fork is a question with the skill's recommendation first and the operator's own answer
 always possible; every answer is a row in `DECISIONS.md` and a card on the Decisions page. A
@@ -163,7 +172,7 @@ and how many; and, on `continue` or `status`, the checklist rebuilt from its sta
 |------|--------|
 | `init [dir]`, `continue` | Intake → Color scheme → Technology → Frame → Foundations → Logo → Microcopy and tone → Components → Icons → Illustrations → States → Auth layout → App layout → Not found page → Key screens → Flows → Email templates → Charts → Architecture → Security → Principles, Decisions, Changelog, Next steps → Audit |
 | `status` | Read the state → Report |
-| `section <id>` | Plan → Approval → Build → Gate |
+| `section <id>` | Section intake → Plan → Approval → Build → Gate |
 | `flow <id>` | Description → Approval → Build → Gate |
 | `flow new` | List → Description → Approval → Build → Gate |
 | `pick <section> <variant>` | Check the variant → Mark it → Decisions → Build |
