@@ -8,7 +8,7 @@ blueprint and do not stamp.
 
 List what changed by hand since the last write (`mechanics.md › Hand edits`), read `STATE.json`, give
 the counts it holds (run `validate` too and report its errors as a list), list the open questions by
-title and the modules with their L2/L3 state, and name any unit marked failed. Report and stop; write
+title and the modules with their L2/L3 state and their `l3Plan`, and name any unit marked failed. Report and stop; write
 nothing — not even `updated`.
 
 ## continue after done
@@ -28,6 +28,13 @@ capability id. Before phase 4 is approved, only phase 4 is re-run. Gate once at 
 runs inside `restructure`, `feedback` or phase 7, which gate once for everything they ran. Use it after
 a `D-` record changed the module, or when the operator edited the file and wants it re-checked. A
 module that does not exist yet is `restructure`'s job.
+
+`/blueprint module <name> full` deepens the module: its capabilities were left as a list — by the
+depth, or by the choice at the start of phase 5 — and the work now needs them in full (`/backlog`
+asks for this before it details a batch). Set the module's `l3Plan` to `full` and re-run phase 5 only
+for it, with the extra instruction to turn each list entry into the full block under the same id and
+to keep everything else; a capability with a later stage of its own stays a list entry. Before phase 5
+starts, setting `l3Plan` is all it does, and phase 5 then writes the module in full. Gate as above.
 
 ## decide
 

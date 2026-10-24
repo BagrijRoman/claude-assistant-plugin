@@ -1,8 +1,9 @@
 // Writes the navigation into every page of the showcase as static HTML, from site.mjs and pages.mjs:
 // the side menu (bands → root sections → their items), the breadcrumbs, the previous / next links,
 // the catalog on the overview page, the list of child pages on their root's page (the Flows index),
-// the fonts and the language scripts in <head>, and the language switch in the top bar. Static markup
-// is on screen with the page's first paint, so nothing appears late or moves when a page opens.
+// the tab's icon (assets/favicon.svg, from the selected mark), the fonts and the language scripts in
+// <head>, and the language switch in the top bar. Static markup is on screen with the page's first
+// paint, so nothing appears late or moves when a page opens.
 //
 // Run it after changing pages.mjs or site.mjs, from the showcase folder: `node build.mjs`.
 // `node open.mjs` runs it first as well. It rewrites only the blocks between its own markers and
@@ -13,7 +14,7 @@
 // Flows, child pages of their own — folds, and only one is open at a time; a root without items is a
 // plain link. Every label carries a data-i18n key, so i18n.js can swap it. The page of a root with
 // children needs <div data-children></div> where their list goes (genPages writes it).
-import { readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { BANDS } from './pages.mjs';
 import { SITE } from './site.mjs';
@@ -109,14 +110,19 @@ function renderRoot(page, current, prefix) {
   ].join('\n');
 }
 
+// The menu is the root sections and nothing above them: a band shows only as the gap before its group
+// The mark carries its size as attributes too (components.css › .brand__mark svg draws it at 18 px): a page
+// painted before its stylesheets arrive would otherwise show the mark as wide as the window
+const brandMark = SITE.mark.includes(' width=') ? SITE.mark : SITE.mark.replace('<svg ', '<svg width="18" height="18" ');
+
 function renderSide(current, prefix) {
-  const bands = BANDS.map((band) => [
-    `    <p class="t-label sc-side__band" data-i18n="nav.band.${band.id}">${escapeHtml(band.title)}</p>`,
+  const bands = BANDS.map((band, index) => [
+    ...(index > 0 ? ['    <hr class="sc-side__gap">'] : []),
     ...allPages.filter((page) => page.band === band && !page.parent).map((page) => renderRoot(page, current, prefix)),
   ].join('\n'));
   return [
     '  <aside class="sc-side" id="sc-side" aria-label="All pages">',
-    `    <a class="brand" href="${prefix}${overview.path}"><span class="brand__mark" aria-hidden="true">${SITE.mark}</span><span>${escapeHtml(SITE.name)}</span></a>`,
+    `    <a class="brand" href="${prefix}${overview.path}"><span class="brand__mark" aria-hidden="true">${brandMark}</span><span>${escapeHtml(SITE.name)}</span></a>`,
     ...bands,
     '    <p class="t-caption sc-side__hint" data-i18n="ui.keysHint">The ← → keys step through the sections and pages.</p>',
     '  </aside>',
@@ -185,6 +191,67 @@ function renderChildren(page, prefix) {
   ].join('\n');
 }
 
+// The value a token has in one theme, as plain text: the declaration is looked up in the scopes in
+// order (the dark set first, then the light one it falls back to), and a `var(--other)` is followed to
+// the token it names, as the browser would on :root. A token that is missing, still holds a
+// {{placeholder}}, or leads to anything that is not a plain value gives undefined.
+function tokenIn(scopes, name, depth = 0) {
+  if (depth > 4) return undefined;
+  for (const css of scopes) {
+    const value = css.match(new RegExp(`(?<![\\w-])${name}\\s*:\\s*([^;}]+)`))?.[1].trim();
+    if (value === undefined) continue;
+    const ref = value.match(/^var\(\s*(--[\w-]+)\s*(?:,\s*([^)]*))?\)$/);
+    const plain = ref ? (tokenIn(scopes, ref[1], depth + 1) ?? ref[2]?.trim()) : value;
+    return plain && !/\{\{|var\(|[<&]/.test(plain) ? plain : undefined;
+  }
+  return undefined;
+}
+
+// The browser tab's icon (assets/favicon.svg): the selected mark in the brand color, as the Logo page
+// shows it in a tab at 16 px, and in the dark theme's brand color on a dark browser; until a mark is
+// picked, the brand tile's letter on the brand color. The colors are tokens.css's: --color-primary
+// (the mark, the tile), --color-primary-foreground (the letter) and, for a mark with knockouts,
+// --lg-ground, each for light and, under prefers-color-scheme: dark, for dark. One that cannot be read
+// (missing, a {{placeholder}}) is left out, never written as "undefined": the mark then draws in the
+// browser's own ink, the tile in black with a white letter, and a theme without its own value takes
+// the light one.
+function renderFavicon(tokens) {
+  const css = tokens.replace(/\/\*[\s\S]*?\*\//g, '');
+  const start = css.search(/prefers-color-scheme:\s*dark|\[data-theme=['"]dark['"]\]/);
+  const light = start < 0 ? css : css.slice(0, start);
+  const dark = start < 0 ? null : css.slice(start);
+  // The <style> for the properties a drawing uses: the light values, then those the dark set changes
+  const styleFor = (props) => {
+    const pick = (scopes) => Object.fromEntries(props.map(([prop, token]) => [prop, tokenIn(scopes, token)]));
+    const block = (set, base = {}) => Object.entries(set).filter(([prop, value]) => value && value !== base[prop]).map(([prop, value]) => `${prop}:${value}`).join(';');
+    const day = pick([light]);
+    const night = dark === null ? {} : pick([dark, light]);
+    const rules = [
+      block(day) && `svg{${block(day)}}`,
+      block(night, day) && `@media (prefers-color-scheme:dark){svg{${block(night, day)}}}`,
+    ].filter(Boolean).join('');
+    return rules ? `<style>${rules}</style>` : '';
+  };
+  const mark = String(SITE.mark ?? '').trim();
+  if (/^<svg[\s>]/.test(mark)) {
+    // A mark with knockouts draws them in --lg-ground, which this file has no page to inherit from: it
+    // gets the page's ground of each theme, as the tab of a light or a dark browser would show it
+    const props = [['color', '--color-primary'], ...(mark.includes('--lg-ground') ? [['--lg-ground', '--lg-ground']] : [])];
+    const open = (_, attrs) => `<svg${/\sxmlns=/.test(attrs) ? '' : ' xmlns="http://www.w3.org/2000/svg"'}${attrs.replace(/\s+aria-hidden="true"/, '')}>${styleFor(props)}`;
+    return `${mark.replace(/^<svg\b([^>]*)>/, open)}\n`;
+  }
+  // A letter: the mark when it is one (two at most), else the name's first; none when neither is usable
+  const usable = (value) => String(value ?? '').trim() !== '' && !String(value).includes('{{');
+  const letters = usable(SITE.mark) ? Array.from(mark).slice(0, 2).join('')
+    : usable(SITE.name) ? Array.from(String(SITE.name).trim())[0].toUpperCase() : '';
+  const size = Array.from(letters).length > 1 ? 30 : 36;
+  const text = letters
+    ? `<text x="32" y="45" text-anchor="middle" font-family="system-ui, sans-serif" font-size="${size}" font-weight="600" style="fill:var(--on-brand,#fff)">${escapeHtml(letters)}</text>`
+    : '';
+  const style = styleFor([['color', '--color-primary'], ['--on-brand', '--color-primary-foreground']]);
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">${style}<rect width="64" height="64" rx="14" style="fill:currentColor"/>${text}</svg>\n`;
+}
+
 // Fonts and the language machinery live in <head>: the dictionaries first, then i18n.js, all deferred,
 // so the texts are swapped before the first paint and in the right order
 function renderHead(prefix) {
@@ -198,7 +265,8 @@ function renderHead(prefix) {
     : [];
   const config = JSON.stringify({ name: SITE.name, languages, defaultLanguage });
   const dictionaries = languages.filter((lang) => lang !== defaultLanguage).map((lang) => `  <script src="${prefix}i18n/${lang}.js" defer></script>`);
-  return [...preconnect, ...fonts, `  <script>window.SHOWCASE_SITE = ${config};</script>`, ...dictionaries, `  <script src="${prefix}assets/i18n.js" defer></script>`].join('\n');
+  const icon = `  <link rel="icon" type="image/svg+xml" href="${prefix}assets/favicon.svg">`;
+  return [icon, ...preconnect, ...fonts, `  <script>window.SHOWCASE_SITE = ${config};</script>`, ...dictionaries, `  <script src="${prefix}assets/i18n.js" defer></script>`].join('\n');
 }
 
 const LANGUAGE_NAMES = { en: 'English', uk: 'Українська', de: 'Deutsch', fr: 'Français', es: 'Español', pl: 'Polski', it: 'Italiano', pt: 'Português', nl: 'Nederlands', cs: 'Čeština' };
@@ -254,9 +322,35 @@ function buildPage(html, page) {
   return next;
 }
 
-// Returns the paths of the pages it had to rewrite
+// The Color scheme step leaves a scratch page, scheme.html, with the proposed schemes side by side. It is
+// needed only until the operator picks one: once STATE.json records the step done, the next build removes
+// it, so nothing of the choice outlives it. Returns whether it removed the page.
+export async function removeSchemeScratch() {
+  let state;
+  try {
+    state = JSON.parse(await readFile(new URL('STATE.json', root), 'utf8'));
+  } catch {
+    return false;
+  }
+  if (state?.steps?.scheme !== 'done') return false;
+  try {
+    await unlink(new URL('scheme.html', root));
+    return true;
+  } catch (error) {
+    if (error.code === 'ENOENT') return false;
+    throw error;
+  }
+}
+
+// Returns the paths of the pages it had to rewrite; the tab's icon is written only when it changed
 export async function build() {
   const changed = [];
+  const favicon = new URL('assets/favicon.svg', root);
+  const icon = renderFavicon(await readFile(new URL('tokens.css', root), 'utf8').catch(() => ''));
+  if (icon !== await readFile(favicon, 'utf8').catch(() => null)) {
+    await mkdir(new URL('assets/', root), { recursive: true });
+    await writeFile(favicon, icon);
+  }
   for (const page of realPages) {
     const file = new URL(page.path, root);
     const html = await readFile(file, 'utf8');
@@ -271,6 +365,7 @@ export async function build() {
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const changed = await build();
+  if (await removeSchemeScratch()) console.log('Removed scheme.html: the color scheme is chosen');
   console.log(
     changed.length === 0
       ? `Navigation is up to date in all ${realPages.length} pages of ${fileURLToPath(root)}`

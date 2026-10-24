@@ -24,13 +24,22 @@ parallel never collide and only the skill touches the logs, the glossary and the
 no ids, because two agents counting at once would hand out the same number. The tool list holds the
 first rule; the other two are instructions.
 
+It runs on Sonnet (`model: sonnet`, since 0.14.0): writers do most of a run's work — ten modules, twice
+each — and writing one module from its sources, in a fixed layout, is well within it; the consistency and
+adequacy reviews, on the session's model, check what they wrote. For the same reason it reads only the
+sections of the brief and the architecture its module needs
+([modules.md › What a writer reads](../../skills/blueprint/references/modules.md#what-a-writer-reads)),
+not the whole files — but always its module's sources in full.
+
 ## What it does
 
 1. Gets a brief naming the goal (L2, the capabilities, or both again for a re-run), the one file, the
-   context files, the module's sources to read in full, for capabilities the module's row of the depth
-   table, and whether it is one of several writers on the module.
-2. Reads the context files, the module file as it is now (the operator may have edited it) and every
-   source in full — the sources, not their extracts.
+   context files with the sections of the brief and the architecture to read, the module's sources to
+   read in full, for capabilities the module's plan (`full` or `list`) and the depth table's rows that
+   still apply, and whether it is one of several writers on the module.
+2. Reads the context files — of the brief and the architecture only the sections named, found with
+   `Grep` — the module file as it is now (the operator may have edited it) and every source in full —
+   the sources, not their extracts.
 3. Writes the part asked for into the module file, in place, in the template's layout: behaviour only,
    in English, in the glossary's terms, every statement referenced to a source, a decision or an
    assumption.
@@ -38,7 +47,9 @@ first rule; the other two are instructions.
    assumption it needs — one `[A-??: edge cases]` per capability for the edge cases no source states —
    and every fork it may not decide under **Open points** in the file, as `[?pending]`: on disk, where a
    summarised context cannot lose it.
-5. Returns a summary of at most 15 lines, the open points, and the terms and entities it proposes. As
+5. Returns a summary of at most 15 lines, the open points, the terms and entities it proposes and,
+   after an L2, how many capabilities it foresees — the number the operator sees when choosing how deep
+   phase 5 goes. As
    one of several writers on a module, it writes nothing and returns its section as text for the skill
    to assemble.
 

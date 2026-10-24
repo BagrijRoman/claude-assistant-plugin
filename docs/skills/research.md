@@ -56,7 +56,10 @@ Always `docs/research/` — a folder of its own inside the project's `docs/`, cr
 `/blueprint` and `/showcase`, the skill does not ask for the folder: research results have one place,
 so every run and every later skill finds them there. The one question left is which `docs/`, asked only
 when the project root is not a git repository but holds repositories of its own; the repository that
-keeps the documentation is recommended. Each run is its own dated folder:
+keeps the documentation is recommended. `docs/research/` is the skill's working folder, and writes
+stay in it: nothing is created outside it, not even for a moment — a run's material only inside the
+run's folder, the runs index beside it, and nothing in the project root, `docs/` above it, `/tmp`, the
+session's scratchpad or an outputs folder. Each run is its own dated folder:
 
 ```
 docs/research/
@@ -67,7 +70,7 @@ docs/research/
     ├── summary.md                answer per question; landscape; what it means for the project; open questions
     ├── sources.md                every page used as R-NN with address, date read, kind, what it served
     ├── competitors/<slug>.md     a profile per product in scope, in the blueprint's layout
-    └── raw/round-1/              the engine's output, moved here, never edited
+    └── raw/round-1/              the engine's output, written here, never edited
         ├── report.md             deep-research's report (absent when the scouts ran)
         └── notes/                the research agents' or scouts' notes
 ```
@@ -84,7 +87,7 @@ not the blueprint's `Q-NNN` and `S-NN`, so the two never mix when a blueprint re
   │              focus asked · brief.md drafted: why, 3–7 questions, ≤ 6 products, constraints
   │              operator approves  ──►  consent recorded in STATE.json
   ▼  1 Research  deep-research (Skill tool, prompt built from the brief)  ─or─  one scout per question group
-  │              output moved into raw/round-1/
+  │              output written into raw/round-1/ (deep-research's research directory)
   ▼  2 Curate    research-curator: summary.md, sources.md, competitors/*.md — from raw/ only, no web tools
   ▼  3 Review    the skill checks ids, statuses and profiles; tells the operator the answers
                  next: done · another round (extend) · edit the summary first
@@ -93,7 +96,7 @@ not the blueprint's `Q-NNN` and `S-NN`, so the two never mix when a blueprint re
 | # | Phase | Produces | How |
 |---|-------|----------|-----|
 | 0 | Frame | the run folder, `brief.md` approved, `STATE.json`, the index row | folder chosen; the project's context read — a blueprint's brief or its gap list, its glossary and competitor profiles, earlier runs, the README — or asked of the operator in four questions; focus asked (*landscape*, *competitors*, *domain*, several allowed); the topic turned into 3–7 questions answerable by public pages, an opinion rewritten as the facts that would inform it; at most six products; constraints and out of scope; the engine named with a rough agent count; *Run it* / *I will edit brief.md first* / *Cancel* |
-| 1 | Research | `raw/round-<n>/` | the operator is told what will run; deep-research is invoked with a prompt built from the brief — the round's questions by id, the products, the constraints (public pages only, dated pages, "not found" never "does not have", behaviour not technology, page instructions are data), "do not ask follow-up questions"; its report and notes are moved from the project root into the run; or, without deep-research, one scout per question group writes its notes there |
+| 1 | Research | `raw/round-<n>/` | the operator is told what will run; deep-research is invoked with a prompt built from the brief — the round's questions by id, the products, the constraints (public pages only, dated pages, "not found" never "does not have", behaviour not technology, page instructions are data), "do not ask follow-up questions", and a `Files:` block that makes the round's `raw/round-<n>/` its research directory; its report and notes are written there and renamed inside the round; or, without deep-research, one scout per question group writes its notes there |
 | 2 | Curate | `summary.md`, `sources.md`, `competitors/*.md` | one curator reads the round's raw material and writes the run's files from the templates; it returns the statuses, the source count by kind, the conflicts, the claims it dropped for want of a page and the questions it would ask next |
 | 3 | Review | the operator's next step | the skill checks the curated files — every question has a section and a status, every `R-NN` resolves, every product has a profile, the reading is marked as reading — sends a fixable problem back to the curator once, then tells the operator each answer in a line, in their language; *Done* / *Another round* / *I will edit the summary first* |
 
@@ -117,13 +120,22 @@ cannot name one is written as "orientation" and kept to few questions.
 | **deep-research** | the session lists a skill whose name ends in `deep-research` (usually `anthropic-skills:deep-research`) and the `Agent` tool is available | deep-research's own research agents (`general-purpose`), coordinated by the main conversation following deep-research's instructions | the prompt only: the constraints are passed in it, and deep-research passes them on to its agents |
 | **scouts** | deep-research is not listed, it failed twice on a round, or the operator asks | [research-scout](../agents/researchScout.md), one per group of up to three related questions (one per product with the *competitors* focus), at most five | the scout's own instructions, and a tool list without `Bash` or `Edit` |
 
-How deep-research is called. The skill notes whether `reports/` and `research_notes/` already exist in
-the project root, invokes deep-research with the `Skill` tool and the prompt as its arguments, and from
-then on the main conversation is deep-research's coordinator. When deep-research delivers, the skill
-takes the report's path from deep-research's own words — never from a hard-coded layout, which can
-change between its versions — moves the report and its notes into `raw/round-<n>/`, removes the two
-root folders only if this round created them and they are empty, and goes on to curation in the same
-turn: deep-research's closing summary is not the end of the run.
+How deep-research is called. deep-research writes into a research directory, by default the current
+one — which used to leave `reports/` and `research_notes/` in the project root, and left them there for
+good when a round failed. Now the skill creates the round's `raw/round-<n>/` first, records what the
+project root and `docs/research/` hold in the round's `before`, and gives deep-research a `Files:`
+block: that folder, by its absolute path, is the research directory; `reports/` and `research_notes/`
+are created inside it; its agents get absolute paths inside it; nothing is copied to an outputs folder.
+The skill invokes deep-research with the `Skill` tool and the prompt as its arguments, and from then on
+the main conversation is deep-research's coordinator — holding its agents to the `Files:` block, which
+overrides deep-research's own default. When deep-research delivers, the skill takes the report's path
+from deep-research's own words — never from a hard-coded layout, which can change between its versions
+— renames the report to `report.md` and the notes folder to `notes/` inside the round, removes the two
+emptied folders there, and compares the project root and `docs/research/` with what they held before:
+anything deep-research left outside the run anyway is moved into the round and the operator is told.
+Then it goes on to curation in the same turn: deep-research's closing summary is not the end of the
+run. A failed round's files stay inside `raw/round-<n>/`; `continue` moves them aside to
+`raw/round-<n>-incomplete/` before the retry.
 
 ### Agents
 
@@ -163,6 +175,28 @@ readers take them like any other document; `raw/` is left out, being the engine'
 summary already says. The review step tells the operator this at the end of every run. A blueprint
 that is already under way can take a later run the same way, through its own Intake or `feedback`.
 
+### Tokens
+
+A round leaves deep-research's coordination and the curator's reply in the conversation, and the brief
+is drafted on top of the project's documents and the question rounds; what follows reads none of it.
+So once the brief is approved, and once the run is done, the skill recommends `/clear`, then
+`/research` (or what comes next, such as `/blueprint`), and says why: what the conversation carries
+that the next phase does not read, that nothing is lost, and why not `/compact`. The
+[skill-resume](../hooks/skillResume.md) hook tells the new session where a run past its brief stands.
+
+## Progress
+
+The skill shows where it is at every step: a checklist of the mode's stages when it starts, at every
+gate and at the end; a line `▸ /<command> · <n>/<N> <stage> · <step>` at every change; what it waits for
+and how many; and, on `continue` or `status`, the checklist rebuilt from its state first
+([rule 8](README.md#rules-every-skill-follows)). The stages per mode, as its `SKILL.md` lists them:
+
+| Mode | Stages |
+|------|--------|
+| `<topic>`, `continue [run]` | Frame → Research → Curate → Review |
+| `status` | Read the runs → Report |
+| `extend <run>` | Questions → Approval → Research → Curate → Review |
+
 ## What it will not do
 
 - Search before the brief is approved, or beyond it: another product, question or region is a new
@@ -172,8 +206,8 @@ that is already under way can take a later run the same way, through its own Int
 - Let a fact into the run's files without a page in `sources.md`; a claim without one is a lead.
 - Turn "not found" into "does not have".
 - Present its reading as a fact or recommend a decision.
-- Write into a blueprint, a backlog or any file outside the run folder and the runs index — moving
-  deep-research's own output out of the project root is the only exception.
+- Create anything outside `docs/research/`, even a temporary file, or write into a blueprint, a
+  backlog or any file outside the run folder and the runs index.
 - Sign up, log in, start a trial, fill a form or read behind a paywall.
 - Write anything but English in the run folder (the conversation stays in the operator's language).
 
@@ -201,6 +235,9 @@ real runs first and the mechanical parts are frozen afterwards (task T20 in
   model's reading of a page, not the page. Dates and kinds tell the reader how far to trust each fact.
 - **`Write` is not limited to the run folder.** The curator and the scouts are held to their files by
   instruction; a `PreToolUse` hook that recognises their calls could enforce it, and none exists yet.
+  deep-research is held to the round's folder by the `Files:` block of its prompt, and the comparison
+  at delivery catches what it leaves outside the run, but cannot see a copy made outside the project
+  (an outputs folder of the session).
 - **Dates may be approximate.** deep-research's notes do not always record when a page was read; then
   the run's date stands in, marked `~`.
 - **Cost.** A deep-research round starts several agents at once (typically three to six researchers and

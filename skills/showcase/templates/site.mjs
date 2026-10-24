@@ -4,7 +4,8 @@
 export const SITE = {
   // Shown in the brand tile at the top of the menu and in every window title
   name: '{{NAME}}',
-  // The brand tile's mark: a letter until the Logo section has a selected mark, then its inline SVG
+  // The brand tile's mark: a letter until the Logo section has a selected mark, then its inline SVG.
+  // build.mjs draws the tab's icon (assets/favicon.svg) from it as well
   mark: '{{MARK}}',
   port: {{PORT}},
 

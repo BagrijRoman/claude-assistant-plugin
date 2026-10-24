@@ -1,13 +1,17 @@
 # Backlog — common mechanics
 
-Read this file at the start of every session, then the section of [modes.md](modes.md) for the mode
-you run and the parts of [slicing.md](slicing.md) it points to. Templates live in the skill's own
+The modes that cut or re-plan (`init`, `continue`, `detail`, `add`, `plan`, `resync`) read this file
+at the start of the session, then the section of [modes.md](modes.md) for the mode they run and the
+parts of [slicing.md](slicing.md) it points to. The daily modes (`status`, `next`, `done`) read only
+`mechanics.md › The script` and their own section of modes.md: the script computes what the other
+sections define, and they act on its report. Templates live in the skill's own
 folder, `${CLAUDE_PLUGIN_ROOT}/skills/backlog/templates/`; a path like `templates/STATE.json` is
 relative to the skill's folder. A reference such as `mechanics.md › Views` names a file of this skill
 and a heading in it.
 
 ## Contents
 
+- [The script](#the-script)
 - [STATE.json](#statejson)
 - [Paths](#paths)
 - [The blueprint's state](#the-blueprints-state)
@@ -17,10 +21,34 @@ and a heading in it.
 - [Views](#views)
 - [Hand edits](#hand-edits)
 - [Gates and resuming](#gates-and-resuming)
+- [A fresh context](#a-fresh-context)
 - [Questions](#questions)
 - [Subagents](#subagents)
 
 ---
+
+## The script
+
+The bookkeeping is done by a script, the same way every time, so that no mode reads every task file to
+count, compute or regenerate by hand:
+
+```
+node "${CLAUDE_PLUGIN_ROOT}/bin/backlog.mjs" <command> <backlog dir> [args]
+```
+
+| Command | What it does | Run by |
+|---------|--------------|--------|
+| `status [--root <project root>]` | the whole report of `modes.md › status` — a pending mode, the hand edits, the blueprint checks, every batch with its state and counts, the current batch's *What works*, the tasks in progress, ready, blocked by question and from outside, what needs attention, what the files break; writes nothing | `status`, a bare `/backlog` |
+| `next [--root <project root>]` | the answer of `modes.md › next`, step by step; writes nothing | `next` |
+| `next-id [--count N]` | the next task id(s), reserved by raising `lastTask` (`mechanics.md › Ids`) | Gate 1's numbering, a `NEW-n`, a split, `add`, `resync` |
+| `tick <T-NNN.n>` | ticks one subtask, turns a `todo` task `in-progress`, and prints its next open subtask, or the acceptance criteria to confirm once every subtask is closed; refuses a done or dropped task and a subtask struck through | `done` of a subtask |
+| `render` | regenerates the views (`mechanics.md › Views`), recomputes `currentBatch`, stamps `updated` and writes `STATE.json` last; prints what the files break | the end of every mode that writes |
+| `validate` | the breaks of `mechanics.md › Hand edits`, one per line; exits 1 on an error | before a gate, and whenever a hand edit is in doubt |
+
+`--root` is the project root, the folder the blueprint's source locations are relative to; it defaults
+to the session's folder. Relay a report in the operator's language and act on it; do not re-read the
+task files to check it — the script read them. When node cannot run, do the same by hand as the
+sections below define it, and say so.
 
 ## STATE.json
 
@@ -31,9 +59,10 @@ which stay the record), the last task id issued (`lastTask`), the batch list (`b
 batch (`currentBatch`, and `currentPinned` when the operator chose one) and an unfinished mode
 (`pending`).
 
-- `updated` is a full timestamp, `YYYY-MM-DDTHH:MM`, taken from `date +%Y-%m-%dT%H:%M` — never
-  estimated. Every mode that writes anything stamps it, and **`STATE.json` is the last file written**
-  in every operation, so `mechanics.md › Hand edits` finds only what the operator changed.
+- `updated` is a full timestamp, `YYYY-MM-DDTHH:MM`, taken from the clock — never estimated. Every
+  mode that writes anything ends with `render`, which stamps it, and **`STATE.json` is the last file
+  written** in every operation, so `mechanics.md › Hand edits` finds only what the operator changed.
+  A mode that writes `STATE.json` on the way (`pending`, `batches`, `next-id`) still ends with `render`.
 - `batches[]` is `{ "id", "slug", "stage", "flow", "detailed", "closed" }`. Find an entry by its `id`
   (`"03"`), never by its position in the array. `closed` is the date the operator confirmed the
   batch's *What works* paragraph (`mechanics.md › Batches`), `null` before.
@@ -81,14 +110,16 @@ edits in its changelog, re-reads the sources and stamps), then `/backlog resync`
 locations are relative to; try it before alarming the operator. When node cannot run, use
 `find <blueprint dir> -newer <blueprint dir>/STATE.json -type f -not -path '*/.*' -not -path '*/export/*'`.
 
-`status`, `next` (when it offers `detail`), `detail` and `resync` run both checks before anything else.
+`status`, `next` (when it offers `detail`), `detail` and `resync` run both checks before anything else;
+the script's `status` and `next` run them and print the result, `changed` included.
 
 ## Ids
 
 - **Tasks** — `T-NNN`, global and sequential: the next id is `lastTask` + 1, or the highest id in
   `tasks/` and in the batch tables + 1 when that is higher (a session lost before `STATE.json` was
-  written). Raise `lastTask` with every id issued; never lower it, never reuse an id — not after a
-  merge, a drop or a deleted file. A task keeps its id when it moves between batches.
+  written). Take ids from `next-id`, which raises `lastTask` as it gives them; never lower it, never
+  reuse an id — not after a merge, a drop or a deleted file. A task keeps its id when it moves between
+  batches.
 - **Outline tasks are numbered too.** Every row of every batch gets its id when the outline is
   approved (Gate 1), so dependencies, *goes to* lines and `COVERAGE.md` can cite it long before the
   task has a file.
@@ -146,14 +177,14 @@ later problem in it is a new `bug` task that cites it.
 ## Views
 
 Some files are rebuilt from others after every mode that changed anything; some hold data nothing else
-holds. Never edit a computed part by hand to reflect a status: change the task file, then regenerate.
-Until a script takes this over, be systematic — list the files with `Glob`, read each frontmatter and
-subtask checklist, rebuild the parts below, and nothing else.
+holds. Never edit a computed part by hand to reflect a status: change the task file, then run
+`render`, which rebuilds the parts below and nothing else — `BACKLOG.md` from
+`templates/BACKLOG.md`, so a change to the overview's layout is made in the template.
 
 | File | Stored | Regenerated |
 |------|--------|-------------|
 | `batches/NN-<slug>.md` | goal, *What works*, *Flow → capabilities*, *Not in this batch*, *Notes*, and the **rows** of the task table — their order (agreed at Gate 1; `next` breaks ties by it) and, for a row with no task file yet, its whole content. Rows are added by `init`, `detail` (a split, a `NEW-n`), `add` and `resync`, moved by `plan move` and `resync`, reordered by `plan order` | the state line under the title; every cell of a row whose task has a file, from that file |
-| `COVERAGE.md` | the capability rows — one per capability id, from the inventory (`init`, `resync`) — and every *Status* that no task file can tell: `planned`, `outline`, `list-only` (until a file exists), `exists`, `partly`, `deferred`, `blueprint gap`, `dropped`, `L2 only` | the *Task(s)* cell — the tasks whose file lists the id in `capabilities`, and the outline rows whose *Capabilities* cell lists it; the *Status* `covered` / `done` of a row whose tasks all have files; the count line |
+| `COVERAGE.md` | the capability rows — one per capability id, from the inventory (`init`, `resync`) — and every *Status* that no task file can tell: `planned`, `outline`, `list-only` (until a file exists), `exists`, `partly`, `deferred`, `blueprint gap`, `dropped`, `L2 only` | the *Task(s)* cell — the tasks whose file lists the id in `capabilities` (a dropped one left out), and the outline rows whose *Capabilities* cell lists it, per platform when they differ (`web: T-021 · mobile: T-040`); the *Status* `covered` / `done` of a row whose tasks all have files, per platform when they differ; the count line |
 | `BACKLOG.md` | nothing | everything — from `STATE.json`, the batch tables, the task files and the titles of the blueprint's open questions |
 
 A row is never removed: a dropped task keeps its row, struck through, and a moved one moves. A task
@@ -163,16 +194,19 @@ with the operator's agreement its row is appended after its last dependency.
 ## Hand edits
 
 The operator edits task files, batch files and `PLANNING.md` between sessions — expected and welcome.
-Every mode starts with:
+Every mode starts with the files changed since `STATE.json` was last written: the script's `status`
+and `next` print them; any other mode runs
 
 ```
 find <backlog dir> -newer <backlog dir>/STATE.json -type f -not -name .DS_Store
 ```
 
-Read the files it lists before anything else and say which they are. When a mode then changes one of
-them, show the operator what it changed. Reading modes report what the edits broke — a ticked subtask
-on a `todo` task, a task whose `batch` has no row, a dependency on a later batch, a cycle, a dependency
-on a dropped task — and writing modes fix it once the operator agrees.
+A reading mode says which they are and reports what the edits broke from the script's report, without
+reading them. A writing mode reads the files it lists before anything else and says which they are;
+when it then changes one of them, it shows the operator what it changed. What an edit can break — a
+ticked subtask on a `todo` task, a task whose `batch` has no row, a dependency on a later batch, a cycle,
+a dependency on a dropped or unknown task — is what `validate` reports, and writing modes fix it once
+the operator agrees.
 
 ## Gates and resuming
 
@@ -193,12 +227,43 @@ gate is approved:
 Steps: `init` — `folder`, `read`, `code`, `strategy`, `outline`, `gate-outline`, `detail`,
 `gate-detail`; `detail` — `write`, `merge`, `questions`, `gate`; `resync` — `diff`, `report`,
 `questions`, `gate`, `apply`. A run that finds `pending` set says which mode stopped at which step and
-continues from there (`modes.md › continue`); it never writes a step's files a second time. There is
+continues from there (`modes.md › continue`); it never writes a step's files a second time. After an
+approved gate, a fresh context is recommended (`mechanics.md › A fresh context`). There is
 one `pending`: a multi-step mode does not start while it names another mode — say which, and offer
 `/backlog continue`. A mode run inside another (`detail` inside `init`) keeps the outer mode's record
 and only moves its step. While `pending.mode` is `init`, `next`, `done`, `add` and `plan` stop with
 "the backlog is not cut yet — `/backlog continue`"; `next` never offers a task of a batch whose detail
 gate is pending.
+
+## A fresh context
+
+Every turn of a session sends its whole context again. `init` reads the whole blueprint before Gate 1,
+and none of that reading is needed to detail batches 1 and 2 — the detailers read their files
+themselves; `detail` and `resync` leave the detailers' replies and the question rounds behind them, and
+none of it is needed by the work that follows. Everything is on disk, so the next step can start from
+the files instead.
+
+After an approved gate — Gate 1 and Gate 2 of `init`, the gate of `detail`, the gate of `resync` once
+its changes are applied — do not go on in this context. Recommend a fresh one and say why, in the
+operator's language, so that they decide knowing what it saves:
+
+```
+✓ <what was approved> saved in <backlog folder>.
+▸ Next: <the detail of batches 1 and 2 / the daily loop, /backlog next>. Recommended: type /clear, then <the command>.
+Why: every message sends this whole conversation to the model again, and it now carries <what this
+mode piled up>, which <next> does not read — it starts from the files. In a fresh context each of its
+steps costs a fraction of that, and nothing is lost: everything is saved, and after /clear the plugin
+tells the new session where the backlog stands.
+Not /compact: it spends one more request on this whole conversation to keep a summary the next step
+does not need.
+Or say "go on here" to continue in this context.
+```
+
+Name what the mode really piled up — the blueprint read for the inventory, the strategy rounds, the
+detailers' replies — not this list. After Gate 1 the command is `/backlog`, which resumes `init` at its
+detail (the `skill-resume` hook tells the new session where `init` stopped); after a mode that is done,
+it is `/backlog next`. A plugin cannot clear or compact the context itself; the operator's two commands
+do it. If the operator says to go on here, go on.
 
 ## Questions
 
@@ -223,11 +288,17 @@ questions per call, 2–4 options per question, a header of at most 12 character
 
 Noisy or parallel work goes to subagents; you keep the merge, the ids and every question.
 
-| Role | Agent type | Does |
-|------|------------|------|
-| inventory reader | `general-purpose`, told to write nothing | reads one module file and returns its capability inventory (`slicing.md › What to read in the blueprint`) |
-| code reader | `Explore` (else `general-purpose`, told to write nothing) | reads one repository and reports which capabilities exist already (`modes.md › init`, step 4) |
-| detailer | `general-purpose` | writes the task files of one batch — or of the rows it is given — and nothing else (`modes.md › detail`) |
+| Role | Agent type | Model | Does |
+|------|------------|-------|------|
+| inventory reader | `general-purpose`, told to write nothing | `sonnet` | reads one module file and returns its capability inventory (`slicing.md › What to read in the blueprint`) |
+| code reader | `Explore` (else `general-purpose`, told to write nothing) | the agent's own | reads one repository and reports which capabilities exist already (`modes.md › init`, step 4) |
+| detailer | `general-purpose` | `sonnet` | writes the task files of one batch — or of the rows it is given — and nothing else (`modes.md › detail`) |
+
+Pass the model of the table in the `Agent` call (`model: "sonnet"`). Inventory readers and detailers
+are most of a run's agents, and their work — one module's capabilities to a fixed layout, one batch's
+task files by the rules of `slicing.md` — is well within Sonnet, as the blueprint's readers and writers
+are. The judgement stays with you: the merge, the ids, every fork turned into a question, and the gates
+where the operator sees the result.
 
 Every brief names the goal; the files to read by absolute path (the agent reads them — do not paste
 them), including `${CLAUDE_PLUGIN_ROOT}/skills/backlog/references/slicing.md` for a detailer; the

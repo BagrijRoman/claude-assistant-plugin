@@ -27,7 +27,7 @@ alone and larger. **Escape** leaves it.
 |---|---|
 | `site.mjs` | Name, mark, port, languages, fonts, and the picks among variants |
 | `pages.mjs` | The pages: bands → root sections → their sections or child pages. The one source of the menu, the breadcrumbs, the catalog and the previous / next links |
-| `build.mjs` | Writes the navigation into every page as static HTML. Run after changing `pages.mjs` or `site.mjs`; `open.mjs` runs it first too |
+| `build.mjs` | Writes the navigation into every page as static HTML, and the tab's icon, `assets/favicon.svg`, from the mark in `site.mjs` and the brand color in `tokens.css`. Run after changing `pages.mjs`, `site.mjs` or the brand tokens; `open.mjs` runs it first too |
 | `open.mjs` | The local server |
 | `tokens.css` | The design tokens, light and dark — every value on the site |
 | `base.css` | Reset and the type scale |
@@ -40,7 +40,7 @@ alone and larger. **Escape** leaves it.
 | `DECISIONS.md`, `CHANGELOG.md` | The choices made and why; what changed at each showing — the sources of the Decisions and Changelog pages |
 | `assets/showcase.css`, `assets/site.css` | The site's own frame: menu, top bar, sections, swatches, flow player, device frames |
 | `assets/showcase.js` | The icon sprite, live swatches and contrast ratios, toasts, modals, motion replay |
-| `assets/nav.js`, `assets/i18n.js`, `assets/flow.js` | Menu, in-place page swaps, theme and presentation mode; languages; the flow player |
+| `assets/nav.js`, `assets/i18n.js`, `assets/flow.js` | Menu, in-place page swaps (the stylesheets are re-read at each, so an edited one reaches the next page), theme and presentation mode; languages; the flow player |
 | `<section>/index.html` | One page per root section; `flows/<flow>.html` one page per flow |
 
 ## Rules of the site
@@ -61,6 +61,8 @@ alone and larger. **Escape** leaves it.
   id on the page, `node build.mjs`.
 - **A flow:** `tools/gen<Flow>.mjs` with `flowPlayer(...)`, an entry in `children` of Flows, build —
   the menu and the Flows index list it.
+- **A letter:** a `block()` with the letter's id in `tools/genEmails.mjs`, an entry in `sections` of
+  Email templates (`emails`) in `pages.mjs`, build — the menu lists it and scrolls to it.
 - **A language:** the code in `site.mjs › languages`, a copy of `i18n/<lang>.js` translated, build,
   then `/showcase audit` for the keys still missing.
 - **A pick among variants:** `site.mjs › selected`, the `Selected` mark on the variant, a row on the

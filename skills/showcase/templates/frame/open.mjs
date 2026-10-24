@@ -8,7 +8,7 @@ import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { build, allPages } from './build.mjs';
+import { build, allPages, removeSchemeScratch } from './build.mjs';
 import { SITE } from './site.mjs';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
@@ -41,6 +41,7 @@ for (const page of allPages) {
 // The menu and the other navigation are static HTML inside the pages: bring them up to date first
 const rebuilt = await build();
 if (rebuilt.length > 0) console.log(`Navigation rewritten in ${rebuilt.length} pages`);
+if (await removeSchemeScratch()) console.log('Removed scheme.html: the color scheme is chosen');
 
 const server = createServer(async (request, response) => {
   const { pathname } = new URL(request.url ?? '/', 'http://localhost');

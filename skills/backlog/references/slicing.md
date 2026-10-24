@@ -24,7 +24,7 @@ a path like `templates/tasks/TASK.md` below is relative to the skill's folder.
 
 | Blueprint file | Take from it |
 |----------------|--------------|
-| `STATE.json` | `phase` and `phases` (is it done?), `depth` (which capabilities are only listed — *Stages* below), `counts`, and `modules[]` — code, slug, file, stage, surfaces, `l3`, `removed` — the list of module files to read |
+| `STATE.json` | `phase` and `phases` (is it done?), `depth` (which capabilities are only listed — *Stages* below), `counts`, and `modules[]` — code, slug, file, stage, surfaces, `l3`, `l3Plan`, `removed` — the list of module files to read |
 | `01-brief.md` | actors (for the actor in *How to verify*); the `## Surfaces` table with its constraints and default rule (the input to the platform map); goals `G-`; non-functional requirements `N-` (they become acceptance criteria and operational tasks); out of scope (never slice it); **Decided outside this blueprint** — binding: it settles platform questions and may mandate technical work; *Key constraints* |
 | `02-architecture.md` | the module map with the `Surfaces` column; the **main flows** — each step's module and surface (the batches are cut along them); the **domain model** — the entities a flow touches are the foundation's first shape, *Relates to* gives entity dependencies, *States* gives lifecycle work; **Roles and access**; the cross-cutting concerns; relationships between modules (they become dependencies) |
 | `03-roadmap.md` | the stage per module *and surface*; *MVP — or what is in scope — in one paragraph*, the target state after the first-stage batches |
@@ -69,7 +69,9 @@ sliced.
 
 A capability with no rules and no edge cases is **list-only** when the blueprint's depth table gives
 its effective stage only a capability list (depth `quick`: MVP or in scope; depth `standard`: next and
-later), or when its module's `l3` is `list-only` — it has a heading, Who, Source and one line of What,
+later), or when its module's `l3` is `list-only` (its `l3Plan` is `list`: the operator kept it a list
+at the start of phase 5) — and not when its module's `l3Plan` is `full`, which reads the module's own
+stage as full detail whatever the depth — it has a heading, Who, Source and one line of What,
 and no rules or edge cases *yet*, by design. Where the depth asks for full detail, the same emptiness is
 a blueprint gap (*From capabilities to tasks*). A list-only capability is cut as an outline row only and
 never reported as a gap. A module with `l3: none` has no capabilities yet: its outline rows come from its L2

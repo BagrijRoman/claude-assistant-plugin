@@ -35,6 +35,18 @@ run the script and relay its report.
    - commit `.claude/settings.json`, so the whole team gets the same boundary;
    - restart Claude Code, because permissions are read when a session starts.
 
+## Progress
+
+The operator always sees which stage the run is in, what is done and what comes next. Before the first
+step, show the stages below as a checklist, one per line: `✓` done, `▸` the current one, `·` still to
+come; mirror them into the session's task list when it has one (`TaskCreate` and `TaskUpdate`, or
+`TodoWrite`). At every step, one line, `▸ /setup-permissions · <n>/<N> <stage>`, in the operator's
+language; at the end, the checklist once more with the final marks.
+
+| Mode | Stages |
+|------|--------|
+| `[dir]` | Script → Report → What is left to the human |
+
 ## What you must not do
 
 - Edit `.claude/settings.json` by hand, even to "help". The script is the only writer; a hand edit is how a

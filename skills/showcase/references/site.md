@@ -23,21 +23,24 @@ a hand-written page breaks without noticing.
 
 | File | Role |
 |------|------|
-| `site.mjs` | name, mark, port, languages, fonts, `selected` picks |
+| `site.mjs` | name, mark (the menu's tile and the tab's icon), port, languages, fonts, `selected` picks |
 | `pages.mjs` | the menu: bands → root sections → sections or children |
-| `build.mjs` | writes menu, breadcrumbs, pager, catalog, the Flows index's tiles, head (fonts, language scripts) and the language switch into every page, between its markers; refuses two entries of `pages.mjs` that would share a key; idempotent |
+| `build.mjs` | writes menu, breadcrumbs, pager, catalog, the Flows index's tiles, head (the tab icon's link, fonts, language scripts) and the language switch into every page, between its markers, and `assets/favicon.svg` beside them; refuses two entries of `pages.mjs` that would share a key; idempotent |
 | `open.mjs` | the server; runs the build first; `SHOWCASE_PORT`, `SHOWCASE_NO_OPEN` |
 | `tokens.css` | every value, light and dark |
 | `base.css` | reset and the text classes `.t-page-title .t-section-title .t-card-title .t-body .t-body-strong .t-label .t-caption .t-figure .mono .tnum` |
 | `components.css` | the product's components, one block each |
 | `assets/showcase.css` | the frame: `.sc-side .sc-top .sc-main .sc-hero .sc-section .sc-section__head .sc-block .sc-row .sc-row__items .sc-state .sc-sample .sc-stage .sc-grid-2/3/4 .sc-tiles .sc-tile .sc-source .sc-proposed .sc-note .sc-list .swatch .sc-swatches .sc-diagram .frame .shell-sample .sc-motion .table-wrap` |
-| `assets/site.css` | bands, root links, language switch, presentation mode, the flow player, `.variant`, `.tag--selected`, `.device--phone/tablet/desktop`, `.mail`, reduced motion |
+| `assets/site.css` | the gaps between groups, root links, `.tech-mark` (`--mono`, `--initials`), language switch, presentation mode, the flow player, `.variant`, `.tag--selected`, `.device--phone/tablet/desktop`, `.mail`, reduced motion |
 | `assets/showcase.js` | the icon sprite (`<use href="#i-…">`), live swatches and contrast, tabs, switches, modals, toasts, motion replay; `window.showcase.enhance(root)` |
-| `assets/nav.js` | menu on narrow screens, one root open at a time (fallback), root-title clicks, in-place page swaps, scroll-spy, theme, presentation, keys; fires `pageswap` |
+| `assets/nav.js` | menu on narrow screens, one root open at a time (fallback), root-title clicks, in-place page swaps that keep the site's stylesheets as the server has them now, scroll-spy, theme, presentation, keys; fires `pageswap` |
+| `assets/favicon.svg` | the tab's icon, written by `build.mjs` — never by hand: the selected mark (a letter on the brand tile until one is picked) in `--color-primary`, light and dark |
 | `assets/i18n.js` | translates `[data-i18n]` and `[data-i18n-attr]`; the language switch; `window.showcaseI18n` |
 | `assets/flow.js` | the step player |
 | `tools/lib/html.mjs` | `renderPage`, `section`, `block`, `variant`, `flowPlayer`, `flowMark`, `device`, `mail`, `t`, `escapeHtml` |
 | `tools/genPages.mjs` | a starting page for every page that does not exist yet |
+| `tools/fetchTechMarks.mjs` | the official marks of the stack, fetched once into `assets/tech/` with `marks.json` (title, color, `mono`, source) |
+| `assets/tech/` | the technology marks: the only files with colors of their own, never redrawn, never in a page |
 | `tools/gen*.mjs` | one generator per heavy page or flow |
 | `tools/parts/<page id>/*.mjs` | the pieces of a page made by several subagents, imported by its generator |
 | `sample.mjs` | the company, the cast, the data, `today` |
@@ -48,17 +51,30 @@ a hand-written page breaks without noticing.
 ## pages.mjs
 
 ```js
-export const BANDS = [{ id, title, desc, pages: [page, …] }, …];
-// page: { id, path, title, desc, sections: [{ id, title, desc }] }  — one long page, anchors
-//       { id, path, title, desc, children: [{ id, path, title, desc }] } — Flows: pages of their own
-//       { id, title, desc }                                           — planned: no path
+export const BANDS = [{ id, title, desc, pages: [page, …] }, …];      // a group: a gap in the menu, a heading in the catalog
+// page:  { id, path, title, desc, sections: [{ id, title, desc }] }  — one long page, anchors
+//        { id, path, title, desc, sections?, children: [child, …] }   — and pages one level down
+//        { id, title, desc }                                          — planned: no path
+// child: { id, path, title, desc, sections?: [{ id, title, desc }] } — a page; its sections are anchors on it
 ```
 
 Ids are the i18n keys: `nav.<page>`, `nav.<page>.desc`, `nav.<page>.<section>`,
-`nav.<page>.<section>.desc`, `nav.band.<band>`, `nav.band.<band>.desc`, and a child under its root:
-`nav.<page>.<child>` (a flow: `nav.flows.<flow>`), so a flow called `signIn` does not take the label
-of the Sign-in layouts page. A section's element on the page has the section's id. After any
+`nav.<page>.<section>.desc`, `nav.band.<band>`, `nav.band.<band>.desc`, a child under its root:
+`nav.<page>.<child>` (a flow: `nav.flows.<flow>`), and a child's section
+`nav.<page>.<child>.<section>` — so a flow called `signIn` does not take the label of the Auth
+layout page (`nav.layouts.signIn`). The menu shows no band label: a band is a group of roots, set
+apart from the next by a gap, and a heading of the catalog on the Product page. The first page is
+the home page, `index.html` — the Product page; build.mjs writes the catalog into it. A section's element on the page has the section's id. After any
 change: `node build.mjs`, which stops with the two entries named when two would share a key.
+
+A root whose sections are a list that grows has its step add one section per item: Components, one
+per component; Email templates (`emails/index.html`, in Design after Layouts, key `emails`), the
+Template and one per letter, the letter's id being its anchor and `nav.emails.<letter id>` its key.
+Email templates has no `children` — its letters are not pages — so its page lists none.
+Charts (`charts/index.html`, in Design right after Components, key `charts`, only when the product has
+figures) is the same: a section per use of a chart in the product, the use's id its anchor and
+`nav.charts.<use id>` its key; it is planned (no path) until the Charts step lays it, and has no
+`children`.
 
 ## Writing a page
 
@@ -161,13 +177,16 @@ address, gives ← → (taking the keys from the page turner while a flow is on 
 steps*, *Full screen* (the browser's, or an overlay). The bar shows the title of the step on
 show, in the language on show. A control inside a screen with `data-go="step-3"` jumps;
 `data-go="end"` shows "not drawn yet". The flow page is a child of Flows in `pages.mjs` and
-includes `assets/flow.js` (genPages does so for children); the next `node build.mjs` puts it in the
+includes `assets/flow.js` (genPages does so for the children of Flows, and only for them); the next `node build.mjs` puts it in the
 menu and on the Flows index.
 
 ## Device frames and letters
 
 `device('phone' | 'tablet' | 'desktop', screenHtml)` draws the frame; `.devices` lays several side
-by side. `mail({ from, to, subject, body })` shows a 600 px letter as a mail client does.
+by side. `mail({ from, to, subject, body })` shows a 600 px letter as a mail client does. The letters
+stand on `emails/index.html`, written by `tools/genEmails.mjs`: a `block()` per letter with the
+letter's id, under two headings, *Common letters* and *The product's own*. A flow that shows a letter
+imports `letter(id, marks)` from that generator.
 
 ## Illustrations and marks
 
@@ -176,9 +195,9 @@ Illustrations: SVG `<symbol>`s in `assets/illustrations.js`, used as
 (line, fill, soft, accent — added to `tokens.css` from the scheme, both themes); animation in CSS
 keyframes on classes inside the symbol, stopped by the reduced-motion rule in `site.css`. Marks:
 SVG on a 64-unit grid, `currentColor` ink, `var(--lg-ground)` knockouts; the picked mark's SVG goes
-to `site.mjs › mark`. `--lg-ground` is the color behind the mark: `tokens.css` sets it for the
-page, the brand tile in `components.css` to its own fill, and every ground the Logo page shows a
-mark on (light, dark, the brand color) sets it again.
+to `site.mjs › mark`, where `build.mjs` also draws the tab's icon from it. `--lg-ground` is the color
+behind the mark: `tokens.css` sets it for the page, the brand tile in `components.css` to its own
+fill, and every ground the Logo page shows a mark on (light, dark, the brand color) sets it again.
 
 ## Menu, theme, presentation, keys
 
@@ -190,15 +209,28 @@ plain link ends with every root folded, as a reload does). nav.js never scrolls 
 inside a folded root, and keeps keyboard focus in the menu when a fold would hide it. A folded root
 still marks the page on show on its title — `aria-current="page"`, or `"true"` on the root of a flow.
 On a narrow screen the menu is a drawer behind *All pages*, inert while closed, so the Tab key
-skips it.
+skips it. The styles stay as fresh as the menu: an in-place swap asks the server again (`cache: 'no-store'`)
+for the site's own stylesheets and loads one that changed since the tab took it beside the old copy,
+which leaves once the new one has loaded — so a page opened after `tokens.css` or `components.css`
+was edited is drawn with the edit, with no reload.
 
 `data-theme="light|dark"` on `<html>`, or none for the device's choice; tokens.css carries both
-sets. Presentation: `html.present`, toggled by **P**, the top-bar button or `?present=1`; Escape
-leaves. Keys: ← → step sections, then pages; in a flow they step the flow.
+sets. The tab's icon follows only the device's choice (`prefers-color-scheme`), as a browser gives an
+icon no page to read the switch from. Presentation: `html.present`, toggled by **P**, the top-bar
+button or `?present=1`; Escape leaves. Keys: ← → step sections, then pages; in a flow they step the flow.
 
 ## Audit
 
-Run from the showcase folder; fix what is found before the gate.
+Run from the showcase folder; fix what is found before the gate. The rows that need no eyes — every
+page exists, the build is idempotent, no value outside tokens, the two dark sets agree, every key
+translated — are one command, which prints each finding with its file and line:
+
+```
+node "${CLAUDE_PLUGIN_ROOT}/bin/showcase.mjs" check <showcase dir>
+```
+
+Run it first and work from its list; the rows below say what each check means. The rest — both themes
+in every language, reduced motion, screenshots — is done by looking.
 
 | Check | How |
 |-------|-----|

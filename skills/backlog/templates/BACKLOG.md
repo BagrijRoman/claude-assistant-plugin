@@ -16,8 +16,8 @@ move or drop things, `/backlog resync` when the blueprint changes.
 | # | Batch | Stage | Tasks | Done | In progress | Ready | Blocked | Dropped | Detailed | State |
 |---|-------|-------|-------|------|-------------|-------|---------|---------|----------|-------|
 | 01 | [{{slug}}](batches/01-{{slug}}.md) | MVP | {{n}} | {{n}} | {{n}} | {{n}} | {{n}} | {{n}} | yes | in progress |
-| 02 | [{{slug}}](batches/02-{{slug}}.md) | MVP | {{n}} | | | | | | yes | todo |
-| 03 | [{{slug}}](batches/03-{{slug}}.md) | MVP | {{n}} (outline) | | | | | | no | outline |
+| 02 | [{{slug}}](batches/02-{{slug}}.md) | MVP | {{n}} | 0 | 0 | {{n}} | {{n}} | 0 | yes | todo |
+| 03 | [{{slug}}](batches/03-{{slug}}.md) | MVP | {{n}} (outline) |  |  |  |  |  | no | outline |
 
 ## Ready now
 

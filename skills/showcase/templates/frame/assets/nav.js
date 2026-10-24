@@ -28,9 +28,14 @@
   var THEME_KEY = 'showcase:theme:' + root.pathname;
   var PRESENT_KEY = 'showcase:present:' + root.pathname;
 
+  // One page, one key: a host with clean addresses (Cloudflare Pages) answers flows/signIn.html with a redirect
+  // to flows/signIn, and charts/index.html with charts/ — all three name the same page
   function normalize(pathname) {
-    return pathname.replace(/\/index\.html$/, '/');
+    return pathname.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
   }
+  // Served from this machine (open.mjs) the files keep their names; a public host is asked for the clean
+  // address at once, so a move in the menu costs no redirect and the page is swapped in, never reloaded
+  var local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 
   function remember(key, value) {
     try {
@@ -416,8 +421,55 @@
     return chain;
   }
 
+  // The page whose content is on show: a move between places on it is not a page to swap in
+  var shownPage = normalize(location.pathname);
+
+  // The styles outlive the page they came with, as the menu does: a stylesheet edited while the tab is
+  // open would not reach the pages opened after the edit, and a new page would be drawn with the old
+  // rules. Each swap asks the server for the site's own stylesheets again and loads anew one that has
+  // changed since the tab took it; the new copy goes in beside the old, which leaves once it has loaded.
+  // Only while served from this machine: on a public host nobody edits the files under an
+  // open tab, and each swap would download every stylesheet again
+  var sheetTexts = {};
+  var watchSheets = swaps && local;
+
+  function ownSheets() {
+    return Array.prototype.filter.call(document.querySelectorAll('link[rel="stylesheet"]'), function (link) {
+      return new URL(link.href).origin === location.origin;
+    });
+  }
+
+  function readSheet(path) {
+    return fetch(path, { cache: 'no-store' }).then(function (response) {
+      return response.ok ? response.text() : null;
+    });
+  }
+
+  if (watchSheets) {
+    ownSheets().forEach(function (link) {
+      var path = new URL(link.href).pathname;
+      readSheet(path).then(function (text) { sheetTexts[path] = text; }).catch(function () {});
+    });
+  }
+
+  function refreshStyles() {
+    if (!watchSheets) return;
+    ownSheets().forEach(function (link) {
+      var path = new URL(link.href).pathname;
+      readSheet(path).then(function (text) {
+        if (text === null || !(path in sheetTexts) || sheetTexts[path] === text) return;
+        sheetTexts[path] = text;
+        var fresh = link.cloneNode();
+        fresh.href = path + '?v=' + Date.now();
+        fresh.addEventListener('load', function () { link.remove(); });
+        link.after(fresh);
+      }).catch(function () {});
+    });
+  }
+
   function go(href, push) {
     var url = new URL(href, location.href);
+    if (!local) url.pathname = normalize(url.pathname);
     if (!swaps) {
       location.href = url.href;
       return;
@@ -427,12 +479,14 @@
     Array.prototype.forEach.call(document.scripts, function (existing) {
       if (existing.getAttribute('src')) existing.setAttribute('src', existing.src);
     });
+    // A stylesheet the same: from flows/ its "components.css" would name flows/components.css
+    ownSheets().forEach(function (link) { link.setAttribute('href', link.href); });
     fetch(url.href)
       .then(function (response) {
         if (!response.ok) throw new Error('HTTP ' + response.status);
         // The page has moved (it became a section of a long page): load it in full, so the browser
         // follows the redirect to the section and the address bar shows where it went
-        if (response.redirected) throw new Error('the page has moved to ' + response.url);
+        if (response.redirected && normalize(new URL(response.url).pathname) !== normalize(url.pathname)) throw new Error('the page has moved to ' + response.url);
         return response.text();
       })
       .then(function (html) {
@@ -444,11 +498,13 @@
         if (push) history.pushState(null, '', url.href);
         document.title = next.title;
         main.innerHTML = nextMain.innerHTML;
+        shownPage = normalize(url.pathname);
         var crumb = document.querySelector('.sc-crumb');
         var nextCrumb = next.querySelector('.sc-crumb');
         if (crumb && nextCrumb) crumb.innerHTML = nextCrumb.innerHTML;
         markCurrent();
         closeNav();
+        refreshStyles();
         var target = url.hash ? document.getElementById(url.hash.slice(1)) : null;
         if (target) target.scrollIntoView();
         else window.scrollTo(0, 0);
@@ -475,7 +531,10 @@
       event.preventDefault();
       go(link.href, true);
     });
+    // Back and forward between pages; a move to another place on the page on show (#section, a flow's
+    // step) is the browser's own, and the page's scripts follow it, so nothing is swapped
     window.addEventListener('popstate', function () {
+      if (normalize(location.pathname) === shownPage) return;
       go(location.href, false);
     });
   }

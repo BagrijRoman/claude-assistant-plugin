@@ -18,6 +18,11 @@
             "type": "command",
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/bin/secretCommitGuard.mjs\"",
             "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/bin/standardsCheck.mjs\"",
+            "timeout": 15
           }
         ]
       },
@@ -40,6 +45,29 @@
             "type": "command",
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/bin/lintFeedback.mjs\"",
             "timeout": 90
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/bin/skillResume.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/bin/standardsCheck.mjs\"",
+            "timeout": 30
           }
         ]
       }

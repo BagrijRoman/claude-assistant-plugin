@@ -7,6 +7,7 @@
 //   node bin/blueprint.mjs changed <dir> [--root <project root>]
 //   node bin/blueprint.mjs validate <dir>
 //   node bin/blueprint.mjs export <dir> [--out <file>] [--with-sources]
+//   node bin/blueprint.mjs expand <dir> <path>… [--root <project root>]
 //
 // <dir> is the blueprint folder, whose STATE.json has kind "blueprint"; every command but `validate` stops
 // (exit 1) when that file is missing, does not parse or belongs to something else, and `validate` reports it.
@@ -22,9 +23,16 @@
 //   sources it cannot find — moved, deleted, or read from the wrong --root. Dotfiles, dot-folders (the
 //   converted copies in .sources/ among them) and export/ are never the operator's edits and are not listed.
 // - validate prints errors (exit 1) and warnings, one per line: `error: <file>:<line> — <what>`.
+// - expand lists what Intake registers from the files and folders the operator named, grouped by folder, paths
+//   relative to --root (default the current directory): dotfiles, dot-folders, build folders, the blueprint
+//   folder and asset files (images, fonts, html, stylesheets, scripts) are left out and counted by kind; a
+//   /research run (a folder whose STATE.json has kind "research") gives its summary, its source register
+//   (marked: registered, not read) and its profiles, and leaves out its brief, its state and its raw/ notes,
+//   which the curated files already carry. A file named outright is kept unless it is one of those.
 // - export writes one Markdown file, <dir>/export/blueprint.md by default: headings one level down, HTML
 //   comments gone, competitor profiles at the end, links to local files turned into their text (the document
-//   travels without the folder; web links and anchors stay). It prints the path.
+//   travels without the folder; web links and anchors stay). It prints the path. --out must stay inside the
+//   blueprint folder; a path outside it is refused (exit 1).
 // Not an id of this blueprint: one narrower than its kind (D-7, G-1 are a source's), anything after § (S-01
 // §D-23), inside {{…}}, in code, in a URL or a link target — so a word that only looks like an id (an N-95
 // mask) goes in backticks. A placeholder written before ids were given (ORG-C??, [A-??: …], S-??) is an
@@ -32,7 +40,7 @@
 
 import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { dirname, isAbsolute, join, normalize, relative, resolve, sep } from 'node:path';
+import { basename, dirname, isAbsolute, join, normalize, relative, resolve, sep } from 'node:path';
 
 const USAGE = `Usage: node bin/blueprint.mjs <command> <dir> [args]
   stamp <dir>                                   set "updated" and recount "counts" in STATE.json
@@ -41,6 +49,7 @@ const USAGE = `Usage: node bin/blueprint.mjs <command> <dir> [args]
   changed <dir> [--root <project root>]         list what changed since STATE.json was last written
   validate <dir>                                check ids, references, markers, modules, counts, coverage
   export <dir> [--out <file>] [--with-sources]  write the blueprint as one Markdown document
+  expand <dir> <path>… [--root <project root>]  list the files to register from the paths the operator named
 `;
 
 // Per command: how many arguments may follow <dir>, and the options it takes.
@@ -50,6 +59,7 @@ const COMMANDS = {
   changed: { extra: 0, options: ['root'] },
   validate: { extra: 0, options: [] },
   export: { extra: 0, options: ['out', 'with-sources'] },
+  expand: { extra: Infinity, options: ['root'] },
 };
 const VALUE_OPTIONS = new Set(['count', 'out', 'root']);
 
@@ -511,6 +521,17 @@ const checkState = (dir, state, raw, logs, corpus) => {
     issues.push(error('STATE.json', entryLine(raw, entry),
       `${entry.code} lastCapability is ${last}, but ${entry.code}-C${pad(highest, 2)} is in use; raise it to ${highest}`));
   }
+  // l3Plan, chosen at the start of phase 5, is what the module's capabilities are written as: in full, or as a list
+  for (const entry of modules) {
+    if (entry.removed || entry.l3Plan === undefined) continue;
+    const ends = { full: 'done', list: 'list-only' }[entry.l3Plan];
+    if (!ends) {
+      issues.push(error('STATE.json', entryLine(raw, entry), `${entry.code} l3Plan is ${JSON.stringify(entry.l3Plan)}; use "full" or "list"`));
+    } else if (['done', 'list-only', 'none'].includes(entry.l3) && entry.l3 !== ends) {
+      issues.push(error('STATE.json', entryLine(raw, entry),
+        `${entry.code} l3 is "${entry.l3}", but its l3Plan "${entry.l3Plan}" ends in "${ends}"; write the capabilities as planned, or change the plan`));
+    }
+  }
   const counts = isObject(state.counts) ? state.counts : {};
   const stale = Object.entries(recount(dir, logs)).filter(([key, value]) => counts[key] !== value);
   if (stale.length) {
@@ -689,6 +710,11 @@ const exportBlueprint = (dir, out, withSources) => {
   const { state } = loadState(dir);
   let target = out ? resolve(out) : join(dir, 'export', 'blueprint.md');
   if (statOf(target)?.isDirectory()) target = join(target, 'blueprint.md');
+  // The skill writes only inside its working folder; sending the document anywhere else is the operator's step.
+  const inside = relative(dir, target);
+  if (inside === '..' || inside.startsWith(`..${sep}`) || isAbsolute(inside)) {
+    throw new Error(`--out ${out} is outside the blueprint folder ${dir}; the export stays inside it (export/ by default), and the operator copies it from there`);
+  }
   const modules = modulesOf(state).filter((entry) => !entry.removed).map(moduleFile);
   const files = [...new Set([
     'README.md', ...(withSources ? ['00-sources.md'] : []), '01-brief.md', '02-architecture.md', '03-roadmap.md',
@@ -705,6 +731,107 @@ const exportBlueprint = (dir, out, withSources) => {
   mkdirSync(dirname(target), { recursive: true });
   writeFileSync(target, `${[title, ...parts].join('\n\n---\n\n')}\n`);
   print(target);
+};
+
+// --- expand
+
+const BUILD_FOLDERS = new Set(['node_modules', 'dist', 'build', 'out', 'coverage']);
+const ASSETS = [
+  ['image', /\.(png|jpe?g|gif|svg|webp|ico|bmp|tiff?|heic)$/i],
+  ['font', /\.(woff2?|ttf|otf|eot)$/i],
+  ['html file', /\.(html?|xhtml)$/i],
+  ['stylesheet', /\.(css|scss|sass|less)$/i],
+  ['script', /\.(m?js|cjs|jsx|tsx?)$/i],
+];
+
+const isResearchRun = (folder) => {
+  try {
+    return JSON.parse(readFileSync(join(folder, 'STATE.json'), 'utf8'))?.kind === 'research';
+  } catch {
+    return false;
+  }
+};
+
+/** The /research run a path lies in — the path itself or the nearest folder above it with a research STATE.json. */
+const runOf = (path) => {
+  for (let folder = path; ; folder = dirname(folder)) {
+    if (isResearchRun(folder)) return folder;
+    if (dirname(folder) === folder) return undefined;
+  }
+};
+
+const filesUnder = (folder) => readdirSync(folder, { recursive: true, withFileTypes: true }).filter((entry) => entry.isFile()).length;
+
+/** What Intake registers from the paths the operator named, and what it leaves out, by kind. */
+const expand = (dir, paths, root) => {
+  loadState(dir);
+  const groups = new Map();
+  const leftOut = new Map();
+  const missing = [];
+  const show = (path) => relative(root, path).split(sep).join('/') || '.';
+  const keep = (group, line) => groups.set(group, [...(groups.get(group) ?? []), line]);
+  const skip = (noun, why = '', count = 1) => {
+    const key = `${noun}\n${why}`;
+    leftOut.set(key, (leftOut.get(key) ?? 0) + count);
+  };
+  const runGroup = (run) => `${show(run)}/ — a /research run: its summary, its source register and its profiles`;
+
+  // A run's raw/ notes are what its curator turned into the summary and the profiles: reading them again is
+  // reading the same facts twice, so they are left out even when named outright.
+  const rawNotes = (run) => ['raw research note', `in ${show(run)}/raw/: the run's summary and profiles carry them`];
+
+  /** The kept line for a file of a /research run, or the reason it is left out; undefined for any other file. */
+  const inRun = (run, path) => {
+    const inner = relative(run, path).split(sep).join('/');
+    if (inner.startsWith('raw/')) return { skip: rawNotes(run) };
+    if (inner === 'brief.md' || inner === 'STATE.json') return { skip: ['research brief or state file', '— the summary answers the brief'] };
+    if (inner === 'sources.md') return { keep: `${show(path)} · register it, do not read it: the summary and the profiles cite it` };
+    if (inner === 'summary.md' || inner.startsWith('competitors/')) return { keep: show(path) };
+    return undefined;
+  };
+
+  const visit = (path, run, named) => {
+    const stat = statOf(path);
+    const name = basename(path);
+    if (!stat) {
+      missing.push(show(path));
+    } else if (path === dir) {
+      skip('blueprint folder', '— the one being written');
+    } else if (!named && name.startsWith('.')) {
+      skip(stat.isDirectory() ? 'dot-folder' : 'dotfile');
+    } else if (stat.isDirectory()) {
+      const ownRun = run ?? (isResearchRun(path) ? path : undefined);
+      if (!named && BUILD_FOLDERS.has(name)) skip('build or dependency folder');
+      else if (ownRun && path === join(ownRun, 'raw')) skip(...rawNotes(ownRun), filesUnder(path));
+      else for (const entry of readdirSync(path).sort()) visit(join(path, entry), ownRun, false);
+    } else {
+      const research = run && inRun(run, path);
+      const asset = !named && ASSETS.find(([, pattern]) => pattern.test(name));
+      if (research?.skip) skip(...research.skip);
+      else if (research?.keep) keep(runGroup(run), research.keep);
+      else if (asset) skip(asset[0]);
+      else keep(`${show(dirname(path))}/`, show(path));
+    }
+  };
+
+  for (const path of paths) {
+    const absolute = resolve(path);
+    visit(absolute, runOf(absolute), true);
+  }
+
+  const kept = [...groups.values()].flat().length;
+  const lines = [...groups].flatMap(([group, files]) => [
+    group.includes(' — ') ? group : `${group} — ${plural(files.length, 'file')}`,
+    ...files.map((file) => `  ${file}`),
+  ]);
+  for (const [key, count] of leftOut) {
+    const [noun, why] = key.split('\n');
+    lines.push(`left out: ${plural(count, noun)}${why ? ` ${why}` : ''}`);
+  }
+  for (const path of missing) lines.push(`not found: ${path} — ask the operator where it is`);
+  const total = [...leftOut.values()].reduce((sum, count) => sum + count, 0);
+  lines.push(`${plural(kept, 'file')} to register, ${total} left out`);
+  print(lines.join('\n'));
 };
 
 // --- command line
@@ -751,6 +878,10 @@ const main = () => {
   if (command === 'changed') changed(dir, resolve(options.root ?? process.cwd()));
   if (command === 'validate') validate(dir);
   if (command === 'export') exportBlueprint(dir, options.out, Boolean(options['with-sources']));
+  if (command === 'expand') {
+    if (!rest.length) usage('expand needs the files or folders the operator named');
+    expand(dir, rest, resolve(options.root ?? process.cwd()));
+  }
 };
 
 try {

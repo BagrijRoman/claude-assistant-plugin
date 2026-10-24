@@ -1,0 +1,13 @@
+{
+  "name": "react",
+  "version": "1.1.0",
+  "title": "React and React Native",
+  "files": [
+    { "from": "rules.md", "to": ".claude/rules/react.md", "render": true },
+    { "from": "eslint.mjs", "to": "eslint/standards/react.mjs" }
+  ],
+  "lint": {
+    "file": "eslint/standards/react.mjs",
+    "export": "reactStandards"
+  }
+}

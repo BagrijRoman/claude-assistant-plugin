@@ -7,6 +7,17 @@ Templates live in the skill's own folder, `${CLAUDE_PLUGIN_ROOT}/skills/blueprin
 like `templates/STATE.json` is relative to the skill's folder. A reference such as
 `mechanics.md › Depth` names a file and a heading in it.
 
+## The working folder
+
+Writes stay in the working folder: nothing is created outside it, not even for a moment. The working
+folder is the blueprint folder chosen at Intake. Every file the skill makes is created there: the
+documents and logs, `STATE.json`, `modules/`, `references/competitors/`, the converted copies of Word
+files in `.sources/`, the one-document copy in `export/`. A file needed only for a while is created
+there too and removed once it has served. Never write into the project root, into `docs/` above the
+folder, into `/tmp` or the system's temporary folder, or into the session's scratchpad; never leave a
+copy in an "outputs" folder. Every agent's brief names a file inside the folder, and the script's
+`export --out` refuses a path outside it. Sending a document anywhere else is the operator's step.
+
 ## The helper script
 
 The bookkeeping is done by a script, not by counting:
@@ -19,6 +30,7 @@ The bookkeeping is done by a script, not by counting:
 | `validate` | before every gate, and after a repair | reports dangling references — capabilities named that no module has included — duplicate ids, unnumbered capabilities, missing module files, stale counts and — from phase 6 on — source items without coverage; every error is fixed before the gate |
 | `stamp` | last thing in every operation that wrote anything | writes `updated` (the clock's time) and `counts` into `STATE.json` |
 | `export [--with-sources]` | the `export` mode | writes the whole blueprint as one document under `export/` |
+| `expand <path>… [--root <project root>]` | Intake, when the operator names folders or a `/research` run | lists the files to register, grouped by folder, and counts what it left out by kind — dotfiles, build folders, this folder, assets, and a research run's brief, state and `raw/` notes (`intake.md › Phase 0 — Intake`, step 4) |
 
 Pass `--root` to `changed` when the sources' paths are relative to the project rather than to the
 folder you run from. If the script cannot run, say so and do the same by hand — but never skip the
@@ -35,7 +47,9 @@ one; when the depth is chosen (`depth`); when research consent is given (`resear
 inside phases 1, 4 and 5, skip the units already done (an extract in `00-sources.md`; `l2: "done"`;
 `l3` anything but `"pending"` or `"failed"`) and retry the failed ones first. A unit of phase 1 is a
 `document` or `url` source the operator gave: an `idea` or `feedback` source you extract yourself from
-its verbatim text, and a `product`, a `person` or a page a researcher used is not read at all.
+its verbatim text, and a `product`, a `person`, a page a researcher used, a register (*Read as*
+`register — not read`) and a source another one carries (*Read as* `carried by S-NN`) are not read at
+all.
 
 `updated` and `counts` are never edited by hand: `stamp` writes them at the end of every operation
 that changed anything, in every mode. `/backlog` compares them to notice that the blueprint moved.
@@ -44,7 +58,8 @@ that changed anything, in every mode. `/backlog` compares them to notice that th
 
 `modules` holds one entry per module from phase 3 on —
 `{ "name", "slug", "code", "file", "stage", "surfaces", "sources", "lastCapability", "l2", "l3" }`,
-plus `"removed": "<D- id>"` on a removed module only:
+plus `"expected"` from phase 4 and `"l3Plan"` from phase 5 on, and `"removed": "<D- id>"` on a removed
+module only:
 - `slug` — the kebab-case file name (`modules/<slug>.md`);
 - `code` — the short module code used in capability ids: the sources' own prefix when they have one
   (`ORG`, `DAT`), otherwise three letters you choose;
@@ -55,7 +70,12 @@ plus `"removed": "<D- id>"` on a removed module only:
 - `lastCapability` — the highest capability number ever issued under the code; `next capability`
   raises it;
 - `l2` — `pending` / `failed` / `done`; `l3` — `pending` / `failed` / `list-only` / `none` (L2 only,
-  by depth) / `done`.
+  by depth) / `done`;
+- `expected` — the number of capabilities the module's L2 writer foresaw; phase 5 shows it when the
+  operator chooses how deep each module goes;
+- `l3Plan` — `full` or `list`: what phase 5 writes for the module (`mechanics.md › Depth`); absent on a
+  module the depth leaves at L2. `validate` holds `l3` to it: a `full` plan ends in `done`, a `list`
+  plan in `list-only`.
 
 ### Hand edits
 
@@ -104,11 +124,49 @@ Every phase ends the same way. Do not shortcut it when the phase felt small.
 5. On approval: every assumption of this phase that was not promoted is marked `accepted (gate
    <phase>)` in `ASSUMPTIONS.md`; `STATE.json` → phase `approved`, next phase `pending`, `phase`
    moves on. Whatever the answer — *Stop here* included — `stamp` is the last write.
+6. On approval, stop after the stamp and recommend a fresh context, with the reason
+   (`mechanics.md › A fresh context`) — the next phase starts after it, not in this context.
 
 A gate that ends a mode (`module`, `restructure`, `feedback`) approves the run: its assumptions are
-marked `accepted (gate <mode>)`, and `phase` and `phases` do not change. A mode run inside another
+marked `accepted (gate <mode>)`, and `phase` and `phases` do not change; the same recommendation
+follows it, for whatever the operator does next. A mode run inside another
 run — `module` inside `restructure`, `restructure` inside `feedback` or phase 7 — does not gate on its
 own: the outer run gates once for everything.
+
+## A fresh context
+
+Every turn of a session sends its whole context again, so a phase that runs in the context of the
+phases before it pays for all of them on every step: their extracts, their question rounds, their
+agents' replies. Everything a phase needs is on disk, so it can start from the files instead. Nothing
+in the procedure is skipped for it; only what the next phase does not use is left behind.
+
+- **At the gate.** After every approved gate (`mechanics.md › The gate`, step 6), do not start the
+  next phase. Recommend a fresh context and say why, in the operator's language, so that they decide
+  knowing what it saves:
+
+  ```
+  ✓ <phase> approved and saved in <blueprint folder>.
+  ▸ Next: <next phase>. Recommended: type /clear, then /blueprint.
+  Why: every message sends this whole conversation to the model again, and it now carries <what this
+  phase piled up>, which <next phase> does not read — it starts from the files. In a fresh context
+  each of its steps costs a fraction of that, and nothing is lost: everything is saved, and after
+  /clear the plugin tells the new session where the blueprint stands.
+  Not /compact: it spends one more request on this whole conversation to keep a summary the next
+  phase does not need.
+  Or say "go on here" to continue in this context.
+  ```
+
+  Name what the phase really piled up — the sources' extracts, the question rounds, the writers'
+  replies, the review findings — not this list. After the last phase, or a mode's gate, *Next* is
+  whatever the operator does next. A plugin cannot clear or compact the context itself; the
+  operator's two commands do it. If the operator says to go on here, go on.
+- **After `/clear`.** The `skill-resume` hook tells the new session which blueprint is unfinished
+  and where it stands; `/blueprint` then runs `continue`.
+- **What `continue` reads.** `STATE.json` first, then `changed`, this file, the reference of the phase
+  or mode it resumes, and `README.md` for the list of files. After that, only what the phase's steps
+  name, when a step needs it — never the whole blueprint, and never the documents of the approved
+  phases just to have them in mind. A phase that runs agents gives them paths: the agents read the
+  files, you read their replies.
 
 ## IDs
 
@@ -146,16 +204,23 @@ as `S-03 §ORG-06` when another source uses the same id; a section as `S-03 §4.
 Noisy or parallel work goes to subagents, each of a type whose tools fit its role, so that what a
 role must not do, it cannot do:
 
-| Role | Agent type | Tools | Does |
-|------|------------|-------|------|
-| reader | `dev-assistant:blueprint-reader` | Read, Glob, Grep, WebFetch | reads one source and returns its extract; cannot write or run a command; has no web search |
-| writer | `dev-assistant:blueprint-writer` | Read, Glob, Grep, Write, Edit | writes the one module file it is given; has no web tools |
-| reviewer | `dev-assistant:blueprint-reviewer` | Read, Glob, Grep | returns findings; cannot write |
-| researcher | `dev-assistant:blueprint-researcher` | Read, Write, WebSearch, WebFetch | researches one consented product and writes its profile |
+| Role | Agent type | Model | Tools | Does |
+|------|------------|-------|-------|------|
+| reader | `dev-assistant:blueprint-reader` | `sonnet` | Read, Glob, Grep, WebFetch | reads one source and returns its extract; cannot write or run a command; has no web search |
+| writer | `dev-assistant:blueprint-writer` | `sonnet` | Read, Glob, Grep, Write, Edit | writes the one module file it is given; has no web tools |
+| reviewer | `dev-assistant:blueprint-reviewer` | the session's | Read, Glob, Grep | returns findings; cannot write |
+| researcher | `dev-assistant:blueprint-researcher` | the session's | Read, Write, WebSearch, WebFetch | researches one consented product and writes its profile |
 
 Where the agent is listed without the prefix (`blueprint-reader`), use that name; where neither is
 available, use `general-purpose` with the same brief — the rules then hold by instruction only, so
-say so in the gate summary.
+say so in the gate summary — and pass the model of the table in the `Agent` call (`model: "sonnet"`
+for a reader or a writer).
+
+Readers and writers are most of a run's agents, and their work — a source to a fixed layout, one
+module from its sources — is well within Sonnet. A reader is not put on a smaller model: its extract
+feeds the gaps, the brief and the split into modules, so a requirement it drops or misattributes
+travels through the whole blueprint. Reviewers and researchers keep the session's model: a reviewer's
+findings decide the gates, and a researcher judges pages nobody has checked.
 
 No agent has a shell: a Word file is read from its converted copy in `.sources/`
 (`intake.md › Phase 0 — Intake`, step 4), and the brief names the copy next to the original. A writer
@@ -167,9 +232,10 @@ Every brief names the goal, the files to read by path (the agent reads them; do 
 citation rules of `mechanics.md › IDs`, and what to return, and repeats the rules every role shares:
 English, the glossary's terms, behaviour not implementation. The agent types carry these rules in
 their own instructions; the brief repeats them so that the `general-purpose` fallback has them too.
-A **writer**'s brief also names its one
-file and **the module's sources in full** — the files in `STATE.json.modules[].sources`, not their
-extracts — and repeats that it writes forks under **Open points** in its file as `[?pending]`, writes
+A **writer**'s brief also names its one file; the sections of `01-brief.md` and `02-architecture.md`
+it reads (`modules.md › What a writer reads`), not the whole files, most of which concern other
+modules; and **the module's sources in full** — the files in `STATE.json.modules[].sources`, not their
+extracts. It repeats that the writer puts forks under **Open points** in its file as `[?pending]`, writes
 no other file (never a log, the glossary or `STATE.json`), and returns a summary of at most 15 lines,
 the open points and the proposed terms and entities. When several writers work on one module (one per
 sub-module), none of them writes: each returns its section as text and you assemble the file. Open
@@ -209,3 +275,12 @@ L2 is written for every module that is not out of scope. A *capability list* giv
 capability, its heading with its id, its **Who**, its **Source** line, its **Stage** line when it
 differs, and one line of **What** — no rules or edge cases yet. A capability whose own stage lands on a row that says
 only L2 is still listed this way: nothing a source names is dropped by depth.
+
+**Per module.** The table is where phase 5 starts, not where it must end. Before its first writer the
+operator sees, per module, what the table gives it and how many capabilities its L2 writer foresaw
+(`expected`), and may narrow full L3 to the core of the product: the modules most main flows pass
+through get it, the rest a capability list (`modules.md › Phase 5 — Capabilities (L3)`, step 1). The
+choice is each module's `l3Plan` — `full`: the module's row reads *full L3*; `list`: it reads
+*capability list* — and a capability with a stage of its own still takes its own row. A module left as
+a list is deepened later, when the work needs it, by `/blueprint module <name> full`
+(`modes.md › module`).

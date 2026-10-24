@@ -53,8 +53,9 @@ every step that changes it, with `updated` from `date "+%Y-%m-%dT%H:%M"`.
    file, ask again. Run → `brief.md` status `approved on <date>`; `STATE.json`: `consent.grantedOn`,
    `consent.scope` (the question ids and the product names), `engine`, `phase: "research"`, round 1
    `pending` with its questions. Cancel → the folder stays with the draft, `phase: "frame"`.
-7. **The runs index.** Create `<root>/README.md` from `templates/README.md` when there is none, and
-   add or update the run's row.
+7. **The runs index.** Create `docs/research/README.md` — in the `docs/` chosen at step 1 — from
+   `templates/README.md` when there is none, and add or update the run's row.
+8. After *Run it*, recommend a fresh context before Phase 1 (`phases.md › A fresh context`).
 
 ## Phase 1 — Research
 
@@ -100,9 +101,40 @@ every step that changes it, with `updated` from `date "+%Y-%m-%dT%H:%M"`.
    would close real gaps — name them in the description) / **I will edit the summary first**.
    - Done → `phase: "done"`, the runs index row updated. Say how the run reaches a blueprint: in
      `/blueprint` Intake, list the run's `summary.md` and `competitors/` folder as sources (not `raw/`,
-     which is the engine's record and repeats the summary), reliability `web`.
+     which is the engine's record and repeats the summary), reliability `web`. Then recommend a fresh
+     context for whatever comes next (`phases.md › A fresh context`).
    - Another round → `extend` on this run (below), starting at its step 2.
    - Edit → wait; the operator's edits stand, and `continue` comes back to this step.
+
+## A fresh context
+
+Every turn of a session sends its whole context again. The brief is drafted on top of the project's
+context and the question rounds, and a round leaves deep-research's coordination and the curator's
+reply behind it; the phase that follows reads none of it — the engine's prompt is built from `brief.md`,
+and `/blueprint` reads the run's curated files. Everything is on disk, so the next phase can start from
+the files instead.
+
+After the brief is approved (*Run it*, for the first round or one added by `extend`) and after *Done*,
+do not go on in this context. Recommend a fresh one and say why, in the operator's language, so that
+they decide knowing what it saves:
+
+```
+✓ <the brief approved / the run done> — saved in <run folder>.
+▸ Next: <round n of the research / whatever comes next — /blueprint takes the run as a source>. Recommended: type /clear, then <the command>.
+Why: every message sends this whole conversation to the model again, and it now carries <what this
+phase piled up>, which <next> does not read — it starts from the files. In a fresh context each of its
+steps costs a fraction of that, and nothing is lost: everything is saved, and after /clear the plugin
+tells the new session where the run stands.
+Not /compact: it spends one more request on this whole conversation to keep a summary the next step
+does not need.
+Or say "go on here" to continue in this context.
+```
+
+Name what the phase really piled up — the project's documents read for the brief, the question rounds,
+deep-research's coordination — not this list. After the brief, the command is `/research`, which
+continues the run (the `skill-resume` hook tells the new session where it stands); after *Done*, it is
+what the operator runs next. A plugin cannot clear or compact the context itself; the operator's two
+commands do it. If the operator says to go on here, go on.
 
 ## The other modes
 
@@ -110,8 +142,10 @@ every step that changes it, with `updated` from `date "+%Y-%m-%dT%H:%M"`.
 
 Find the run (`SKILL.md › How to read the arguments`), read `STATE.json`, and resume its phase: a
 round `failed` or `running` (a session that ended mid-research) starts again at Phase 1, step 1 —
-`raw/round-<n>/` from a cut-off run is moved aside to `raw/round-<n>-incomplete/`, not mixed with the
-new one. A round `researched` resumes at Phase 2. Files the operator edited by hand are theirs: re-read
+`raw/round-<n>/` from a cut-off run is moved aside to `raw/round-<n>-incomplete/` (`-incomplete-2`
+and on when that exists), not mixed with the new one; a round that was `running` gets the comparison
+of `engines.md › Calling deep-research` first, so whatever it left outside the run joins the folder
+moved aside. A round `researched` resumes at Phase 2. Files the operator edited by hand are theirs: re-read
 before writing, and show what you change.
 
 ### status

@@ -22,6 +22,15 @@ export const commitDiff = (dir, { all = false, paths = [] } = {}) => {
   return git([...base, '--unified=0', '--no-color', '--no-ext-diff', '--', ...paths], dir);
 };
 
+/** The files a commit would record, as paths from the repository's top, and that top; null outside a repository. */
+export const commitFiles = (dir, { all = false, paths = [] } = {}) => {
+  const top = git(['rev-parse', '--show-toplevel'], dir);
+  if (top === null) return null;
+  const base = all && hasCommits(dir) ? ['diff', 'HEAD'] : ['diff', '--cached'];
+  const names = git([...base, '--name-only', '--no-ext-diff', '--', ...paths], dir);
+  return names === null ? null : { top, files: names.split('\n').filter(Boolean) };
+};
+
 const REMOTE_TIMEOUT_MS = 8000;
 
 /**

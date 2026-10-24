@@ -4,29 +4,55 @@
  * device frames, and reduced motion. Every color is a token; nothing here is the product's style.
  */
 
-/* ── Menu: bands and root sections ── */
+/* ── Menu: root sections, their groups set apart by a gap ── */
 
-.sc-side__band {
-  margin: 16px 12px 4px;
-  color: var(--color-subtle);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+.sc-side__gap {
+  margin: 12px 12px;
+  border: 0;
+  border-top: 1px solid var(--color-default);
 }
-.sc-side__band:first-of-type { margin-top: 8px; }
 
 /* The title of a root is a link inside the <summary>: the chevron folds, the title opens the page */
 .sc-side__title { display: flex; align-items: center; gap: 6px; }
 .sc-side__title .navlink--page { flex: 1; padding-left: 0; }
 .navlink--page { font-weight: 500; }
 
-/* While its root is open, the page on show is marked in the list under the title, so the title keeps
-   no background. Folded, the title carries the mark: aria-current="page" for a page in sections,
-   "true" for the root of a child page on show (a flow). */
-.sc-side__group[open] > .sc-side__title .navlink--page[aria-current] { background: transparent; }
-.sc-side__group:not([open]) > .sc-side__title .navlink--page[aria-current='true'] {
+/* The row is the <summary>, chevron and title together: the hover and the mark of the page on show
+   are drawn on it, never on the link alone, or the highlight would start after the chevron. While
+   its root is open, the page on show is marked in the list under the title, so the row keeps no
+   background. Folded, the row carries the mark: aria-current="page" for a page in sections, "true"
+   for the root of a child page on show (a flow). */
+.sc-side__title .navlink--page,
+.sc-side__title .navlink--page:hover,
+.sc-side__title .navlink--page[aria-current] { background: transparent; }
+.sc-side__title:hover .navlink--page { color: var(--color-foreground); }
+.sc-side__group:not([open]) > .sc-side__title:has(> .navlink--page[aria-current]) {
   background: var(--color-primary-soft);
+}
+.sc-side__group:not([open]) > .sc-side__title:has(> .navlink--page[aria-current]),
+.sc-side__group:not([open]) > .sc-side__title > .navlink--page[aria-current] {
   color: var(--color-primary-strong);
 }
+
+/* ── Technology marks on the Stack page: files in assets/tech/ (tools/fetchTechMarks.mjs) in their
+   brand colors; a black or white mark (mono) turns white on the dark theme; a technology with no mark
+   shows its initials on a tile ── */
+
+.tech-mark { display: block; width: 40px; height: 40px; object-fit: contain; flex: none; }
+.tech-mark[src$=".png"] { border-radius: var(--radius-control); }
+.tech-mark--initials {
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  color: var(--color-muted);
+  font-weight: 600;
+  font-size: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .tech-mark--mono { filter: invert(1); }
+}
+:root[data-theme='dark'] .tech-mark--mono { filter: invert(1); }
 
 /* ── Top bar: language and presentation ── */
 
@@ -215,8 +241,24 @@ html.present .sc-present-exit { display: inline-flex; }
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
 }
+
+/* ── Contrast verdict: showcase.js writes <span class="pill pill--success|danger"> into each row ── */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+}
+.pill--success { background: var(--color-success-soft); color: var(--color-success-text); }
+.pill--danger { background: var(--color-danger-soft); color: var(--color-danger-text); }

@@ -2,6 +2,7 @@
 name: blueprint-reader
 description: Worker of the /blueprint skill, not for general use — the skill delegates to it the reading of one source the operator gave (a file, or a URL fetched exactly as given, never a web search) and gets back the source's extract under fixed headings; it writes nothing and runs no command.
 tools: Read, Glob, Grep, WebFetch
+model: sonnet
 ---
 
 You are the reader of the `/blueprint` skill. The skill turns what an operator has — documents, an

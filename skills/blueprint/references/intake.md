@@ -17,7 +17,9 @@ Read `mechanics.md` first. Each phase says what it starts from, its steps, and i
    nothing above argues against it — plus one or two alternatives that fit the project; the operator
    can type any path as Other. A directory passed in the argument becomes the recommended option,
    checked the same way. Never scaffold into a non-empty folder without the operator confirming that
-   specific folder; a folder outside git is the operator's call, noted in the gate summary.
+   specific folder; a folder outside git is the operator's call, noted in the gate summary. Whatever
+   folder is chosen, everything the blueprint makes is created inside it, `.sources/` included, and
+   nothing outside it (`mechanics.md › The working folder`).
 2. **Scaffold.** Create the folder, `modules/`, `references/competitors/`; copy the logs and the
    index from `templates/` — `00-sources.md`, `DECISIONS.md`, `ASSUMPTIONS.md`, `OPEN-QUESTIONS.md`,
    `GLOSSARY.md`, `CHANGELOG.md`, `README.md` — filling the placeholders you can (project name, date)
@@ -42,11 +44,22 @@ Read `mechanics.md` first. Each phase says what it starts from, its steps, and i
 4. **Collect sources.** Ask the operator to list everything they have: files and folders (paths),
    URLs, the idea in their own words, names of similar or competing products, people to ask.
    Accept it in any form, then turn it into a list of things that can each be read:
-   - **A folder is expanded**, never read as one source. List its files, leaving out `.git`,
-     `node_modules`, dotfiles, build output, the blueprint folder itself, and code or asset files
-     (html, css, js, mjs, images, fonts) unless the operator says they are input; show the list
-     grouped by subfolder, with a count of what was left out by kind ("12 images, 3 html"), and let
-     the operator prune it or bring any of it back. Every file left becomes its own source.
+   - **A folder is expanded**, never read as one source — by the script, not by listing it yourself:
+     `expand <dir> <every file and folder the operator named> --root <project root>`. It leaves out
+     dotfiles and dot-folders, `node_modules` and build output, the blueprint folder itself, and code
+     or asset files (images, fonts, html, stylesheets, scripts); prints the rest grouped by subfolder,
+     then what it left out, counted by kind ("12 images, 3 html files"). Show that to the operator and
+     let them prune it or bring any of it back — a file named outright is kept whatever its kind.
+     Every file left becomes its own source.
+   - **A `/research` run** (its folder has a `STATE.json` of kind `research`) is taken as the run's
+     curated files, which `expand` picks out: `summary.md` and each profile in `competitors/` are
+     sources to read; `sources.md`, the register of the pages they cite, is registered with *Read as*
+     `register — not read`, so that a fact can still be traced to its page; the run's `brief.md`, its
+     `STATE.json` and its `raw/` notes are left out — the curator already turned the notes into the
+     summary and the profiles, and reading them again is reading the same facts twice.
+   - **A source another one already carries** — a PDF export of a document also given, a second copy,
+     a digest of a file that is in the list — is registered with *Read as* `carried by S-NN` and not
+     read; the gate summary names each pair, so that the operator can say which one to read instead.
    - **Check that each one can be read.** Markdown, text, PDF and images are read directly. A Word
      file (`.docx`, `.doc`, `.rtf`, `.odt`) is converted once, by you, into a working copy that every
      agent reads — the readers and writers have no shell: once it has its id,
@@ -75,7 +88,8 @@ Read `mechanics.md` first. Each phase says what it starts from, its steps, and i
 **Start from:** `00-sources.md` with registered sources.
 
 1. **One reader per document or URL** (`mechanics.md › Subagents`) — never for a `product` or
-   `person` source; tell the operator the wave first. Brief: read the source (a URL with `WebFetch` —
+   `person` source, a register or a source another one carries (*Read as* `register — not read`,
+   `carried by S-NN`); tell the operator the wave first. Brief: read the source (a URL with `WebFetch` —
    the operator's input, not research; no web search; a Word file from its copy in `.sources/`);
    return, under the fixed labels of `templates/00-sources.md` — bold labels such as `**Facts**`,
    never headings, because `validate` finds the index by its label:
