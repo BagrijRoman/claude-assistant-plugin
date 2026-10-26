@@ -440,9 +440,20 @@ Decisions:
 - Output file names are lower-case (`brief.md`, `summary.md`, `sources.md`) per the camelCase rule; `STATE.json` and
   `README.md` keep the form the other skills use.
 
+Fixed after the first real run (deep-research, two rounds, 12 questions, 2026-10-26):
+- The curator was refused `summary.md` twice: Claude Code blocks a subagent's `Write` of a summary or report file. It
+  now writes `sources.md` and the profiles and returns `summary.md` in a four-backtick block; the skill cuts it out of
+  the reply and saves it unchanged (`engines.md › Saving the summary`).
+- A research agent tried `curl` on a blocked EUR-Lex page (stopped by Claude Code). The deep-research prompt and the
+  scout now forbid getting around a site's blocking and record how each page was read (full, snippet, archived,
+  official mirror).
+- Research agents saved downloads in the session's scratchpad in both rounds. The `Files:` block now names
+  `raw/round-<n>/downloads/` as the only place for temporary files, and delivery moves what is newer than
+  `STATE.json` in `/tmp` and the scratchpad there.
+
 What is left:
-- Run `/research` end to end on a real topic with deep-research, and once without it (scouts); adjust the prompt, the
-  question count and the curator's layout from what the runs show.
+- Run `/research` once without deep-research (scouts); adjust the prompt, the question count and the curator's layout
+  from what the runs show.
 - `bin/research.mjs`: `next` (RQ and R ids), `validate` (every question with a section and status, every `R-NN`
   resolving, no `R-??`, every product with a profile, the index row current), `stamp`. Tests in
   `tests/research.test.mjs`.

@@ -33,13 +33,20 @@ instructions; what it could fetch is excluded by its tools.
 3. Registers in `sources.md` every page that supports what it will write — one id per page, kept
    across rounds — with title, address, date read (`~` and the run's date when the notes give none),
    kind and use.
-4. Writes `summary.md`: a section per question with status, confidence, answer, evidence with ids and
+4. Composes `summary.md`: a section per question with status, confidence, answer, evidence with ids and
    conflicts; *Answers at a glance*; the landscape table when the focus asks for it; *What this means
    for the project*, marked as its reading; *Open questions*, with the claims that had no page as leads;
    the round's row.
 5. Writes a profile per product in scope.
 6. Returns the files, each question's status and one-line answer, the source count by kind, the
-   conflicts, what it left out, and up to five questions for another round.
+   conflicts, what it left out, up to five questions for another round, and last the whole
+   `summary.md` in a four-backtick block, which the skill saves unchanged.
+
+It returns the summary rather than writing it because Claude Code refuses a subagent's `Write` of a
+file that looks like a summary or a report ("Subagents should return findings as text, not write
+report files"). In the first real run the curator wrote `sources.md` and the profiles and was refused
+`summary.md` twice; the skill now saves it from the main session
+([engines.md › Saving the summary](../../skills/research/references/engines.md#saving-the-summary)).
 
 ## What its tools guarantee, and what stays a rule
 
@@ -49,7 +56,8 @@ instructions; what it could fetch is excluded by its tools.
 | No command run | **The tools.** There is no `Bash`. |
 | No file edited in place | **The tools.** There is no `Edit`; every `Write` replaces a whole file, so a later round reads and writes back what was there. |
 | No fact from its own prior knowledge; a claim without a page is a lead, not evidence | **Its instructions.** Nothing mechanical separates what the model knew from what it read. |
-| Only `summary.md`, `sources.md` and the profiles, inside the run folder; never `raw/` | **Its instructions.** `Write` reaches any path the session may write. |
+| Only `sources.md` and the profiles, inside the run folder; never `raw/` | **Its instructions.** `Write` reaches any path the session may write. |
+| `summary.md` returned, not written | **Claude Code.** A subagent's `Write` of a summary or report file is refused; the skill saves the returned text. |
 | Its reading marked as reading; no decision recommended | **Its instructions.** |
 
 ## Limitations
@@ -62,6 +70,8 @@ instructions; what it could fetch is excluded by its tools.
   was read, the run's date stands in, marked `~`.
 - **Large rounds are long reads.** A deep-research round with many notes files fills much of the
   curator's context; a round with more than seven questions is split by the skill before it starts.
+- **Its reply is long.** With the summary in it, a reply runs to 75–150 KB and reaches the skill saved to
+  a file; the skill cuts the summary block out of that file by its fences.
 
 ## Tests
 

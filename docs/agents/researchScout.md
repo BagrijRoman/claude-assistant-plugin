@@ -29,7 +29,9 @@ approved questions and nothing else — are its standing instructions, not only 
    sources first for a market or a domain; reviews, analysts, news and forums for the rest, named as
    such.
 3. Writes its notes file whole: a section per question, one finding per bullet with address, title and
-   date read, what was not found; then the pages used with their kind.
+   date read, what was not found; then the pages used with their kind and how each was read (full,
+   snippet, archived, official mirror). A blocked page is not worked around: the scout falls back to an
+   archived copy, an official mirror or the search snippet, and says so.
 4. Returns the path, the pages used, the questions answered and not answered with the reason, and up to
    three leads outside its scope.
 
@@ -42,6 +44,7 @@ approved questions and nothing else — are its standing instructions, not only 
 | Only its notes file | **Its instructions.** `Write` reaches any path the session may write. |
 | Only the approved questions and product | **Its instructions.** `WebSearch` and `WebFetch` take any query and any address. The approval itself is the skill's step, taken before the agent starts. |
 | Public pages only; every finding with its page and date; "not found" never "does not have" | **Its instructions.** |
+| No getting around a site's blocking; how each page was read is recorded | **Its instructions**, and partly **the tools**: without `Bash` there is no `curl` or scripted fetch to try. |
 
 ## Limitations
 

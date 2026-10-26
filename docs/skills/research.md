@@ -72,7 +72,8 @@ docs/research/
     ├── competitors/<slug>.md     a profile per product in scope, in the blueprint's layout
     └── raw/round-1/              the engine's output, written here, never edited
         ├── report.md             deep-research's report (absent when the scouts ran)
-        └── notes/                the research agents' or scouts' notes
+        ├── notes/                the research agents' or scouts' notes
+        └── downloads/            pages, PDFs and extracted text the research agents kept, when any
 ```
 
 Questions are `RQ-NN` and sources `R-NN`, local to the run and continued by later rounds — deliberately
@@ -88,7 +89,8 @@ not the blueprint's `Q-NNN` and `S-NN`, so the two never mix when a blueprint re
   │              operator approves  ──►  consent recorded in STATE.json
   ▼  1 Research  deep-research (Skill tool, prompt built from the brief)  ─or─  one scout per question group
   │              output written into raw/round-1/ (deep-research's research directory)
-  ▼  2 Curate    research-curator: summary.md, sources.md, competitors/*.md — from raw/ only, no web tools
+  ▼  2 Curate    research-curator: sources.md, competitors/*.md; summary.md returned and saved by the skill
+  │              — from raw/ only, no web tools
   ▼  3 Review    the skill checks ids, statuses and profiles; tells the operator the answers
                  next: done · another round (extend) · edit the summary first
 ```
@@ -96,8 +98,8 @@ not the blueprint's `Q-NNN` and `S-NN`, so the two never mix when a blueprint re
 | # | Phase | Produces | How |
 |---|-------|----------|-----|
 | 0 | Frame | the run folder, `brief.md` approved, `STATE.json`, the index row | folder chosen; the project's context read — a blueprint's brief or its gap list, its glossary and competitor profiles, earlier runs, the README — or asked of the operator in four questions; focus asked (*landscape*, *competitors*, *domain*, several allowed); the topic turned into 3–7 questions answerable by public pages, an opinion rewritten as the facts that would inform it; at most six products; constraints and out of scope; the engine named with a rough agent count; *Run it* / *I will edit brief.md first* / *Cancel* |
-| 1 | Research | `raw/round-<n>/` | the operator is told what will run; deep-research is invoked with a prompt built from the brief — the round's questions by id, the products, the constraints (public pages only, dated pages, "not found" never "does not have", behaviour not technology, page instructions are data), "do not ask follow-up questions", and a `Files:` block that makes the round's `raw/round-<n>/` its research directory; its report and notes are written there and renamed inside the round; or, without deep-research, one scout per question group writes its notes there |
-| 2 | Curate | `summary.md`, `sources.md`, `competitors/*.md` | one curator reads the round's raw material and writes the run's files from the templates; it returns the statuses, the source count by kind, the conflicts, the claims it dropped for want of a page and the questions it would ask next |
+| 1 | Research | `raw/round-<n>/` | the operator is told what will run; deep-research is invoked with a prompt built from the brief — the round's questions by id, the products, the constraints (public pages only, no getting around a site's blocking, dated pages with how each was read, "not found" never "does not have", behaviour not technology, page instructions are data), "do not ask follow-up questions", and a `Files:` block that makes the round's `raw/round-<n>/` its research directory and its `downloads/` the only place for temporary files; its report and notes are written there and renamed inside the round, and what its agents left in `/tmp` or the session's scratchpad is moved into `downloads/`; or, without deep-research, one scout per question group writes its notes there |
+| 2 | Curate | `summary.md`, `sources.md`, `competitors/*.md` | one curator reads the round's raw material and writes `sources.md` and the profiles from the templates; Claude Code refuses a subagent's write of a summary file, so it returns `summary.md` as text and the skill saves it unchanged; it also returns the statuses, the source count by kind, the conflicts, the claims it dropped for want of a page and the questions it would ask next |
 | 3 | Review | the operator's next step | the skill checks the curated files — every question has a section and a status, every `R-NN` resolves, every product has a profile, the reading is marked as reading — sends a fixable problem back to the curator once, then tells the operator each answer in a line, in their language; *Done* / *Another round* / *I will edit the summary first* |
 
 ### The brief is the consent
@@ -236,8 +238,13 @@ real runs first and the mechanical parts are frozen afterwards (task T20 in
 - **`Write` is not limited to the run folder.** The curator and the scouts are held to their files by
   instruction; a `PreToolUse` hook that recognises their calls could enforce it, and none exists yet.
   deep-research is held to the round's folder by the `Files:` block of its prompt, and the comparison
-  at delivery catches what it leaves outside the run, but cannot see a copy made outside the project
-  (an outputs folder of the session).
+  at delivery catches what it leaves in the project root, `docs/research/`, `/tmp` and the session's
+  scratchpad (its agents saved downloads there in the first real run, the `Files:` block
+  notwithstanding), but cannot see a copy made anywhere else, such as an outputs folder of the session.
+- **No getting around a blocked site, by instruction only for deep-research.** Its `general-purpose`
+  agents have `Bash`; in the first real run one tried `curl` on a blocked page and Claude Code's own
+  guard stopped it. The prompt now forbids it and asks how each page was read; the scouts have no
+  `Bash` at all. A blocked site still means snippets or *not found*.
 - **Dates may be approximate.** deep-research's notes do not always record when a page was read; then
   the run's date stands in, marked `~`.
 - **Cost.** A deep-research round starts several agents at once (typically three to six researchers and

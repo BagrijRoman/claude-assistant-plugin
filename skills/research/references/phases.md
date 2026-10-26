@@ -74,8 +74,9 @@ every step that changes it, with `updated` from `date "+%Y-%m-%dT%H:%M"`.
 
 **Start from:** `phase: "curate"` and the round's raw material on disk.
 
-1. One curator (`engines.md › The curator's brief`). Its files appear in the run folder; its reply is
-   short and is what you read — not the raw material.
+1. One curator (`engines.md › The curator's brief`). Its `sources.md` and profiles appear in the run
+   folder; its reply carries the statuses and ends with `summary.md`, which you save as it stands
+   (`engines.md › Saving the summary`). The reply is what you read — not the raw material.
 2. Write the statuses it returns into `STATE.json.questions` (`RQ-01: "answered"`, …), the round
    `done`, and `phase: "review"`.
 

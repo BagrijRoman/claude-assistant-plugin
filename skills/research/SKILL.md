@@ -69,7 +69,8 @@ docs/research/
     ├── competitors/<slug>.md     a profile per product in scope
     └── raw/round-<n>/            what the engine brought back, written here and never edited
         ├── report.md             deep-research's report (absent when scouts ran)
-        └── notes/                the researchers' or scouts' notes
+        ├── notes/                the researchers' or scouts' notes
+        └── downloads/            pages, PDFs and extracted text the researchers kept, when any
 ```
 
 Writes stay in the working folder: nothing is created outside it, not even for a moment.
@@ -91,7 +92,7 @@ reused; a later round continues the numbering. They are deliberately not the blu
 |---|-------|----------|--------|
 | 0 | Frame | `brief.md` approved, `STATE.json`, the run folder | project context read; the topic turned into 3–7 questions with why each matters; products and constraints; the engine named; the operator approves — that is the consent |
 | 1 | Research | `raw/round-<n>/` | deep-research run with a prompt built from the brief, its output moved into the run; or one scout per question group when deep-research is not available |
-| 2 | Curate | `summary.md`, `sources.md`, `competitors/*.md` | one curator agent reads the raw material and writes the run's files; it has no web tools |
+| 2 | Curate | `summary.md`, `sources.md`, `competitors/*.md` | one curator agent reads the raw material, writes the sources and profiles and returns the summary, which you save as it stands; it has no web tools |
 | 3 | Review | the operator's next step | your checks on the curated files, a summary in the operator's language, then: done, another round, or hand to `/blueprint` |
 
 The step-by-step procedures are in `references/`: [phases.md](references/phases.md) — the four
@@ -111,7 +112,9 @@ is approved, and once the run is done, a fresh context is recommended, with the 
 
 Either way, `dev-assistant:research-curator` (Read, Glob, Grep, Write) turns the raw material into
 the run's files. It has no web tools, so it cannot add a fact the research did not bring back — the
-one guarantee this skill can make about its output.
+one guarantee this skill can make about its output. It writes `sources.md` and the profiles; Claude
+Code refuses a subagent's write of a summary or report file, so it returns `summary.md` as text and
+you save it unchanged (`engines.md › Saving the summary`).
 
 When the plugin's agents are listed without the prefix, use that name; when neither is listed, use
 `general-purpose` with the same brief and say at the review that the rules held by instruction only.
@@ -163,8 +166,8 @@ The operator always sees which stage the run is in, what is done and what comes 
 - **Create anything outside `docs/research/`**, or write into a blueprint, a backlog or any file
   outside the run folder and the runs index — not even a temporary file. Should deep-research leave
   something outside the run anyway, it is moved into the round's folder and the operator is told.
-- **Sign up, log in, start a trial, fill a form or read behind a paywall** — the engine's prompt and
-  the scouts' instructions say so.
+- **Sign up, log in, start a trial, fill a form or read behind a paywall**, or get around a site's
+  blocking — the engine's prompt and the scouts' instructions say so.
 
 ## Done when
 
@@ -177,7 +180,7 @@ The operator always sees which stage the run is in, what is done and what comes 
 - Every product in scope has a profile in `competitors/`.
 - `raw/round-<n>/` holds what the engine returned for every round, as `report.md` and `notes/`.
 - Nothing was created outside the run folder and the runs index: no `reports/` or `research_notes/`
-  in the project root, nothing in `/tmp` or an outputs folder.
+  in the project root, nothing in `/tmp`, the session's scratchpad or an outputs folder.
 - The runs index `README.md` has the run's row, current.
 - The operator has seen the answers and knows how to hand the run to `/blueprint` (its `summary.md`
   and `competitors/` as sources in Intake) and that `/research extend <run>` adds a round.

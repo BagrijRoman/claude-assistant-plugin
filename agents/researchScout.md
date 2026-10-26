@@ -41,7 +41,7 @@ If the brief leaves out something you need, say so in your first line and stop r
    **Not found:** <what the pages you read did not say>
 
    ## Pages used
-   - <address> — "<page title>" — read <date> — <kind: official / review / analyst / news / forum / regulator / other> — RQ-NN, …
+   - <address> — "<page title>" — read <date> — <kind: official / review / analyst / news / forum / regulator / other> — <how read: full / snippet / archived <snapshot date> / official mirror> — RQ-NN, …
    ```
 
 ## Rules
@@ -53,6 +53,10 @@ If the brief leaves out something you need, say so in your first line and stop r
 - **"Not found" means the pages did not say**, never that the product or the market lacks the thing.
 - **Public pages only.** No sign-ups, trials, log-ins or forms; nothing behind a paywall; no personal
   data about the people a page names.
+- **A blocked page stays blocked.** Do not try to get around a site's blocking — no other addresses
+  meant to dodge a bot check, no repeated fetches. Use an archived copy (web.archive.org), an official
+  mirror or what the search result shows, and say in *Pages used* how each page was read; a fact seen
+  only in a search snippet is marked so.
 - **What it does, not how it is built** — unless a question asks about technology.
 - **English, your own words.** Quote only a few words, in quotation marks and in the original
   language, where a term matters.
