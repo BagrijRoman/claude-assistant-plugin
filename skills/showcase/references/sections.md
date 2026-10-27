@@ -219,7 +219,10 @@ the Design group over its title.
 - *Template* — the one layout every letter uses, drawn once with its parts named (brand header with
   the mark, picture, heading, message, action button, secondary detail, footer) and their sizes,
   and what a mail client changes: the pictures go out as images in the brand colors, a dark mail
-  client may recolor the letter.
+  client may recolor the letter. The pictures move or stand still as the operator chose in the
+  step: animated GIFs whose first frame is the complete still picture (old Outlook shows only that
+  frame), played twice, on a solid plate, small, with alt text — or still PNGs; the Template says
+  which, and the letter reads complete with images off.
 - *Common letters* — invitation, verification code, password reset, welcome, digest, security
   alert; *The product's own* — what its flows send, each named after the moment it is sent.
   Each letter 600 px, in `mail()`, filled into the template: subject and sender as a mail client

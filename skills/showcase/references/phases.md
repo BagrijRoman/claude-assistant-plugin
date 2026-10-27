@@ -141,7 +141,7 @@ before this answer. Intake (0) and Audit (20) have none.
 | 12 Not found page | 3–5 variants, one picked | one |
 | 13 Key screens | every screen the flows need, on every surface of its actors | the screens the flows need, on the main surface |
 | 14 Flows | the list, a description per flow, each built and gated | the one to three main flows, their descriptions approved together |
-| 15 Email templates | the template, the common letters and the product's own, a picture each | the template and the product's own letters, one shared picture |
+| 15 Email templates | the template, the common letters and the product's own, a picture each — animated GIF or still, as the operator chooses | the template and the product's own letters, one shared picture — animated or still, as the operator chooses |
 | 16 Charts | a section per use of a chart in the product | the one or two uses the key screens show |
 | 17 Architecture | the six diagrams | one diagram: the system in its world, with its parts |
 | 18 Security | the six parts, with drawings | one page of short paragraphs per part, done / planned tags, no drawings |
@@ -415,7 +415,18 @@ Two approvals, by design.
 - **Email templates (15).** Plan: the common letters (invitation, verification code, password reset,
   welcome, digest, security alert) and the product's own, proposed from the flows and the
   documentation's notifications (what is sent, to whom, when) — each with its subject, its one
-  action and its picture, one line each. Approve (`plans/emails.md`). Email templates is a root section of
+  action and its picture, one line each. With the plan, ask whether the letters' pictures move
+  (`AskUserQuestion`, header `Motion`): **Animated GIF** — the letter's picture is its illustration's
+  own animation exported as a GIF: the first frame is the complete still picture (Outlook 2007–2019
+  shows only that frame; Apple Mail, iOS, Gmail and Outlook.com play it), it plays twice and rests,
+  on a solid plate of the letter's color (no transparency, so a dark mail client shows no halo),
+  ≤ 200 KB, hosted over https on the sending domain, with alt text, and the letter reads complete
+  with images off — or **Still pictures** — the same pictures in their still pose as PNG. The answer
+  is a row in `DECISIONS.md` and the first line of the plan. Animated: a `tools/exportEmailGifs.mjs`
+  steps each picture's animation frame by frame in Playwright and writes `assets/email/<id>.gif`
+  with no npm dependency (a small PNG decoder on `node:zlib`, a palette from the `--ill-*` tokens,
+  a GIF89a LZW encoder); the letters show `<img>`s of those files, as the sent letter will, and the
+  Template carries a rule card *Animated pictures* with the rules above. Approve (`plans/emails.md`). Email templates is a root section of
   its own in Design, right after Layouts, not a page under Screens: the letters stand on one page,
   `emails/index.html`, each a section of it (`sections.md › Email templates`). Right after the approval make the `sections` of the
   `emails` entry in `pages.mjs` match the plan, in the order of the page — the Template, then one

@@ -1198,6 +1198,27 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T44 — `/showcase` Email templates: the operator chooses animated GIF or still pictures · `done`
+
+The operator asked that the letters' pictures be animated when wanted, and that the skill ask it
+rather than decide. Applied to the skill; no release, the version stays.
+
+What was done:
+- `phases.md` (the section-intake row and the Email templates step): with the plan of letters the
+  skill asks **Animated GIF** or **Still pictures** (header `Motion`), records the answer in
+  `DECISIONS.md` and at the top of the plan. Animated: `tools/exportEmailGifs.mjs` exports each
+  picture's own animation as a GIF with no npm dependency (Playwright frames, a PNG decoder on
+  `node:zlib`, a palette from the `--ill-*` tokens, a GIF89a encoder) — the first frame the
+  complete still picture, played twice, on a solid plate, ≤ 200 KB, alt text, served over https
+  from the sending domain; the letters show the files as `<img>`s; the Template has a rule card.
+- `sections.md` (Email templates › Template): the pictures move or stand still as chosen, and the
+  letter reads complete with images off.
+
+Later: the export tool goes into `templates/frame/tools/` once it has been used on a project.
+
+Done when:
+- `npm test` passes.
+
 ## T43 — `/showcase` Illustrations: every picture with a minimal animation · `done`
 
 The operator asked that the Illustrations step make every picture move a little, as the skill's
