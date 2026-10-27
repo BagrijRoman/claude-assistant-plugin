@@ -191,7 +191,9 @@ html.present .sc-present-exit { display: inline-flex; }
 /* ── Variants and the Selected mark ── */
 
 .variant { position: relative; }
-.variant__head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+/* The title and its Selected / Alternative tag on one line, from the left: the section head is a column
+   (showcase.css), so the row is set here, or align-items would centre both */
+.variant__head { display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; flex-wrap: wrap; }
 .tag--selected {
   background: var(--color-primary-soft);
   color: var(--color-primary-strong);
