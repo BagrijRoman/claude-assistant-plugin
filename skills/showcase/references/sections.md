@@ -168,7 +168,10 @@ A root section of its own: the pictures are what makes the product feel like its
 - **In place**: each picture where it sits in the product — a panel, a page, a letter — at its real
   size.
 - **Reserve**: pictures ready for situations the product will meet later, with one line of when.
-Moving ones are marked, with a replay control. Pictures are SVG symbols in
+Every picture moves: a minimal animation of its own that tells its story — small, slow, calm, once
+on coming into view and on replay, looping only where the picture is about waiting — and each
+block has the *Moving* tag and a replay control; under reduced motion it rests on its last frame,
+the complete still picture. Pictures are SVG symbols in
 `assets/illustrations.js`, drawn only with `--ill-*` tokens, no text, no faces, so they need no
 translation and follow the theme. Sizes: hero, welcome, spot.
 

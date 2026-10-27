@@ -1198,6 +1198,22 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T43 — `/showcase` Illustrations: every picture with a minimal animation · `done`
+
+The operator asked that the Illustrations step make every picture move a little, as the skill's
+default — not "some moving". Applied to the skill; no release, the version stays.
+
+What was done:
+- `SKILL.md` (the order of making), `phases.md` (the section-intake row and the Illustrations step),
+  `sections.md` (Illustrations) and `site.md` (Illustrations and marks): every picture has a minimal
+  animation of its own that tells its story — small, slow, the tokens' easings, no bounce; once on
+  coming into view and on replay, looping only where the picture is about waiting; each block with
+  the *Moving* tag and a replay control; under reduced motion each rests on its last frame, the
+  complete still picture. The simplified section keeps the animation too.
+
+Done when:
+- `npm test` passes.
+
 ## T42 — `/showcase` without the Microcopy and tone step · `done`
 
 The operator asked for the Microcopy and tone step (step 6, `microcopy`, the Design child page

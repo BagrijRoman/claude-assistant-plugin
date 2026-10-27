@@ -192,8 +192,9 @@ imports `letter(id, marks)` from that generator.
 
 Illustrations: SVG `<symbol>`s in `assets/illustrations.js`, used as
 `<svg class="ill ill--spot"><use href="#ill-empty"/></svg>`; drawn only with `--ill-*` tokens
-(line, fill, soft, accent — added to `tokens.css` from the scheme, both themes); animation in CSS
-keyframes on classes inside the symbol, stopped by the reduced-motion rule in `site.css`. Marks:
+(line, fill, soft, accent — added to `tokens.css` from the scheme, both themes); every picture
+animated, minimally, in CSS keyframes on classes inside the symbol, stopped by the reduced-motion
+rule in `site.css`. Marks:
 SVG on a 64-unit grid, `currentColor` ink, `var(--lg-ground)` knockouts; the picked mark's SVG goes
 to `site.mjs › mark`, where `build.mjs` also draws the tab's icon from it. `--lg-ground` is the color
 behind the mark: `tokens.css` sets it for the page, the brand tile in `components.css` to its own

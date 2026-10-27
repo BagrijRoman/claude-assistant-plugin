@@ -134,7 +134,7 @@ before this answer. Intake (0) and Audit (20) have none.
 | 5 Logo | 6–12 marks at every size, one picked; the Loaders page | the baseline's mark, or three marks to pick from; one loader in Components, no Loaders page |
 | 6 Components | the standard set, the product's own, a reserve; variants, states, sizes, properties | the components the planned screens and flows use, default and one state each, no properties table, no reserve |
 | 7 Icons | the base and domain groups on their grid, with the rules | the icons the screens use, on one sheet |
-| 8 Illustrations | for states, from the domain, in place, a reserve; some moving | one still picture per state and one domain scene |
+| 8 Illustrations | for states, from the domain, in place, a reserve; every picture with a minimal animation | one picture per state and one domain scene, each with a minimal animation |
 | 9 States | a section per state: picture, words, action, where it appears | one table of states with words and actions; pictures for empty and error only |
 | 10 Auth layout | 3–5 variants, each with a moving scene, one picked | one layout, its scene still |
 | 11 App layout | 2–4 shells, folded and unfolded, tablet and phone, one picked | one shell (the baseline's when there is one), desktop and phone |
@@ -341,8 +341,14 @@ The shape of steps 4–5: **plan → approve → build in parallel → build.mjs
   approval, a report ready, a target reached), each named after where it will sit (onboarding, a
   sign-in panel, a letter, an announcement, the 404) — plus a reserve. Approve. `tools/genIllustrations.mjs`:
   SVG symbols drawn only with `--ill-*` tokens (added to `tokens.css`, derived from the scheme), no
-  text, no faces; some with CSS animation that stops under `prefers-reduced-motion`; the sections
-  For states, From the domain, In place and Reserve.
+  text, no faces; the sections For states, From the domain, In place and Reserve. **Every picture
+  moves** — a minimal animation of its own that tells its story (the cushions of an empty tray
+  settle, a loupe drifts and pauses, a lock gives one small rattle, a parcel travels its legs):
+  small amplitudes, slow, the easings of the tokens, no bounce or overshoot; once on coming into
+  view and again on Replay, looping only where waiting is the meaning (a signal, sand running, a
+  scan). CSS keyframes on classes inside the symbol, durations and easings from tokens; under
+  `prefers-reduced-motion` every one stops on its last frame, which is the complete still picture.
+  Each block carries the *Moving* tag and a replay control.
 
 ## Steps 9–13 — States, Layouts, Key screens
 

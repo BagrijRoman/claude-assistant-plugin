@@ -155,7 +155,7 @@ site, and approves or sends it back. A skipped step has no gate. The key is the 
 | 5 Logo | `logo` | marks from ideas in the product, at every size; one picked; then the Loaders page, the picked mark set in motion | 4 |
 | 6 Components | `components` | the standard set, the product's own, a reserve; styled to the project | 4 |
 | 7 Icons | `icons` | two groups only: the base standard icons the components and screens use, and the icons of the product's domain; on their grid | 6 |
-| 8 Illustrations | `illustrations` | a picture for every state a screen can be in and for the cases of the domain, some moving; a reserve | 4, 5 |
+| 8 Illustrations | `illustrations` | a picture for every state a screen can be in and for the cases of the domain, each with a minimal animation of its own; a reserve | 4, 5 |
 | 9 States | `states` | picture + words + action for empty, loading, error, access, offline, done | 8 |
 | 10 Auth layout | `signIn` | Layouts: several, every one with an animated scene of the domain; one picked | 6, 8 |
 | 11 App layout | `appLayout` | Layouts: several shells with a folding sidebar, most with the product's moving pictures in place; one picked | 6, 8 |
