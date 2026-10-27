@@ -30,6 +30,9 @@
 //   one (2–6 capital letters or digits, a letter first; not RK, NEW or a module code) and writes it to STATE.json's
 //   taskPrefix — only while no task has an id, since the id is what everything links to.
 // Task ids are <taskPrefix>-NNN; a backlog whose STATE.json has no taskPrefix keeps the legacy T-NNN.
+// A task of type group is a parent: it groups the tasks of one feature — one per repository and platform, each
+// naming it in `parent` — holds no subtasks, is never offered and never counted in a batch; its status is
+// computed from its children, and render writes in-progress into its file once one of them has started.
 // - render rewrites the regenerated parts of the views (mechanics.md › Views): BACKLOG.md whole, from the
 //   skill's template; each batch file's state line and every row whose task has a file; COVERAGE.md's Task(s)
 //   cells, the covered / done status of a row whose tasks all have files, and its count line. Then it recomputes
@@ -278,6 +281,12 @@ const frontmatter = (text) => {
 };
 
 const asList = (value) => (Array.isArray(value) ? value : value ? listItems(value) : []);
+/** A scalar field, '' when it is empty, a dash or null. */
+const scalar = (value) => {
+  const text = typeof value === 'string' ? value.trim() : '';
+  return /^([-–—]|null|~)?$/.test(text) ? '' : text;
+};
+const isGroup = (task) => task?.type === 'group';
 
 /** The checklist of a section: { line, ticked, struck, text, id, title, doneWhen }. */
 const checklist = (lines, title, ids) => {
@@ -317,6 +326,8 @@ const readTask = (dir, name, ids) => {
     module: meta?.module ?? '',
     platforms: asList(meta?.platforms),
     type: meta?.type ?? '',
+    repo: scalar(meta?.repo),
+    parent: scalar(meta?.parent),
     priority: meta?.priority ?? '',
     size: meta?.size ?? '',
     batch: batchId(meta?.batch),
@@ -347,6 +358,7 @@ const readBatchFile = (dir, name, ids) => {
       cells: values,
       id: ids.task.exec(bare(at('task')))?.[0] ?? null,
       title: bare(at('title')),
+      type: bare(at('type')),
       capabilities: bare(at('capabilities')).split(/[,\s]+/).filter((id) => CAPABILITY_ID.test(id)),
       platforms: bare(at('platforms')).split(/[,\s]+/).filter((item) => item && !/^[-–—]$/.test(item)),
       depends: [...at('depends').matchAll(new RegExp(ids.task.source, 'g'))].map(([id]) => id),
@@ -391,6 +403,14 @@ const load = (dir) => {
 // --- what is computed, never stored (mechanics.md › Statuses, › Batches)
 
 const isOpenTask = (task) => !['done', 'dropped'].includes(task.status);
+const childrenOf = (model, group) => model.taskList.filter((task) => task.meta && task.parent === group.id && !isGroup(task));
+/** A group that is neither done nor dropped, whose children are all closed and at least one of them done. */
+const isClosable = (model, group) => {
+  const children = childrenOf(model, group);
+  return isGroup(group) && isOpenTask(group) && children.some((child) => child.status === 'done') && !children.some(isOpenTask);
+};
+/** A row that stands for a group: its task file says so, or an outline row's Type cell. */
+const isGroupRow = (model, entry) => (entry.id && model.tasks.has(entry.id) ? isGroup(model.tasks.get(entry.id)) : entry.type === 'group');
 const isBlocked = (task) => task.blockedBy.length > 0 && isOpenTask(task);
 const nextSubtask = (task) => task.subtasks.find((item) => !isClosed(item)) ?? null;
 
@@ -402,6 +422,7 @@ const gatePending = (model, id) => {
 };
 
 const isReady = (model, task) => {
+  if (isGroup(task)) return false;
   const batch = model.batches.find((entry) => entry.id === task.batch);
   return task.status === 'todo' && !isBlocked(task) && !task.review && Boolean(batch?.detailed) && !batch?.closed
     && !gatePending(model, task.batch) && task.depends.every((id) => model.tasks.get(id)?.status === 'done');
@@ -410,15 +431,16 @@ const isReady = (model, task) => {
 /** What a task is right now: dropped, done, blocked, in progress, ready or todo. */
 const shownAs = (model, task) => {
   if (task.status === 'dropped' || task.status === 'done') return task.status;
+  if (isGroup(task)) return childrenOf(model, task).some((child) => ['in-progress', 'done'].includes(child.status)) ? 'in progress' : 'todo';
   if (isBlocked(task)) return 'blocked';
   if (task.status === 'in-progress') return 'in progress';
   return isReady(model, task) ? 'ready' : 'todo';
 };
 
-const tasksOf = (model, id) => model.taskList.filter((task) => task.batch === id && task.id);
+const tasksOf = (model, id) => model.taskList.filter((task) => task.batch === id && task.id && !isGroup(task));
 
 const isComplete = (model, batch) => {
-  const rows = model.files.get(batch.id)?.rows ?? [];
+  const rows = (model.files.get(batch.id)?.rows ?? []).filter((entry) => !isGroupRow(model, entry));
   return Boolean(batch.detailed) && rows.length > 0 && rows.every((entry) => entry.id && model.tasks.has(entry.id))
     && tasksOf(model, batch.id).every((task) => !isOpenTask(task));
 };
@@ -443,7 +465,7 @@ const byRow = (model) => (a, b) => (Number(a.batch) - Number(b.batch))
   || ((model.rowOf.get(a.id)?.row.order ?? 999) - (model.rowOf.get(b.id)?.row.order ?? 999));
 
 const counts = (model, batch) => {
-  const rows = model.files.get(batch.id)?.rows ?? [];
+  const rows = (model.files.get(batch.id)?.rows ?? []).filter((entry) => !isGroupRow(model, entry));
   const tally = { done: 0, 'in progress': 0, ready: 0, blocked: 0, todo: 0, dropped: 0 };
   let outline = 0;
   for (const entry of rows) {
@@ -464,6 +486,10 @@ const check = (model) => {
   const found = [];
   const { dir, state, ids, batches, files, taskList, tasks, rowOf, foreign } = model;
   const known = new Set(batches.map((batch) => batch.id));
+  const strategy = isObject(state.strategy) ? state.strategy : {};
+  const byRepository = strategy.split === 'by-repository';
+  const repoMap = isObject(strategy.repoMap) ? strategy.repoMap : {};
+  const repositories = new Set([...asList(state.repositories), ...Object.values(repoMap)].filter((name) => typeof name === 'string' && name));
 
   for (const batch of batches) {
     if (!files.has(batch.id)) found.push(error('STATE.json', `batch ${batch.id} has no file batches/${batch.id}-<slug>.md`));
@@ -494,6 +520,29 @@ const check = (model) => {
     else if (at.batch !== task.batch) found.push(error(task.file, `its batch is ${task.batch}, but its row is in batch ${at.batch}`));
     if (task.status === 'todo' && task.subtasks.some((item) => item.ticked)) found.push(error(task.file, 'a subtask is ticked but the task is todo'));
     if (task.status === 'done' && task.subtasks.some((item) => !isClosed(item))) found.push(warning(task.file, 'done, but a subtask is neither ticked nor struck through'));
+    if (isGroup(task)) {
+      const children = childrenOf(model, task);
+      if (task.parent) found.push(error(task.file, `a group is never a child, but it names the parent ${task.parent}`));
+      if (!children.length) found.push(error(task.file, 'a group with no children: no task names it in parent'));
+      if (task.subtasks.length) found.push(warning(task.file, 'a group holds no subtasks; its children do'));
+      if (task.repo) found.push(warning(task.file, `a group changes no repository; its children do (repo ${task.repo})`));
+      if (task.status === 'done' && children.some(isOpenTask)) {
+        found.push(error(task.file, `done, but its children ${children.filter(isOpenTask).map((child) => child.id).join(', ')} are not`));
+      }
+      for (const child of children) {
+        if (known.has(child.batch) && Number(child.batch) < Number(task.batch)) {
+          found.push(error(task.file, `its row is in batch ${task.batch}, but its child ${child.id} is in batch ${child.batch}: a group's row sits in the batch of its first child`));
+        }
+      }
+    } else {
+      const parent = task.parent ? tasks.get(task.parent) : null;
+      if (task.parent && !parent) found.push(error(task.file, `its parent ${task.parent} is not in the backlog`));
+      if (parent && !isGroup(parent)) found.push(error(task.file, `its parent ${task.parent} is not a group (type: group)`));
+      if (byRepository && !task.repo) found.push(error(task.file, 'no repo: the backlog is split by repository, so every task names the one it changes'));
+      if (task.repo && repositories.size && !repositories.has(task.repo)) {
+        found.push(warning(task.file, `repo ${task.repo} is none of the backlog's repositories (${[...repositories].join(', ')})`));
+      }
+    }
     for (const blocker of task.blockedBy) {
       if (!/^(Q-\d+|ext:)/.test(blocker)) found.push(warning(task.file, `blocked_by "${blocker}" is neither a Q- id nor "ext: …"`));
     }
@@ -518,6 +567,7 @@ const check = (model) => {
       if (!where) found.push(error(file, `${id} depends on ${dependency}, which is not in the backlog`));
       else if (Number(where) > Number(batch)) found.push(error(file, `${id} depends on ${dependency}, which is in a later batch (${where})`));
       if (tasks.get(dependency)?.status === 'dropped') found.push(error(file, `${id} depends on ${dependency}, which is dropped`));
+      if (isGroup(tasks.get(dependency))) found.push(error(file, `${id} depends on the group ${dependency}: name the child it needs`));
     }
   }
   const seen = new Set();
@@ -603,7 +653,8 @@ const handEdits = (model) => {
 
 const taskLine = (task) => `${task.id} ${task.title}`;
 const subtaskLine = (item) => (item ? `${item.id ?? '?'} ${item.title}${item.doneWhen ? ` — done when: ${item.doneWhen}` : ''}` : 'no open subtask');
-const readyLine = (task) => `${taskLine(task)} · ${[task.priority, task.size, task.module, task.platforms.join(', ')].filter(Boolean).join(' · ')} · first ${subtaskLine(nextSubtask(task))}`;
+const readyLine = (task) => `${taskLine(task)} · ${[task.priority, task.size, task.module, task.platforms.join(', '), task.repo, task.parent ? `part of ${task.parent}` : ''].filter(Boolean).join(' · ')} · first ${subtaskLine(nextSubtask(task))}`;
+const isWorkInProgress = (task) => task.status === 'in-progress' && !isBlocked(task) && !isGroup(task);
 
 const waitsFor = (model, task) => {
   const reasons = [
@@ -617,6 +668,7 @@ const waitsFor = (model, task) => {
 const isTaskError = ({ level, file }) => level === 'error' && file.startsWith('tasks/');
 
 const attention = (model, found) => [
+  ...model.taskList.filter((task) => isClosable(model, task)).map((task) => ({ task, why: `every child is closed — confirm its acceptance criteria: /backlog done ${task.id}` })),
   ...model.taskList.filter((task) => task.review && isOpenTask(task)).map((task) => ({ task, why: task.review })),
   ...found.filter(isTaskError).map(({ file, what }) => ({ task: model.taskList.find((task) => task.file === file), why: what })),
 ];
@@ -668,7 +720,7 @@ const status = (dir, root) => {
 
   const list = (title, items) => lines.push(`${title}:`, ...(items.length ? items.map((item) => `  ${item}`) : ['  none']));
   const open = model.taskList.filter((task) => task.id && task.meta);
-  list('In progress', open.filter((task) => task.status === 'in-progress' && !isBlocked(task)).sort(byRow(model))
+  list('In progress', open.filter(isWorkInProgress).sort(byRow(model))
     .map((task) => `${taskLine(task)} · batch ${task.batch} · next ${subtaskLine(nextSubtask(task))}`));
   list('Ready', open.filter((task) => isReady(model, task)).sort(byRow(model)).map((task) => `${readyLine(task)} · batch ${task.batch}`));
   list('Blocked by blueprint questions', questionBlocks(model).map(({ id, title, holds, built, batches }) => [
@@ -709,7 +761,7 @@ const next = (dir, root) => {
     lines.push(`1. Batch ${current.id} is not detailed — offer /backlog detail ${current.id}.`, ...blueprintChecks(model, root));
   }
   const open = model.taskList.filter((task) => task.id && task.meta);
-  const inProgress = open.filter((task) => task.status === 'in-progress' && !isBlocked(task)).sort(byRow(model));
+  const inProgress = open.filter(isWorkInProgress).sort(byRow(model));
   lines.push('In progress:', ...(inProgress.length
     ? inProgress.map((task) => `  ${taskLine(task)} · batch ${task.batch} · next ${subtaskLine(nextSubtask(task))}`)
     : ['  none']));
@@ -756,6 +808,7 @@ const tick = (dir, id) => {
   const taskId = id.replace(/\.\d+$/, '');
   const task = model.tasks.get(taskId);
   if (!task) fail(`no task file for ${taskId} in tasks/`);
+  if (isGroup(task)) fail(`${taskId} is a group: its children hold the subtasks.`);
   if (task.status === 'done') fail(`${taskId} is done, and a done task is never reopened: a later problem is a new bug task that cites it.`);
   if (task.status === 'dropped') fail(`${taskId} is dropped.`);
   const item = task.subtasks.find((entry) => entry.id === id);
@@ -878,9 +931,11 @@ const renderBatch = (model, batch) => {
       set('capabilities', cell(task.capabilities));
       set('module', task.module || '—');
       set('platforms', cell(task.platforms));
+      set('repo', task.repo || '—');
+      set('parent', task.parent || '—');
       set('type', task.type || '—');
       set('priority', task.priority || '—');
-      set('size', task.size || '—');
+      set('size', isGroup(task) ? '—' : task.size || '—');
       set('depends', cell(task.depends));
       set('status', task.status.replace('-', ' '));
       lines[entry.index] = row(values);
@@ -925,13 +980,13 @@ const renderCoverage = (model) => {
   const taskAt = table.columns.findIndex((key) => key.startsWith('task'));
   const statusAt = at('status');
   const outlineRows = [...model.files.entries()].flatMap(([id, batchFile]) => batchFile.rows
-    .filter((entry) => entry.id && !model.tasks.has(entry.id)).map((entry) => ({ ...entry, batch: id })));
+    .filter((entry) => entry.id && !model.tasks.has(entry.id) && entry.type !== 'group').map((entry) => ({ ...entry, batch: id })));
   const tally = { planned: 0, covered: 0, done: 0, outline: 0, 'list-only': 0, exists: 0, partly: 0, deferred: 0, gaps: 0, dropped: 0 };
 
   for (const { index, cells: values } of table.rows) {
     const id = bare(values[at('id')]);
     const withFile = CAPABILITY_ID.test(id)
-      ? model.taskList.filter((task) => task.meta && task.status !== 'dropped' && task.capabilities.includes(id)) : [];
+      ? model.taskList.filter((task) => task.meta && !isGroup(task) && task.status !== 'dropped' && task.capabilities.includes(id)) : [];
     const outline = CAPABILITY_ID.test(id) ? outlineRows.filter((entry) => entry.capabilities.includes(id)) : [];
     const delivering = [
       ...withFile.map((task) => ({ id: task.id, platform: task.platforms[0] ?? '', done: task.status === 'done' })),
@@ -992,12 +1047,15 @@ const renderOverview = (model, found, current, updated) => {
     }),
     'Ready now': open.filter((task) => isReady(model, task)).sort(byRow(model)).map((task) => {
       const first = nextSubtask(task);
-      return row([link(task, ''), task.title, task.module || '—', cell(task.platforms), task.size || '—', first ? `${first.id} — ${first.title}` : '—']);
+      return row([link(task, ''), task.title, task.module || '—', cell(task.platforms), task.repo || '—', task.size || '—', first ? `${first.id} — ${first.title}` : '—']);
     }),
-    'In progress': open.filter((task) => task.status === 'in-progress').sort(byRow(model)).map((task) => {
+    'In progress': open.filter((task) => task.status === 'in-progress' && !isGroup(task)).sort(byRow(model)).map((task) => {
       const first = nextSubtask(task);
       return row([link(task, ''), task.title, first ? `${first.id} — ${first.title}` : 'every subtask closed — confirm the criteria']);
     }),
+    Groups: open.filter((task) => isGroup(task) && isOpenTask(task)).sort(byRow(model)).map((group) => row([
+      link(group, ''), group.title, cell(childrenOf(model, group).map((child) => `${child.id} ${shownAs(model, child)}`)),
+    ])),
     'Needs attention': attention(model, found).map(({ task, why }) => row([task ? link(task, '') : '?', why])),
     'Blocked by blueprint questions': questionBlocks(model).map(({ id, title, holds, built, batches }) => row([
       title ? `${id} — ${title}` : id, cell(holds.map((task) => task.id)), cell(built.map((task) => task.id)), batches.join(', '),
@@ -1013,8 +1071,21 @@ const renderOverview = (model, found, current, updated) => {
   writeFileSync(join(model.dir, 'BACKLOG.md'), lines.join('\n'));
 };
 
+/** Writes in-progress into a todo group's file once one of its children has started; returns the ids written. */
+const renderGroups = (model) => model.taskList.filter((task) => isGroup(task) && task.status === 'todo' && shownAs(model, task) === 'in progress')
+  .map((group) => {
+    const lines = read(join(model.dir, group.file)).split('\n');
+    const end = lines.indexOf('---', 1);
+    const at = lines.slice(0, end).findIndex((line) => /^status:\s*todo\b/.test(line));
+    if (at >= 0) lines[at] = lines[at].replace(/^(status:\s*)todo\b/, '$1in-progress');
+    writeFileSync(join(model.dir, group.file), lines.join('\n'));
+    group.status = 'in-progress';
+    return group.id;
+  });
+
 const render = (dir) => {
   const model = load(dir);
+  const groups = renderGroups(model);
   const found = check(model);
   const current = currentOf(model);
   const updated = now();
@@ -1025,7 +1096,7 @@ const render = (dir) => {
   // batch closes
   writeState(dir, { ...model.state, updated, currentBatch: current.id, currentPinned: current.pinned ? current.id : null });
   print([
-    `Rendered BACKLOG.md · batch files changed: ${batches.length ? batches.join(', ') : 'none'} · COVERAGE.md: ${coverage === null ? 'no capability table' : plural(coverage, 'row')}`,
+    `Rendered BACKLOG.md · batch files changed: ${batches.length ? batches.join(', ') : 'none'} · COVERAGE.md: ${coverage === null ? 'no capability table' : plural(coverage, 'row')}${groups.length ? ` · groups in progress now: ${groups.join(', ')}` : ''}`,
     `Current batch ${current.id ?? 'none'}${current.pinned ? ' (pinned)' : ''} · STATE.json updated ${updated}`,
     ...found.map(({ text }) => text),
   ].join('\n'));

@@ -21,15 +21,24 @@ move or drop things, `/backlog resync` when the blueprint changes.
 
 ## Ready now
 
-| Task | Title | Module | Platforms | Size | First subtask |
-|------|-------|--------|-----------|------|---------------|
-| [{{prefix}}-{{nnn}}](tasks/{{prefix}}-{{nnn}}-{{slug}}.md) | {{title}} | {{ORG}} | {{web}} | {{S/M}} | {{prefix}}-{{nnn}}.1 — {{title}} |
+| Task | Title | Module | Platforms | Repo | Size | First subtask |
+|------|-------|--------|-----------|------|------|---------------|
+| [{{prefix}}-{{nnn}}](tasks/{{prefix}}-{{nnn}}-{{slug}}.md) | {{title}} | {{ORG}} | {{web}} | {{frontend}} | {{S/M}} | {{prefix}}-{{nnn}}.1 — {{title}} |
 
 ## In progress
 
 | Task | Title | Next subtask |
 |------|-------|--------------|
 | [{{prefix}}-{{nnn}}](tasks/{{prefix}}-{{nnn}}-{{slug}}.md) | {{title}} | {{prefix}}-{{nnn}}.k — {{title}} |
+
+## Groups
+
+Parent tasks still open: each groups the tasks of one feature, one per repository and platform, and is
+closed with `/backlog done` once every child is.
+
+| Group | Title | Children |
+|-------|-------|----------|
+| [{{prefix}}-{{nnn}}](tasks/{{prefix}}-{{nnn}}-{{slug}}.md) | {{title}} | {{prefix}}-{{nnn}} done, {{prefix}}-{{nnn}} ready, {{prefix}}-{{nnn}} todo |
 
 ## Needs attention
 
@@ -59,6 +68,7 @@ Run `/blueprint decide` to close these; `/backlog resync` lifts the blocks.
 
 `P0` the batch does not work without it · `P1` first stage (MVP or in scope) · `P2` next · `P3` later ·
 `S/M/L` relative size by subtask count · `platforms` what the task is built on, per the platform map
-in `PLANNING.md` · ready = not started, not blocked, every dependency done · `source: planning` a
+in `PLANNING.md`, `server` for the backend · `repo` the one repository a task changes · a group is a
+parent task: never worked on itself, done once its children are · ready = not started, not blocked, every dependency done · `source: planning` a
 foundation or cross-cutting task the blueprint does not describe · `source: manual` added by the
 operator during the work.

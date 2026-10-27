@@ -37,7 +37,9 @@
     "crossCutting": "{{task-plus-criterion / criterion-only / later-batch}}",
     "foundation": "{{walking-skeleton / full-skeleton}}",
     "platformMap": { "{{web}}": ["web"], "{{mobile}}": ["{{web / mobile / ios, android}}"] },
-    "platformOrder": "{{null / one-first / together / by-flow}}"
+    "platformOrder": "{{null / one-first / together / by-flow}}",
+    "split": "{{by-repository / by-platform}}",
+    "repoMap": { "server": "{{backend}}", "{{web}}": "{{frontend}}", "{{mobile}}": "{{mobile / frontend}}" }
   },
   "lastTask": 0,
   "batches": [

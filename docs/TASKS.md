@@ -1198,6 +1198,32 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T47 — `/backlog` split by repository: a task per repository and platform under a parent · `done`
+
+The operator asked that tasks be cut per repository and per platform — backend, web, mobile — each
+task touching one repository, the tasks of one feature grouped under a parent task, so that each one
+can be built and reviewed on its own (one ticket, one branch, one pull request in `apiko-agent`'s flow).
+Applied to the skill; no release, the version stays.
+
+What was done:
+- `slicing.md`: the strategy questions *Split* (`by-repository` / `by-platform`) and *Repositories*
+  (`strategy.repoMap`, `server` for the backend); the section *Groups and repository tasks* — when a
+  slice is one task and when a group with children, what the server child and a platform child each
+  hold, a later platform's child in a later batch, the ids; the `group` type; no subtasks in a group.
+- `templates/tasks/GROUP.md` (new), `repo` and `parent` in `TASK.md`, `Repo` and `Parent` columns in
+  `BATCH.md`, `split` and `repoMap` in `STATE.json`, the `Repo` column and the *Groups* table in
+  `BACKLOG.md`.
+- `bin/backlog.mjs`: a group is never ready, never counted in a batch nor in its completeness, left out
+  of coverage; `tick` refuses it; `render` writes it `in-progress` once a child starts and lists open
+  groups with their children; a group whose children are all closed is under *Needs attention*;
+  `status` and `next` name a task's repository and parent; `validate` checks parents, repositories,
+  dependencies on a group, empty and early groups, a group done before its children.
+- `modes.md` (`init` outline and Gate 1, the detailer's brief, `done` of a group, `add`, `plan drop`),
+  `mechanics.md`, `SKILL.md`, `docs/skills/backlog.md`, the README rows.
+
+Done when:
+- `npm test` passes; the earlier fixtures pass unchanged.
+
 ## T46 — `/backlog` task ids under a prefix the operator picks · `done`
 
 The operator asked for task ids with a prefix of several letters, chosen from suggestions at `init` and kept

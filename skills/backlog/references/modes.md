@@ -68,16 +68,20 @@ with the script's `render` (`mechanics.md › The script`), which regenerates th
 5. **Strategy rounds** — `slicing.md › Strategy questions`; each answer a `P-` record, copied to
    `STATE.json.strategy`. Then write `PLANNING.md › Standing criteria`: one criterion per cross-cutting
    concern of the architecture and per `N-` that applies to most tasks, each with the batch it applies
-   from (`slicing.md › Foundation and cross-cutting tasks`).
+   from (`slicing.md › Foundation and cross-cutting tasks`). With `split: "by-repository"`, check that
+   every repository of `repoMap` is one of `repositories` — a repository that does not exist yet is
+   fine; name it in Gate 1's summary.
 6. **Outline every batch** yourself (`slicing.md › Batches`): for each a file from
    `templates/batches/BATCH.md` with id, slug, goal, the *What works after this batch* paragraph, the
    *Flow → capabilities* table for a batch that cuts a flow, and the task rows — title, capability ids,
-   module, platforms, type, priority, size guess, depends (by title for now), in execution order. **No
-   task files yet.** Later-stage batches: titles and goal, the paragraph one line. Write the batch list
+   module, platforms, repo and parent (with `by-repository`; `slicing.md › Groups and repository tasks`
+   — a group's row right before its first child's, with type `group`), type, priority, size guess,
+   depends (by title for now), in execution order. **No task files yet.** Later-stage batches: titles and goal, the paragraph one line. Write the batch list
    to `STATE.json.batches` (`detailed: false`). Fill `COVERAGE.md`'s status: `planned — batch NN`,
    `outline — batch NN`, `list-only — batch NN`, `deferred`, `blueprint gap`.
 7. **Gate 1 — outline.** Summary: the number of batches and of tasks in batch 1, batch 1's paragraph,
-   the foundation tasks and why each is needed, what was taken as already existing, the tasks that hang
+   the foundation tasks and why each is needed, the groups with their children per repository (with
+   `by-repository`), what was taken as already existing, the tasks that hang
    on open questions, capabilities left uncovered and why, feedback to the blueprint so far. The
    operator reorders, merges, splits; apply and gate again. **On approval, number every row** in batch
    order with the ids of `next-id --count <rows>`, rewrite the depends and *goes to* references as ids,
@@ -168,7 +172,10 @@ routine of `done`.
      of the questions those capabilities carry (their provisional choice goes into *Notes*), the task
      files of earlier batches that cite the same capabilities (what they left over is this row's
      work), and a `partly` note from `init` step 4 if there is one;
-   - write `tasks/<id>-<slug>.md` from `templates/tasks/TASK.md` for each row, and nothing else; a row
+   - write `tasks/<id>-<slug>.md` for each row, and nothing else — from `templates/tasks/GROUP.md` for
+     a group row and `templates/tasks/TASK.md` for every other, a child with `parent` and `repo` set
+     (`slicing.md › Groups and repository tasks`); a group's children in a later batch are named in
+     its *Children* list and written when that batch is detailed; a row
      that already has a task file (a manual task from `add`, a task moved in by `plan move`) is read as
      context and left alone unless it has `review: needs-detail`; clear `review` on every file written;
    - follow `slicing.md` for subtasks, criteria and *How to verify*; forks go to *Notes* as
@@ -199,6 +206,11 @@ to *Notes*; otherwise ask for none.
 the acceptance criteria it lists and ask whether they hold: yes → *A task becomes done* below; no → it
 stays `in-progress`, and what is left goes to *Notes*.
 
+**Group (`ABC-012`, `type: group`):** only when every child is done or dropped — otherwise name the
+open children and stop. Show the group's acceptance criteria and ask whether they hold across the
+platforms; yes → *A task becomes done*; no → what does not hold becomes a `bug` task through `add`,
+in the child's repository, under the same parent.
+
 **Task (`ABC-012`):** already `done` → say so and show what it unblocked. Otherwise, for each subtask not
 closed, ask: **Done after all** / **Move to another task** / **Drop it**. Moved → strike it through
 with `moved → ABC-0xx.n`, strike its acceptance criterion the same way and add a *goes to* line; the
@@ -211,8 +223,9 @@ run *A task becomes done*.
 
 **A task becomes done:** tick each criterion the operator confirmed; `status: done`; "done
 <YYYY-MM-DD>" in *Notes*, with the pull request link(s) when given; `render`; list the tasks that
-became ready (the script's `next` names them); when the batch is now complete, the closing question
-(`mechanics.md › Batches`).
+became ready (the script's `next` names them); when the task has a parent whose children are now all closed, say
+so and offer `done <group>` (the script lists it under *Needs attention*); when the batch is now
+complete, the closing question (`mechanics.md › Batches`).
 
 ## `add [text]`
 
@@ -223,7 +236,9 @@ building.
    Then one `AskUserQuestion` round of at most four: **type** — the five (`bug`, `chore`, `spike`,
    `polish`, `feature`; `slicing.md › Task types`) listed in the question text, the two likeliest from
    the description as options, Other for the rest — **batch** (the current one, Recommended, or another),
-   **platforms** (when there are several), **priority** (by the rule in
+   **platforms** (when there are several) — with `split: "by-repository"` the **repository** follows from
+   `repoMap` and the platform, and a task that belongs to an open group gets it as `parent` —
+   **priority** (by the rule in
    `slicing.md › Priority, size, dependencies, blocking`). Derive the module from the text and name it
    in the summary; a chore may have `module: —`. Dependencies when obvious.
 2. **Behaviour the blueprint lacks** (a `feature`) → ask whether it should be a blueprint capability
@@ -249,7 +264,7 @@ it touches, and `validate` confirms that no dependency points forward.
 | `plan batch new <after NN> <slug>` | a new batch at that position: the batches after it are renumbered — their files renamed (`mv`), their `STATE.json` entries (`id`, and `flow` when it says "widening of NN"), `currentBatch`, the `batch` of their tasks, the `— batch NN` statuses in `COVERAGE.md` and the "→ batch NN" lines of every batch's *Not in this batch* rewritten |
 | `plan batch move <NN> <after MM>` · `plan batch rename <NN> <slug>` | the same renumbering, or a new slug and file name; a move is refused when it would make a dependency point forward |
 | `plan current <NN>` | asks, then sets `currentPinned` — the current batch until that one closes, for working on a batch out of order |
-| `plan drop ABC-NNN <reason>` | `status: dropped`, the reason in *Notes*; in the same question, every task depending on it: repoint to another task / remove the dependency / drop it too; `COVERAGE.md` `dropped: <reason>` when no other task covers the capability |
+| `plan drop ABC-NNN <reason>` | `status: dropped`, the reason in *Notes*; dropping a group asks about each open child — drop it too / keep it without a parent — and a group whose last open child is dropped is closed by `done` or dropped with it; in the same question, every task depending on it: repoint to another task / remove the dependency / drop it too; `COVERAGE.md` `dropped: <reason>` when no other task covers the capability |
 | `plan unblock ABC-NNN` | lifts an `ext:` blocker the operator says is gone |
 
 A request in plain words ("move the export task to batch 4") is mapped to the action and confirmed

@@ -11,6 +11,7 @@ a path like `templates/tasks/TASK.md` below is relative to the skill's folder.
 - [Strategy questions](#strategy-questions)
 - [Batches](#batches)
 - [From capabilities to tasks](#from-capabilities-to-tasks)
+- [Groups and repository tasks](#groups-and-repository-tasks)
 - [Foundation and cross-cutting tasks](#foundation-and-cross-cutting-tasks)
 - [Task types](#task-types)
 - [Subtasks](#subtasks)
@@ -93,6 +94,8 @@ as a copy of the record.
 | **Cross-cutting concerns** (`Crosscut`) | a task per concern in the first batch that touches it, plus a criterion on every task it touches → `task-plus-criterion` · a criterion only → `criterion-only` · a dedicated batch later → `later-batch` | the first: the concern exists from the moment it matters, and every task proves it still holds |
 | **Foundation depth** (`Foundation`) | walking skeleton — only what batch 1's flow needs → `walking-skeleton` · full skeleton — every module's basics first → `full-skeleton` | walking skeleton; a full skeleton is a horizontal layer in disguise |
 | **Platform map** (`Platforms`) — when any surface is not plainly the web, unless *Decided outside this blueprint* or a source decision already fixes it (then record a `P-` citing it, `S-01 §D4`, and do not ask) | per surface: an installed app per OS (`ios`, `android`) · one cross-platform app (`mobile`) · the same responsive web application (`web`) → `platformMap: { surface: [platforms] }` | read the brief's constraints: store distribution, offline use, or device features a browser cannot reach → an installed app; none of these → the responsive page (a camera alone is not a reason: a browser can take a photo). Between a native pair and one cross-platform app there are no product grounds — ask, and say so. A surface that is a channel, not an application (email, a partner API), gets no platform of its own: its work is built on the platform that sends or serves it, usually `web` |
+| **Split** (`Split`) — when the product's code lives, or will live, in more than one repository (`init`, step 4), or the operator names a separate backend | a task per repository and platform, the tasks of one feature grouped under a parent → `split: "by-repository"` · a task per platform, each across every repository it touches → `split: "by-platform"` | by repository: each task is one pull request in one repository, so it can be planned, reviewed and merged on its own — and a tool that reads the ticket from the branch finds the task there; by platform only for a single repository, where a parent would group one child |
+| **Repositories** (`Repos`) — same round, only with `by-repository` | which repository builds each layer: `server` (the backend) and every platform of the map; the repositories of `init` step 4 listed in the question text, the likeliest assignment as the recommended option → `repoMap: { server: "backend", web: "frontend", mobile: "frontend" }` | one repository per layer as the code is laid out; two platforms may share one repository (a cross-platform frontend) and still get a task each |
 | **Platform order** (`Plat order`) — next round, only when the map produced several platforms | one platform through its first-stage flows, the other follows → `one-first` · both from batch 1 → `together` · interleave by flow → `by-flow` | one first: the batch-1 paragraph stays small and the second platform starts with lessons learned. Both from batch 1 only when the first flow itself crosses surfaces |
 
 ## Batches
@@ -138,9 +141,45 @@ Default: **one capability → one task**. Deviate when:
 | A list-only capability (*Stages*) | an outline row only, never a gap | `COVERAGE.md` status `list-only — batch NN` |
 | A capability the blueprint describes in full but too vaguely to cut (no rules, no edge cases, one sentence where the depth asks for full detail) | do not guess; no task | `COVERAGE.md` status `blueprint gap: <one line>` and a *Feedback to the blueprint* row |
 
+With `split: "by-repository"` every row above that touches more than one repository or platform is cut
+once more, into a group and its children — *Groups and repository tasks* below.
+
 Task title: a verb phrase in the user's terms, close to the capability's verb phrase. The *What the
 user gets* section: the capability's *What*, in the same voice, then one *Delivers* line per capability
 (`mechanics.md › Paths`).
+
+## Groups and repository tasks
+
+Only with `split: "by-repository"` (*Strategy questions*). Every task changes **one repository** and is
+built on **one platform** — `server` for the backend, otherwise a platform of the map — and names both
+in `repo` and `platforms`.
+
+| A slice of a capability needs | Cut |
+|-------------------------------|-----|
+| work in one repository on one platform (a rule only the server enforces; a screen over an API that exists) | one task, `repo` set, no parent |
+| work in several — the usual feature: the server's rules and data, and a screen per platform | a **group** (`type: group`, from `templates/tasks/GROUP.md`) and one **child** per repository and platform (`templates/tasks/TASK.md`, `parent:` the group's id) |
+
+- **The group** carries the feature: the title, *What the user gets*, the capabilities, the end-to-end
+  acceptance criteria and *How to verify* across the platforms. It holds no subtasks, changes no
+  repository, is never offered by `next` and is not counted in a batch; it is done, through `done`, once
+  every child is done or dropped. Its row sits right before its first child's, in that child's batch; its
+  priority is the highest of its children's; its `platforms` list every child's.
+- **The children** split the work by layer: the `server` child holds the rules, the data, the
+  transitions and the access checks — whatever must hold whichever screen is used; each platform child
+  holds what its users see and do there, against the server child's behaviour. A platform child depends
+  on the server child; children never depend on the group, and nothing outside depends on a group —
+  name the child it needs. Titles: the group's title and the layer, `Invite a member — server`,
+  `Invite a member — web`.
+- **Each child is a whole task**: its own subtasks (2 to 8), acceptance criteria and *How to verify* for
+  its layer — the server child verified by a request, a platform child on its screen. The capability's
+  rules go to the child that enforces them; a rule visible on a screen (a message, a disabled button) is
+  a subtask of both — enforced on the server, shown on the platform.
+- **A later platform** keeps its child under the same group, in the batch where the platform enters
+  (`platformOrder`); the group's row stays where its first child is.
+- **Foundation, cross-cutting, chore, spike and bug tasks** name their repository too and usually have no
+  parent; a skeleton is a task per repository.
+- **Ids**: the group takes its id first and its children the next ones, in the order server, then the
+  platforms of the map — one `next-id --count` for the group and its children together.
 
 ## Foundation and cross-cutting tasks
 
@@ -185,6 +224,7 @@ cross-cutting task exists only for a concern no capability describes.
 | `chore` | no user-visible change: an upgrade, a refactoring, CI, an environment | observable in the build or the repository; *How to verify* says how to see that nothing broke |
 | `spike` | answers one question in 1–3 sittings, placed before the task it unblocks | the answer is written in *Notes* and as a `P-` record or a *Feedback* row; exempt from the product done-when rule |
 | `polish` | a visible refinement of existing behaviour, with no new rules | the refinement is visible |
+| `group` | a parent: the tasks of one feature, one per repository and platform (*Groups and repository tasks*); no subtasks of its own | every child is done or dropped and its end-to-end criteria hold |
 
 The rule "product terms only" holds for tasks cut from the blueprint. A `bug` or `chore` the operator
 adds may name the library, the error or the endpoint it is about; a mandated `foundation` task may name
@@ -205,7 +245,7 @@ Subtasks are the list a developer works down. Their shape, in the task file:
 
 Rules:
 
-- **2 to 8 per task.** 7–8 makes the task `L`, a candidate for splitting; nine or more → split it into
+- **2 to 8 per task** — none for a group, whose children hold them. 7–8 makes the task `L`, a candidate for splitting; nine or more → split it into
   two tasks before it enters a detailed batch. One → merge with a neighbour — except a `manual` task the
   operator adds, which may have one (size `S`).
 - **Execution order, vertical.** The first subtasks make the thinnest working path; then rules; then

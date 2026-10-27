@@ -5,8 +5,10 @@ module: {{ORG}}            # the blueprint's module code; a chore may have —
 submodule: {{Sub-module}}
 capabilities: [{{ORG-C03}}]  # blueprint capability ids — never paths or anchors; [] for planning and manual tasks
 source_items: []           # the capabilities' Source items, e.g. ORG-06
-platforms: [web]           # from the platform map in PLANNING.md; exactly one platform
-type: feature              # feature | foundation | cross-cutting | bug | chore | spike | polish
+platforms: [web]           # from the platform map in PLANNING.md, or server for the backend; exactly one platform
+repo: {{frontend}}         # the one repository this task changes (strategy.repoMap); — when the backlog is split by platform
+parent: —                  # the group this task belongs to (type: group), or —
+type: feature              # feature | foundation | cross-cutting | bug | chore | spike | polish (a parent is GROUP.md)
 priority: P1               # P0 the batch does not work without it · P1 first stage · P2 next · P3 later
 size: M                    # S 2–3 subtasks · M 4–6 · L 7–8 (split candidate)
 batch: "{{NN}}"

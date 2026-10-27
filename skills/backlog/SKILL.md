@@ -123,8 +123,9 @@ Templates for every file are in `templates/` next to this file
 | Unit | Id | What it is | Done means |
 |------|----|------------|------------|
 | **Batch** | `01`, `02`… | a portion of work after which something new works end to end | every task done or dropped, and the operator confirmed the *What works after this batch* paragraph |
-| **Task** | `ABC-012` | one reviewable change — one pull request per repository it touches | every subtask closed and every acceptance criterion holds |
+| **Task** | `ABC-012` | one reviewable change — one pull request per repository it touches, exactly one when the backlog is split by repository | every subtask closed and every acceptance criterion holds |
 | **Subtask** | `ABC-012.3` | one sitting of work, one commit | its *done when* line holds |
+| **Group** | `ABC-011` | a parent task: the tasks of one feature, one per repository and platform (server, web, mobile), when the backlog is split by repository | every child done or dropped, and its end-to-end criteria hold |
 
 **The task prefix.** Every task id starts with the backlog's prefix — `ABC` in this documentation —
 chosen by the operator at `init` from the script's suggestions and kept in `STATE.json`'s `taskPrefix`:
@@ -132,6 +133,11 @@ chosen by the operator at `init` from the script's suggestions and kept in `STAT
 branch-based tool reads as a ticket — `feat/ABC-012-slug` names task `ABC-012`, which is how
 `apiko-agent`'s plan gate finds the plan — so a task id serves as the ticket id in every repository.
 The prefix is fixed once the first id is given; a backlog without `taskPrefix` keeps the legacy `T-NNN`.
+
+**Split by repository.** When the code lives in more than one repository, `init` asks whether to split
+the tasks by repository (`slicing.md › Groups and repository tasks`): then every task changes one
+repository on one platform — `repo` and `platforms` say which — and the tasks of one feature are the
+children of a group. A child is one pull request in one repository, and its id is the ticket.
 
 A batch is **vertical**: the thinnest version of a user flow across the modules it touches, not a
 layer ("all the data first, all the screens later"). The test is the paragraph at the top of each

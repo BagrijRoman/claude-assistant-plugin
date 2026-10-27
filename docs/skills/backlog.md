@@ -74,8 +74,9 @@ docs/backlog/
 | Unit | Id | Size | Done means |
 |------|----|------|------------|
 | Batch | `01`, `02`… | a few tasks; after it something new works end to end | every task done or dropped, and the operator confirmed the *What works after this batch* paragraph |
-| Task | `ABC-012` | one reviewable change — one pull request per repository it touches | every subtask closed and every acceptance criterion holds |
+| Task | `ABC-012` | one reviewable change — one pull request per repository it touches, exactly one when the backlog is split by repository | every subtask closed and every acceptance criterion holds |
 | Subtask | `ABC-012.3` | one sitting of work, one commit | its one-line *done when* holds |
+| Group | `ABC-011` | a parent task grouping the tasks of one feature, one per repository and platform | every child done or dropped, and its end-to-end criteria hold |
 
 ### Task ids and the prefix
 
@@ -91,6 +92,35 @@ Why a prefix at all: branch-based tools read the ticket from the branch name in 
 `feat/ABC-012-orders-export` it looks for `docs/features/ABC-012/plan.md`. The old one-letter `T-012` does not
 match, so the gate stayed silent; with a prefix the backlog's task id is the ticket id in every repository.
 A backlog whose `STATE.json` has no `taskPrefix` keeps `T-NNN` and works as before.
+
+### Groups and repository tasks
+
+When the product's code lives in more than one repository — a backend and a frontend, a separate mobile
+app — `init` asks how to split (header `Split`): **by repository** (recommended then) or **by platform**
+(the earlier behaviour, one task per platform across every repository it touches). With by repository a
+second question (header `Repos`) maps each layer to a repository — `server` for the backend and every
+platform of the map — into `strategy.repoMap`, for instance `{ server: "backend", web: "frontend", mobile:
+"frontend" }`.
+
+Then every task changes one repository on one platform, named in `repo` and `platforms`, and a feature that
+needs several becomes a **group** with **children**:
+
+```
+LRM-011  Invite a member                 group   — the feature: what the user gets, end-to-end criteria
+├─ LRM-012  Invite a member — server     backend   rules, data, access; verified by a request
+├─ LRM-013  Invite a member — web        frontend  depends on LRM-012; verified on the page
+└─ LRM-014  Invite a member — mobile     frontend  depends on LRM-012; may sit in a later batch
+```
+
+A child is a whole task — subtasks, criteria, *How to verify* for its layer — and one pull request in one
+repository; its id is the ticket a branch names (`feat/LRM-012-invite`), which is what lets `apiko-agent`'s
+`/feature LRM-012` plan and build it in the backend repository alone. The group holds no subtasks and
+changes no repository: `next` never offers it, a batch does not count it, `render` writes it `in-progress`
+once a child starts, and `done` closes it once every child is done or dropped, after its end-to-end
+criteria are confirmed. `validate` checks the links: a parent that is no group or does not exist, a task
+without a repository, a repository the backlog does not know (a warning), a dependency on a group instead of
+its child, a group with no children, a group done while a child is open, a group's row later than its
+first child's.
 
 ### How it cuts
 
@@ -244,7 +274,7 @@ node bin/backlog.mjs validate <dir>
 | `tick` | ticks one subtask, turns a `todo` task `in-progress`, prints the next open subtask or — once every subtask is ticked or struck through — the acceptance criteria to confirm; refuses a done or dropped task and a struck subtask | the task file |
 | `prefix` | without `--set`, the prefix, or — while none is chosen and no id is given — up to three suggestions from the project's name and the shape a prefix must have; with `--set`, checks it and writes it, refusing a wrong shape, `RK`, `NEW`, a module code, and any change once an id is given | `taskPrefix` |
 | `render` | the regenerated parts of `mechanics.md › Views` and nothing else: `BACKLOG.md` whole, from the skill's template; each batch file's state line and the rows whose task has a file (an outline row stays as written); `COVERAGE.md`'s *Task(s)* cells, the `covered` / `done` status of a row whose tasks all have files (per platform when they differ), its count line; then `currentBatch` (a pin ends when its batch closes), `updated`, and `STATE.json` last | the views, `STATE.json` |
-| `validate` | a task whose batch has no row or whose row sits in another batch, an id its file name does not give, a status none of the four, a ticked subtask on a `todo` task, a dependency that is unknown, dropped, in a later batch or in a cycle (outline rows' dependencies included); warnings for a done task with open subtasks, a `blocked_by` entry that is neither `Q-` nor `ext:`, a `lastTask` below the highest id, a task file under another prefix (not read as a task) | nothing |
+| `validate` | a task whose batch has no row or whose row sits in another batch, an id its file name does not give, a status none of the four, a ticked subtask on a `todo` task, a dependency that is unknown, dropped, in a later batch or in a cycle (outline rows' dependencies included); warnings for a done task with open subtasks, a `blocked_by` entry that is neither `Q-` nor `ext:`, a `lastTask` below the highest id, a task file under another prefix (not read as a task); and for groups and repositories the links above, with an unknown repository as a warning | nothing |
 
 A missing, broken or foreign `STATE.json` stops every command (exit 1) — rebuilding it is the
 operator's call; `validate` exits 1 on an error; usage errors exit 2. `BACKLOG_NOW` sets the stamp
@@ -280,4 +310,6 @@ verbatim (for tests). Dates and numbers are computed; titles, statuses the files
   criteria once every subtask is closed, and its refusals; `render`'s overview, batch rows, coverage
   cells and count line, the stamp and the pin, and a second run that changes nothing; `validate` once
   per break; `prefix`'s suggestions, its writing and its refusals, and the whole fixture run under a
-  prefix of its own, with a file under another prefix named and a malformed one stopping every command.
+  prefix of its own, with a file under another prefix named and a malformed one stopping every command; a backlog split by repository — the children offered and
+  the group not, the batch counts, the group written in progress, the *Groups* table, coverage per layer,
+  the closing of a group, and `validate` once per broken link.

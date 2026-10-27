@@ -92,8 +92,9 @@ ${rows.join('\n')}
 `;
 
 const taskFile = ({
-  id, title, batch, status = 'todo', capabilities = [], platforms = ['web'], priority = 'P1', size = 'M',
-  depends = '[]', blockedBy = [], review = '', subtasks, criteria = ['- [ ] the member sees the result'], notes = '- none',
+  id, title, batch, status = 'todo', capabilities = [], platforms = ['web'], priority = 'P1', size = 'M', type = 'feature',
+  repo = '', parent = '', depends = '[]', blockedBy = [], review = '', subtasks, criteria = ['- [ ] the member sees the result'],
+  notes = '- none',
 }) => `---
 id: ${id}
 title: ${title}
@@ -102,7 +103,9 @@ submodule: Team
 capabilities: [${capabilities.join(', ')}]  # blueprint capability ids
 source_items: []
 platforms: [${platforms.join(', ')}]           # exactly one platform
-type: feature              # feature | foundation | …
+repo: ${repo || '—'}
+parent: ${parent || '—'}         # the group, or —
+type: ${type}              # feature | foundation | …
 priority: ${priority}
 size: ${size}
 batch: "${batch}"
@@ -266,6 +269,64 @@ const toPrefix = (prefix) => (files) => {
     files[path.replace(/\/T-(\d)/, `/${prefix}-$1`)] = text;
   }
 };
+
+// A backlog split by repository: batch 01 holds the backend skeleton (LRM-001, done) and the group LRM-002
+// "Invite a member" with its server child LRM-003 (done) and web child LRM-004 (ready); its mobile child LRM-005
+// sits in batch 02, as a later platform does.
+const GROUP_STATE = {
+  ...STATE,
+  taskPrefix: 'LRM',
+  repositories: ['backend', 'frontend'],
+  strategy: { split: 'by-repository', repoMap: { server: 'backend', web: 'frontend', mobile: 'frontend' } },
+  lastTask: 5,
+  batches: [
+    { id: '01', slug: 'invite', stage: 'MVP', flow: 'Flow 1 — Invite', detailed: true, closed: null },
+    { id: '02', slug: 'invite-mobile', stage: 'MVP', flow: 'widening of 01', detailed: true, closed: null },
+  ],
+};
+const GROUP_HEADER = `| # | Task | Title | Capabilities | Module | Platforms | Repo | Parent | Type | Priority | Size | Depends | Status |
+|---|------|-------|--------------|--------|-----------|------|--------|------|----------|------|---------|--------|`;
+const groupBatch = (id, title, rows) => batchFile(id, title, 'MVP · detailed: yes · todo', rows).replace(HEADER, GROUP_HEADER);
+const GROUP_FILES = {
+  'tasks/LRM-001-skeleton.md': taskFile({
+    id: 'LRM-001', title: 'The backend runs', batch: '01', status: 'done', type: 'foundation', platforms: ['server'], repo: 'backend', priority: 'P0',
+    subtasks: [['x', 1, 'It runs', 'the health check answers'], ['x', 2, 'It deploys', 'a push deploys it']], criteria: ['- [x] the health check answers'],
+  }),
+  'tasks/LRM-002-invite.md': taskFile({
+    id: 'LRM-002', title: 'Invite a member', batch: '01', type: 'group', capabilities: ['ACC-C04'], platforms: ['server', 'web', 'mobile'],
+    subtasks: [], criteria: ['- [ ] an invited member joins on the web and on the phone'],
+  }),
+  'tasks/LRM-003-invite-server.md': taskFile({
+    id: 'LRM-003', title: 'Invite a member — server', batch: '01', status: 'done', capabilities: ['ACC-C04'], platforms: ['server'], repo: 'backend',
+    parent: 'LRM-002', depends: '[LRM-001]',
+    subtasks: [['x', 1, 'Record the invitation', 'it can be listed'], ['x', 2, 'Send the letter', 'the invitee gets it']], criteria: ['- [x] it can be listed'],
+  }),
+  'tasks/LRM-004-invite-web.md': taskFile({
+    id: 'LRM-004', title: 'Invite a member — web', batch: '01', capabilities: ['ACC-C04'], platforms: ['web'], repo: 'frontend',
+    parent: 'LRM-002', depends: '[LRM-003]',
+    subtasks: [[' ', 1, 'The invite form', 'the owner sends an invitation'], [' ', 2, 'The accept page', 'the invitee joins']],
+  }),
+  'tasks/LRM-005-invite-mobile.md': taskFile({
+    id: 'LRM-005', title: 'Invite a member — mobile', batch: '02', capabilities: ['ACC-C04'], platforms: ['mobile'], repo: 'frontend',
+    parent: 'LRM-002', depends: '[LRM-003]',
+    subtasks: [[' ', 1, 'Invite from the phone', 'the owner sends an invitation'], [' ', 2, 'Open the link', 'the app opens the accept screen']],
+  }),
+  'batches/01-invite.md': groupBatch('01', 'Members invite others', [
+    '| 1 | [LRM-001](../tasks/LRM-001-skeleton.md) | The backend runs | — | ACC | server | backend | — | foundation | P0 | M | — | done |',
+    '| 2 | [LRM-002](../tasks/LRM-002-invite.md) | Invite a member | ACC-C04 | ACC | server, web, mobile | — | — | group | P1 | — | — | todo |',
+    '| 3 | [LRM-003](../tasks/LRM-003-invite-server.md) | Invite a member — server | ACC-C04 | ACC | server | backend | LRM-002 | feature | P1 | M | LRM-001 | done |',
+    '| 4 | [LRM-004](../tasks/LRM-004-invite-web.md) | Invite a member — web | ACC-C04 | ACC | web | frontend | LRM-002 | feature | P1 | M | LRM-003 | todo |',
+  ]),
+  'batches/02-invite-mobile.md': groupBatch('02', 'Members invite from the phone', [
+    '| 1 | [LRM-005](../tasks/LRM-005-invite-mobile.md) | Invite a member — mobile | ACC-C04 | ACC | mobile | frontend | LRM-002 | feature | P1 | M | LRM-003 | todo |',
+  ]),
+};
+const withGroups = (edit = () => {}) => (files) => {
+  for (const path of Object.keys(files)) if (/^docs\/backlog\/(tasks|batches)\//.test(path)) delete files[path];
+  for (const [path, text] of Object.entries(GROUP_FILES)) files[`docs/backlog/${path}`] = text;
+  edit(files);
+};
+const makeGroups = (edit) => makeBacklog({ state: GROUP_STATE, change: withGroups(edit) });
 
 /** A backlog scaffolded and not cut yet: no batch, no task, nothing numbered. */
 const UNCUT = {
@@ -510,7 +571,7 @@ describe('backlog.mjs', () => {
       assert.match(text, /Work cut from the blueprint at \[\.\.\/blueprint\]\(\.\.\/blueprint\/README\.md\)/);
       assert.match(text, /Updated 2026-10-14T16:20 · current batch \*\*01\*\*\./);
       assert.match(text, /\n\| 01 \| \[sign-in\]\(batches\/01-sign-in\.md\) \| MVP \| 4 \| 1 \| 1 \| 1 \| 1 \| 0 \| yes \| in progress \|\n\| 02 \| \[invite\]\(batches\/02-invite\.md\) \| MVP \| 2 \| 0 \| 0 \| 1 \| 1 \| 0 \| yes \| todo \|\n\| 03 \| \[export\]\(batches\/03-export\.md\) \| next \| 1 \(outline\) \|  \|  \|  \|  \|  \| no \| outline \|\n/);
-      assert.match(text, /## Ready now\n\n\| Task .*\n\|-.*\n\| \[T-003\]\(tasks\/T-003-dashboard\.md\) \| See the dashboard \| ACC \| web \| M \| T-003\.1 — The empty dashboard \|\n\| \[T-006\]/);
+      assert.match(text, /## Ready now\n\n\| Task .*\n\|-.*\n\| \[T-003\]\(tasks\/T-003-dashboard\.md\) \| See the dashboard \| ACC \| web \| — \| M \| T-003\.1 — The empty dashboard \|\n\| \[T-006\]/);
       assert.match(text, /## In progress\n\n\| Task .*\n\|-.*\n\| \[T-002\]\(tasks\/T-002-sign-in\.md\) \| Sign in with email \| T-002\.2 — Rules: lockout \|\n\n/);
       assert.match(text, /\| Q-001 — Who may approve an invitation\? \| T-004 \| — \| 01 \|\n\| Q-003 — Which mail provider sends invitations\? \| — \| T-005 \| 02 \|/);
       assert.match(text, /\| \[T-005\]\(tasks\/T-005-invite\.md\) \| credentials for the mail sandbox \| 2026-10-01 \|/);
@@ -638,6 +699,71 @@ describe('backlog.mjs', () => {
       const result = run(['validate', dir]);
       assert.equal(result.status, 1);
       assert.match(result.stderr, /STATE\.json's taskPrefix "lrm" is not 2–6 capital letters or digits/);
+    });
+  });
+
+  describe('groups and repositories', () => {
+    it('offers the children, never the group, and counts only the children in a batch', () => {
+      const { dir } = makeGroups();
+      assert.match(ok(run(['validate', dir])), /The task files, the batch tables and STATE\.json agree\./);
+      const out = ok(run(['status', dir]));
+      assert.match(out, /\n {2}01 invite · MVP · in progress · 3 tasks: 2 done · 0 in progress · 1 ready · 0 todo · 0 blocked · 0 dropped\n/);
+      assert.match(out, /\nReady:\n {2}LRM-004 Invite a member — web · P1 · M · ACC · web · frontend · part of LRM-002 · first LRM-004\.1 The invite form — done when: the owner sends an invitation · batch 01\n {2}LRM-005 /);
+      assert.doesNotMatch(out, /\n {2}LRM-002 Invite a member ·/);
+      assert.match(run(['tick', dir, 'LRM-002.1']).stderr, /LRM-002 is a group: its children hold the subtasks/);
+    });
+
+    it('writes the group in progress once a child starts, and lists it with its children', () => {
+      const { dir } = makeGroups();
+      assert.match(ok(run(['render', dir])), /groups in progress now: LRM-002/);
+      assert.match(readFileSync(join(dir, 'tasks/LRM-002-invite.md'), 'utf8'), /^status: in-progress\b/m);
+      const batch = readFileSync(join(dir, 'batches/01-invite.md'), 'utf8');
+      assert.match(batch, /\n\| 2 \| \[LRM-002\]\(\.\.\/tasks\/LRM-002-invite\.md\) \| Invite a member \| ACC-C04 \| ACC \| server, web, mobile \| — \| — \| group \| P1 \| — \| — \| in progress \|\n/);
+      assert.match(batch, /\n\| 4 \| \[LRM-004\]\(\.\.\/tasks\/LRM-004-invite-web\.md\) \| Invite a member — web \| ACC-C04 \| ACC \| web \| frontend \| LRM-002 \| feature \| P1 \| M \| LRM-003 \| todo \|\n/);
+      const overview = readFileSync(join(dir, 'BACKLOG.md'), 'utf8');
+      assert.match(overview, /## Groups\n[\s\S]*?\| \[LRM-002\]\(tasks\/LRM-002-invite\.md\) \| Invite a member \| LRM-003 done, LRM-004 ready, LRM-005 ready \|\n/);
+      assert.match(overview, /\| \[LRM-004\]\(tasks\/LRM-004-invite-web\.md\) \| Invite a member — web \| ACC \| web \| frontend \| M \| LRM-004\.1 — The invite form \|/);
+      const coverage = readFileSync(join(dir, 'COVERAGE.md'), 'utf8').split('\n').find((line) => line.startsWith('| ACC-C04 |'));
+      assert.match(coverage, /\| server: LRM-003 · web: LRM-004 · mobile: LRM-005 \| server done · web covered · mobile covered \|$/);
+    });
+
+    it('asks to close a group once every child is closed', () => {
+      const { dir } = makeGroups((files) => {
+        for (const id of ['004-invite-web', '005-invite-mobile']) {
+          const path = `docs/backlog/tasks/LRM-${id}.md`;
+          files[path] = files[path].replace('status: todo', 'status: done').replaceAll('- [ ]', '- [x]');
+        }
+      });
+      assert.match(ok(run(['status', dir])), /\nNeeds attention:\n {2}LRM-002 every child is closed — confirm its acceptance criteria: \/backlog done LRM-002\n/);
+    });
+
+    const breaks = [
+      ['a child whose parent is no group', (files) => replaceIn(files, 'docs/backlog/tasks/LRM-004-invite-web.md', 'parent: LRM-002', 'parent: LRM-001'),
+        /error: tasks\/LRM-004-invite-web\.md — its parent LRM-001 is not a group/],
+      ['a child whose parent is unknown', (files) => replaceIn(files, 'docs/backlog/tasks/LRM-004-invite-web.md', 'parent: LRM-002', 'parent: LRM-099'),
+        /error: tasks\/LRM-004-invite-web\.md — its parent LRM-099 is not in the backlog/],
+      ['a task without a repository', (files) => replaceIn(files, 'docs/backlog/tasks/LRM-004-invite-web.md', 'repo: frontend', 'repo: —'),
+        /error: tasks\/LRM-004-invite-web\.md — no repo: the backlog is split by repository/],
+      ['a dependency on a group', (files) => replaceIn(files, 'docs/backlog/tasks/LRM-004-invite-web.md', 'depends: [LRM-003]', 'depends: [LRM-002]'),
+        /error: tasks\/LRM-004-invite-web\.md — LRM-004 depends on the group LRM-002: name the child it needs/],
+      ['a group done while a child is open', (files) => replaceIn(files, 'docs/backlog/tasks/LRM-002-invite.md', 'status: todo', 'status: done'),
+        /error: tasks\/LRM-002-invite\.md — done, but its children LRM-004, LRM-005 are not/],
+      ['a group with no children', (files) => {
+        for (const id of ['003-invite-server', '004-invite-web', '005-invite-mobile']) replaceIn(files, `docs/backlog/tasks/LRM-${id}.md`, 'parent: LRM-002', 'parent: —');
+      }, /error: tasks\/LRM-002-invite\.md — a group with no children/],
+      ['a group in a later batch than its child', (files) => replaceIn(files, 'docs/backlog/tasks/LRM-002-invite.md', 'batch: "01"', 'batch: "02"'),
+        /error: tasks\/LRM-002-invite\.md — its row is in batch 02, but its child LRM-003 is in batch 01/],
+    ];
+    for (const [name, edit, expected] of breaks) {
+      it(`reports ${name}`, () => {
+        const { dir } = makeGroups(edit);
+        assert.match(run(['validate', dir]).stdout, expected);
+      });
+    }
+
+    it('warns about a repository the backlog does not know', () => {
+      const { dir } = makeGroups((files) => replaceIn(files, 'docs/backlog/tasks/LRM-004-invite-web.md', 'repo: frontend', 'repo: web-app'));
+      assert.match(ok(run(['validate', dir])), /warning: tasks\/LRM-004-invite-web\.md — repo web-app is none of the backlog's repositories \(backend, frontend\)/);
     });
   });
 

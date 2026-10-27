@@ -152,6 +152,7 @@ A task stores one of four statuses; everything else is computed from its frontma
 
 | Computed | When |
 |----------|------|
+| **group status** | a group's own `todo` / `in-progress` is the script's: `render` writes `in-progress` once a child is in progress or done. `done` stays the operator's, through `done`, once every child is closed — the script lists such a group under *Needs attention* |
 | **blocked** | `blocked_by` is not empty — whatever the stored status |
 | **ready** | `todo`, not blocked, `review` empty, every id in `depends` is `done` |
 | **needs attention** | `review` is set (`needs-review`, `needs-detail`), or the files contradict each other (a ticked subtask on a `todo` task, a `batch` with no row) |
@@ -165,7 +166,8 @@ later problem in it is a new `bug` task that cites it.
 ## Batches
 
 - A batch is **complete** when it is detailed, every row of its task table has a task file, and every
-  task whose `batch` is its id is `done` or `dropped`. An outline-only batch is never complete, and
+  task whose `batch` is its id is `done` or `dropped` — groups left out: a group is not a unit of work,
+  and its later children may sit in later batches. An outline-only batch is never complete, and
   neither is a detailed batch that still holds a row nobody could detail (a list-only capability).
 - When a batch becomes complete, ask (header `Batch`): **It works — close the batch** (Recommended) /
   **Not yet — add what is missing** (runs `add` into this batch) / **Close anyway** (the reason goes to
