@@ -1198,6 +1198,28 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T46 — `/backlog` task ids under a prefix the operator picks · `done`
+
+The operator asked for task ids with a prefix of several letters, chosen from suggestions at `init` and kept
+with the backlog, so that a task id is the ticket id `apiko-agent` reads from a branch name: its plan gate
+takes the ticket as `[A-Za-z][A-Za-z0-9]+-\d+`, and the one-letter `T-012` never matched, so the gate stayed
+silent. Applied to the skill; no release, the version stays.
+
+What was done:
+- `bin/backlog.mjs`: ids come from `STATE.json`'s `taskPrefix` (the legacy `T` when it has none), in every
+  command — task files, batch rows, `depends`, subtasks, `next-id`, `tick`, `validate`, the rendered
+  `BACKLOG.md`. A new `prefix` command shows the prefix or, while none is chosen and no id is given, up to
+  three suggestions from the project's name; `--set` checks the shape (2–6 capital letters or digits, a letter
+  first) and refuses `RK`, `NEW`, the blueprint's module codes and any change once an id is given. `validate`
+  names a task file under another prefix; a malformed `taskPrefix` stops every command.
+- `modes.md › init` step 2: the Task prefix question (header `Prefix`) from the script's suggestions, an issue
+  tracker's key welcome as "Other"; Gate 1 names it. `SKILL.md`, `mechanics.md`, `slicing.md` and the
+  templates write ids as `ABC-NNN`; `templates/STATE.json` carries `taskPrefix: null`.
+- `docs/skills/backlog.md` (*Task ids and the prefix*, the script table), the README rows.
+
+Done when:
+- `npm test` passes; the old `T-NNN` fixture passes unchanged and the same fixture passes under a prefix.
+
 ## T45 — `/showcase` Components: every list that opens is a styled component, never the native popup · `done`
 
 The operator saw a select open as the system's native menu (its own colors, a blue highlight) in the

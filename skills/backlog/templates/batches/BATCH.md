@@ -18,7 +18,7 @@ Only in a batch that cuts a flow: every step of the flow, the capability that de
 
 | Step | Capability | Task |
 |------|------------|------|
-| {{1. Actor does X — Module · surface}} | {{ORG-C03}} | T-{{nnn}} |
+| {{1. Actor does X — Module · surface}} | {{ORG-C03}} | {{prefix}}-{{nnn}} |
 
 ## Tasks
 
@@ -28,15 +28,15 @@ a file is refreshed from that file; a row without one is an outline task, kept a
 
 | # | Task | Title | Capabilities | Module | Platforms | Type | Priority | Size | Depends | Status |
 |---|------|-------|--------------|--------|-----------|------|----------|------|---------|--------|
-| 1 | [T-{{nnn}}](../tasks/T-{{nnn}}-{{slug}}.md) | {{title}} | — | {{ORG}} | {{web}} | foundation | P0 | S | — | todo |
-| 2 | [T-{{nnn}}](../tasks/T-{{nnn}}-{{slug}}.md) | {{title}} | {{ORG-C03}} | {{ORG}} | {{web}} | feature | P0 | M | T-{{nnn}} | in progress |
-| 3 | T-{{nnn}} | {{title — outline, no file yet}} | {{ORG-C04}} | {{ORG}} | {{web}} | feature | P1 | M? | T-{{nnn}} | outline |
+| 1 | [{{prefix}}-{{nnn}}](../tasks/{{prefix}}-{{nnn}}-{{slug}}.md) | {{title}} | — | {{ORG}} | {{web}} | foundation | P0 | S | — | todo |
+| 2 | [{{prefix}}-{{nnn}}](../tasks/{{prefix}}-{{nnn}}-{{slug}}.md) | {{title}} | {{ORG-C03}} | {{ORG}} | {{web}} | feature | P0 | M | {{prefix}}-{{nnn}} | in progress |
+| 3 | {{prefix}}-{{nnn}} | {{title — outline, no file yet}} | {{ORG-C04}} | {{ORG}} | {{web}} | feature | P1 | M? | {{prefix}}-{{nnn}} | outline |
 
 ## Not in this batch
 
 Things a reader might expect here and where they are instead.
 
-- {{rules and edge cases of X}} → batch {{NN+1}}, T-{{nnn}}
+- {{rules and edge cases of X}} → batch {{NN+1}}, {{prefix}}-{{nnn}}
 - {{flow 2}} → batch {{NN+2}}
 
 ## Notes

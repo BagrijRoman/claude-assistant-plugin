@@ -41,7 +41,8 @@ node "${CLAUDE_PLUGIN_ROOT}/bin/backlog.mjs" <command> <backlog dir> [args]
 | `status [--root <project root>]` | the whole report of `modes.md › status` — a pending mode, the hand edits, the blueprint checks, every batch with its state and counts, the current batch's *What works*, the tasks in progress, ready, blocked by question and from outside, what needs attention, what the files break; writes nothing | `status`, a bare `/backlog` |
 | `next [--root <project root>]` | the answer of `modes.md › next`, step by step; writes nothing | `next` |
 | `next-id [--count N]` | the next task id(s), reserved by raising `lastTask` (`mechanics.md › Ids`) | Gate 1's numbering, a `NEW-n`, a split, `add`, `resync` |
-| `tick <T-NNN.n>` | ticks one subtask, turns a `todo` task `in-progress`, and prints its next open subtask, or the acceptance criteria to confirm once every subtask is closed; refuses a done or dropped task and a subtask struck through | `done` of a subtask |
+| `prefix [--set <ABC>]` | without `--set`: the task prefix, or — while none is chosen and no id is given — up to three suggestions from the project's name, each with how it was made, and the shape a prefix must have; with `--set`: checks the shape, refuses `RK`, `NEW` and the blueprint's module codes, writes `taskPrefix` to `STATE.json`, and refuses any change once an id is given | `init`, step Task prefix |
+| `tick <ABC-NNN.n>` | ticks one subtask, turns a `todo` task `in-progress`, and prints its next open subtask, or the acceptance criteria to confirm once every subtask is closed; refuses a done or dropped task and a subtask struck through | `done` of a subtask |
 | `render` | regenerates the views (`mechanics.md › Views`), recomputes `currentBatch`, stamps `updated` and writes `STATE.json` last; prints what the files break | the end of every mode that writes |
 | `validate` | the breaks of `mechanics.md › Hand edits`, one per line; exits 1 on an error | before a gate, and whenever a hand edit is in doubt |
 
@@ -115,7 +116,11 @@ the script's `status` and `next` run them and print the result, `changed` includ
 
 ## Ids
 
-- **Tasks** — `T-NNN`, global and sequential: the next id is `lastTask` + 1, or the highest id in
+- **Task prefix** — `taskPrefix` in `STATE.json`, set by `prefix --set` at `init` before the first id
+  is given and never changed after it: a new prefix would rename every task file and every reference.
+  Every task and subtask id below starts with it (`ABC` here); a backlog whose `STATE.json` has none
+  keeps the legacy `T`. A task file under another prefix is not read as a task — `validate` names it.
+- **Tasks** — `ABC-NNN`, global and sequential: the next id is `lastTask` + 1, or the highest id in
   `tasks/` and in the batch tables + 1 when that is higher (a session lost before `STATE.json` was
   written). Take ids from `next-id`, which raises `lastTask` as it gives them; never lower it, never
   reuse an id — not after a merge, a drop or a deleted file. A task keeps its id when it moves between
@@ -123,7 +128,7 @@ the script's `status` and `next` run them and print the result, `changed` includ
 - **Outline tasks are numbered too.** Every row of every batch gets its id when the outline is
   approved (Gate 1), so dependencies, *goes to* lines and `COVERAGE.md` can cite it long before the
   task has a file.
-- **Subtasks** — `T-NNN.n`, numbered in order when the task is detailed and never renumbered; one
+- **Subtasks** — `ABC-NNN.n`, numbered in order when the task is detailed and never renumbered; one
   added later takes the next number even when it belongs earlier in the order (say so in its line).
 - **Planning decisions** — `P-NNN` in `PLANNING.md`: the highest existing + 1, in the order the
   questions are answered; a question not asked gets no record.
@@ -184,7 +189,7 @@ holds. Never edit a computed part by hand to reflect a status: change the task f
 | File | Stored | Regenerated |
 |------|--------|-------------|
 | `batches/NN-<slug>.md` | goal, *What works*, *Flow → capabilities*, *Not in this batch*, *Notes*, and the **rows** of the task table — their order (agreed at Gate 1; `next` breaks ties by it) and, for a row with no task file yet, its whole content. Rows are added by `init`, `detail` (a split, a `NEW-n`), `add` and `resync`, moved by `plan move` and `resync`, reordered by `plan order` | the state line under the title; every cell of a row whose task has a file, from that file |
-| `COVERAGE.md` | the capability rows — one per capability id, from the inventory (`init`, `resync`) — and every *Status* that no task file can tell: `planned`, `outline`, `list-only` (until a file exists), `exists`, `partly`, `deferred`, `blueprint gap`, `dropped`, `L2 only` | the *Task(s)* cell — the tasks whose file lists the id in `capabilities` (a dropped one left out), and the outline rows whose *Capabilities* cell lists it, per platform when they differ (`web: T-021 · mobile: T-040`); the *Status* `covered` / `done` of a row whose tasks all have files, per platform when they differ; the count line |
+| `COVERAGE.md` | the capability rows — one per capability id, from the inventory (`init`, `resync`) — and every *Status* that no task file can tell: `planned`, `outline`, `list-only` (until a file exists), `exists`, `partly`, `deferred`, `blueprint gap`, `dropped`, `L2 only` | the *Task(s)* cell — the tasks whose file lists the id in `capabilities` (a dropped one left out), and the outline rows whose *Capabilities* cell lists it, per platform when they differ (`web: ABC-021 · mobile: ABC-040`); the *Status* `covered` / `done` of a row whose tasks all have files, per platform when they differ; the count line |
 | `BACKLOG.md` | nothing | everything — from `STATE.json`, the batch tables, the task files and the titles of the blueprint's open questions |
 
 A row is never removed: a dropped task keeps its row, struck through, and a moved one moves. A task

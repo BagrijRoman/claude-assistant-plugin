@@ -1,5 +1,5 @@
 ---
-id: T-{{nnn}}
+id: {{prefix}}-{{nnn}}
 title: {{Verb phrase in the user's terms}}
 module: {{ORG}}            # the blueprint's module code; a chore may have —
 submodule: {{Sub-module}}
@@ -33,19 +33,19 @@ Delivers [{{ORG-C03}} · {{verb phrase}}](../{{blueprint path}}/modules/{{slug}}
 
 ## Out of scope → goes to
 
-- {{rule or edge case}} → T-{{nnn}}
-- {{the other module's side of this capability}} → T-{{nnn}}
-- {{the same capability on another platform}} → T-{{nnn}}
+- {{rule or edge case}} → {{prefix}}-{{nnn}}
+- {{the other module's side of this capability}} → {{prefix}}-{{nnn}}
+- {{the same capability on another platform}} → {{prefix}}-{{nnn}}
 
 ## Subtasks
 
-- [ ] T-{{nnn}}.1 — {{thinnest working path, step one}}
+- [ ] {{prefix}}-{{nnn}}.1 — {{thinnest working path, step one}}
       done when: {{one checkable line about the running product}}
-- [ ] T-{{nnn}}.2 — {{thinnest working path, step two}}
+- [ ] {{prefix}}-{{nnn}}.2 — {{thinnest working path, step two}}
       done when: {{…}}
-- [ ] T-{{nnn}}.3 — Rules: {{the rules, named}}
+- [ ] {{prefix}}-{{nnn}}.3 — Rules: {{the rules, named}}
       done when: {{each named rule is enforced and visible as a message}}
-- [ ] T-{{nnn}}.4 — Edge cases: {{the cases, named}}
+- [ ] {{prefix}}-{{nnn}}.4 — Edge cases: {{the cases, named}}
       done when: {{each case shows the behaviour the capability describes}}
 
 ## Acceptance criteria

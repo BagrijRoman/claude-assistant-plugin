@@ -45,6 +45,13 @@ with the script's `render` (`mechanics.md › The script`), which regenerates th
    `P-001`. `STATE.json` starts with `strategy: {}`, `batches: []`, `lastTask: 0`, `currentBatch:
    null`, `pending: { "mode": "init", "step": "read", … }`. Record the answer of step 1 in
    `PLANNING.md`'s header and in `blueprint.adequacyApprovedAtInit`. Create `batches/` and `tasks/`.
+   **Task prefix** (`SKILL.md › The three units`): run `prefix` and ask (`AskUserQuestion`, header
+   `Prefix`) with the script's suggestions as the options, the first one recommended, each labelled
+   with the prefix and described with how it was made and the ids it gives (`ABC-001`, subtask
+   `ABC-001.1`); the operator can type any prefix as "Other". When the project uses an issue tracker,
+   its project key is a fitting answer — say so in the question. Run `prefix --set <answer>`; a refusal
+   (wrong shape, `RK`, `NEW`, a module code) is relayed and the question asked again. Gate 1's summary
+   names the prefix.
 3. **Read the blueprint** (`slicing.md › What to read in the blueprint`). Yourself: the brief, the
    architecture, the roadmap, `OPEN-QUESTIONS.md`, `GLOSSARY.md`. Then the inventory: one reader per
    module entry without `removed` — tell the operator how many first. Merge into `COVERAGE.md`, one row
@@ -82,7 +89,7 @@ with the script's `render` (`mechanics.md › The script`), which regenerates th
    tasks that are blocked or built on a provisional choice and their questions, the first three tasks
    `next` would offer. On approval `detailed: true` for 01 and 02, `pending: null`.
 10. `render` (it sets `currentBatch` to `"01"`). Tell the operator the daily loop: `/backlog next` →
-    work → `/backlog done T-NNN.n` after each subtask — and recommend starting it in a fresh context
+    work → `/backlog done ABC-NNN.n` after each subtask — and recommend starting it in a fresh context
     (`mechanics.md › A fresh context`).
 
 ## `continue`
@@ -170,7 +177,7 @@ routine of `done`.
      rules / edge cases / transitions it could not place, and `QUESTIONS FOR OPERATOR`. A task it
      thinks is missing comes back as `NEW-n` text.
 3. **Merge.** Number any `NEW-n` with `next-id` and write it. Apply splits (a new id, both cite the capability) and
-   merges (the lower id survives; the other is `dropped` — "merged into T-0xx" — and every `depends`
+   merges (the lower id survives; the other is `dropped` — "merged into ABC-0xx" — and every `depends`
    and *goes to* that named it is repointed). Rewrite the *goes to* lines of earlier batches that point
    at this batch. Check every capability's Rules, Edge cases and States are traceable to a subtask or a
    *goes to* line.
@@ -183,19 +190,19 @@ routine of `done`.
 
 ## `done <id> [note]`
 
-`done` is the only way a status becomes `done`. If the operator says "I finished T-012 and T-013" in
+`done` is the only way a status becomes `done`. If the operator says "I finished ABC-012 and ABC-013" in
 conversation, run `done` for each; do not edit statuses in passing. A note given with the command goes
 to *Notes*; otherwise ask for none.
 
-**Subtask (`T-012.3`):** the script's `tick T-012.3` ticks the box and turns a `todo` task
+**Subtask (`ABC-012.3`):** the script's `tick ABC-012.3` ticks the box and turns a `todo` task
 `in-progress`; show the next subtask it names, then `render`. When it says every subtask is closed, show
 the acceptance criteria it lists and ask whether they hold: yes → *A task becomes done* below; no → it
 stays `in-progress`, and what is left goes to *Notes*.
 
-**Task (`T-012`):** already `done` → say so and show what it unblocked. Otherwise, for each subtask not
+**Task (`ABC-012`):** already `done` → say so and show what it unblocked. Otherwise, for each subtask not
 closed, ask: **Done after all** / **Move to another task** / **Drop it**. Moved → strike it through
-with `moved → T-0xx.n`, strike its acceptance criterion the same way and add a *goes to* line; the
-target task gets it with its next number, marked "(from T-012.5)", its criterion, and the capability
+with `moved → ABC-0xx.n`, strike its acceptance criterion the same way and add a *goes to* line; the
+target task gets it with its next number, marked "(from ABC-012.5)", its criterion, and the capability
 in its `capabilities`; "a new task" runs `add` with the moved subtasks prefilled, in the same batch,
 depending on this one — the same path splits a task mid-work. Dropped → strike it through with
 `dropped: <reason>`; when it carried a capability rule, ask whether to defer the rule (`COVERAGE.md`:
@@ -237,13 +244,13 @@ it touches, and `validate` confirms that no dependency points forward.
 
 | Action | What it does |
 |--------|--------------|
-| `plan move T-NNN <batch>` | moves a task (its row, its `batch`); checks `depends` both ways against the no-forward rule and offers to move the tasks that would break it too; into a batch not yet detailed only when no subtask is ticked — then its file stays and it waits there |
-| `plan order <batch> T-a T-b …` | rewrites the order of the batch's rows |
+| `plan move ABC-NNN <batch>` | moves a task (its row, its `batch`); checks `depends` both ways against the no-forward rule and offers to move the tasks that would break it too; into a batch not yet detailed only when no subtask is ticked — then its file stays and it waits there |
+| `plan order <batch> ABC-a ABC-b …` | rewrites the order of the batch's rows |
 | `plan batch new <after NN> <slug>` | a new batch at that position: the batches after it are renumbered — their files renamed (`mv`), their `STATE.json` entries (`id`, and `flow` when it says "widening of NN"), `currentBatch`, the `batch` of their tasks, the `— batch NN` statuses in `COVERAGE.md` and the "→ batch NN" lines of every batch's *Not in this batch* rewritten |
 | `plan batch move <NN> <after MM>` · `plan batch rename <NN> <slug>` | the same renumbering, or a new slug and file name; a move is refused when it would make a dependency point forward |
 | `plan current <NN>` | asks, then sets `currentPinned` — the current batch until that one closes, for working on a batch out of order |
-| `plan drop T-NNN <reason>` | `status: dropped`, the reason in *Notes*; in the same question, every task depending on it: repoint to another task / remove the dependency / drop it too; `COVERAGE.md` `dropped: <reason>` when no other task covers the capability |
-| `plan unblock T-NNN` | lifts an `ext:` blocker the operator says is gone |
+| `plan drop ABC-NNN <reason>` | `status: dropped`, the reason in *Notes*; in the same question, every task depending on it: repoint to another task / remove the dependency / drop it too; `COVERAGE.md` `dropped: <reason>` when no other task covers the capability |
+| `plan unblock ABC-NNN` | lifts an `ext:` blocker the operator says is gone |
 
 A request in plain words ("move the export task to batch 4") is mapped to the action and confirmed
 before it runs.

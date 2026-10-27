@@ -6,7 +6,8 @@
 //   node bin/backlog.mjs status <dir> [--root <project root>]
 //   node bin/backlog.mjs next <dir> [--root <project root>]
 //   node bin/backlog.mjs next-id <dir> [--count N]
-//   node bin/backlog.mjs tick <dir> <T-NNN.n>
+//   node bin/backlog.mjs tick <dir> <PREFIX-NNN.n>
+//   node bin/backlog.mjs prefix <dir> [--set <PREFIX>]
 //   node bin/backlog.mjs render <dir>
 //   node bin/backlog.mjs validate <dir>
 //
@@ -25,6 +26,10 @@
 // - tick ticks one subtask in its task file, turns a todo task in-progress, and prints the task's next open
 //   subtask or, when every subtask is closed, the acceptance criteria to confirm. A done or dropped task, and a
 //   subtask struck through, are refused.
+// - prefix prints the task prefix and, while none is chosen, suggestions from the project's name; --set validates
+//   one (2–6 capital letters or digits, a letter first; not RK, NEW or a module code) and writes it to STATE.json's
+//   taskPrefix — only while no task has an id, since the id is what everything links to.
+// Task ids are <taskPrefix>-NNN; a backlog whose STATE.json has no taskPrefix keeps the legacy T-NNN.
 // - render rewrites the regenerated parts of the views (mechanics.md › Views): BACKLOG.md whole, from the
 //   skill's template; each batch file's state line and every row whose task has a file; COVERAGE.md's Task(s)
 //   cells, the covered / done status of a row whose tasks all have files, and its count line. Then it recomputes
@@ -43,7 +48,8 @@ const USAGE = `Usage: node bin/backlog.mjs <command> <dir> [args]
   status <dir> [--root <project root>]   what /backlog status reports; writes nothing
   next <dir> [--root <project root>]     what /backlog next answers; writes nothing
   next-id <dir> [--count N]              print and reserve the next task id(s)
-  tick <dir> <T-NNN.n>                   tick one subtask; a todo task becomes in-progress
+  tick <dir> <PREFIX-NNN.n>              tick one subtask; a todo task becomes in-progress
+  prefix <dir> [--set <PREFIX>]          show the task prefix and suggestions, or choose it
   render <dir>                           regenerate the views, recompute currentBatch, stamp STATE.json last
   validate <dir>                         check that the task files, the batch tables and STATE.json agree
 `;
@@ -54,10 +60,11 @@ const COMMANDS = {
   next: { extra: 0, options: ['root'] },
   'next-id': { extra: 0, options: ['count'] },
   tick: { extra: 1, options: [] },
+  prefix: { extra: 0, options: ['set'] },
   render: { extra: 0, options: [] },
   validate: { extra: 0, options: [] },
 };
-const VALUE_OPTIONS = new Set(['count', 'root']);
+const VALUE_OPTIONS = new Set(['count', 'root', 'set']);
 
 const PLUGIN_ROOT = fileURLToPath(new URL('../', import.meta.url));
 const BACKLOG_TEMPLATE = join(PLUGIN_ROOT, 'skills/backlog/templates/BACKLOG.md');
@@ -65,8 +72,11 @@ const BLUEPRINT_SCRIPT = join(PLUGIN_ROOT, 'bin/blueprint.mjs');
 
 const STATUSES = ['todo', 'in-progress', 'done', 'dropped'];
 const PRIORITY = { P0: 0, P1: 1, P2: 2, P3: 3 };
-const TASK_ID = /\bT-(\d+)\b(?!\.\d)/;
-const SUBTASK_ID = /\bT-(\d+)\.(\d+)\b/;
+// The ticket shape branch-based tools read (feat/ABC-012-slug): two characters at least before the dash
+const PREFIX_SHAPE = /^[A-Z][A-Z0-9]{1,5}$/;
+const LEGACY_PREFIX = 'T';
+// Ids the blueprint and this skill already write with two letters or more, so a task id never reads as one of them
+const RESERVED_PREFIXES = ['RK', 'NEW'];
 const CHECKBOX = /^(\s*[-*]\s+\[)( |x|X)(\]\s+)(.*)$/;
 const CAPABILITY_ID = /^[A-Z][A-Z0-9]{1,5}-C\d{2,}$/;
 // Coverage statuses a task file can tell, from the least advanced; any other status is the operator's record
@@ -90,6 +100,16 @@ const isObject = (value) => value !== null && typeof value === 'object' && !Arra
 const pad = (number, width) => String(number).padStart(width, '0');
 const plural = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`;
 const unique = (items) => [...new Set(items)];
+
+/** The task and subtask id patterns of one prefix; a prefix is capitals and digits only, so it needs no escaping. */
+const idsFor = (prefix) => ({
+  prefix,
+  task: new RegExp(`\\b${prefix}-(\\d+)\\b(?!\\.\\d)`),
+  subtask: new RegExp(`\\b${prefix}-(\\d+)\\.(\\d+)\\b`),
+  file: new RegExp(`^${prefix}-\\d+.*\\.md$`),
+  number: (id) => Number(new RegExp(`^${prefix}-(\\d+)`).exec(id ?? '')?.[1] ?? Number.NaN),
+  format: (number) => `${prefix}-${pad(number, 3)}`,
+});
 
 const statOf = (path) => {
   try { return statSync(path); } catch { return null; }
@@ -172,6 +192,15 @@ const loadState = (dir) => {
   return state;
 };
 
+/** The ids of a backlog: its taskPrefix, or the legacy T when it has none; a malformed one stops every command. */
+const idsOf = (state) => {
+  const prefix = state.taskPrefix ?? LEGACY_PREFIX;
+  if (prefix !== LEGACY_PREFIX && !PREFIX_SHAPE.test(String(prefix))) {
+    fail(`STATE.json's taskPrefix ${JSON.stringify(prefix)} is not 2–6 capital letters or digits starting with a letter.`);
+  }
+  return idsFor(prefix);
+};
+
 const writeState = (dir, state) => writeFileSync(join(dir, 'STATE.json'), `${JSON.stringify(state, null, 2)}\n`);
 
 const batchId = (value) => {
@@ -251,7 +280,7 @@ const frontmatter = (text) => {
 const asList = (value) => (Array.isArray(value) ? value : value ? listItems(value) : []);
 
 /** The checklist of a section: { line, ticked, struck, text, id, title, doneWhen }. */
-const checklist = (lines, title) => {
+const checklist = (lines, title, ids) => {
   const section = sectionOf(lines, title);
   if (!section) return [];
   const items = [];
@@ -259,8 +288,8 @@ const checklist = (lines, title) => {
     const box = CHECKBOX.exec(lines[i]);
     if (box) {
       const text = box[4].trim();
-      const id = SUBTASK_ID.exec(text)?.[0] ?? null;
-      const title = text.replace(/~~/g, '').replace(SUBTASK_ID, '').replace(/^\s*[—–-]\s*/, '').trim();
+      const id = ids.subtask.exec(text)?.[0] ?? null;
+      const title = text.replace(/~~/g, '').replace(ids.subtask, '').replace(/^\s*[—–-]\s*/, '').trim();
       items.push({ line: i, ticked: box[2] !== ' ', struck: text.includes('~~'), text, id, title, doneWhen: '' });
       continue;
     }
@@ -272,7 +301,7 @@ const checklist = (lines, title) => {
 
 const isClosed = (item) => item.ticked || item.struck;
 
-const readTask = (dir, name) => {
+const readTask = (dir, name, ids) => {
   const file = `tasks/${name}`;
   const text = read(join(dir, file));
   const meta = frontmatter(text);
@@ -283,7 +312,7 @@ const readTask = (dir, name) => {
     file,
     name,
     meta,
-    id: meta?.id || TASK_ID.exec(name)?.[0] || null,
+    id: meta?.id || ids.task.exec(name)?.[0] || null,
     title: meta?.title ?? name,
     module: meta?.module ?? '',
     platforms: asList(meta?.platforms),
@@ -296,15 +325,15 @@ const readTask = (dir, name) => {
     blockedBy: asList(meta?.blocked_by),
     review: typeof meta?.review === 'string' ? meta.review.trim() : asList(meta?.review).join(', '),
     capabilities: asList(meta?.capabilities),
-    subtasks: checklist(lines, 'Subtasks'),
-    criteria: checklist(lines, 'Acceptance criteria'),
+    subtasks: checklist(lines, 'Subtasks', ids),
+    criteria: checklist(lines, 'Acceptance criteria', ids),
     notes: notes ? lines.slice(notes.start, notes.end).join('\n') : '',
   };
 };
 
 // --- the backlog as one model
 
-const readBatchFile = (dir, name) => {
+const readBatchFile = (dir, name, ids) => {
   const file = `batches/${name}`;
   const lines = read(join(dir, file)).split('\n');
   const section = sectionOf(lines, 'Tasks');
@@ -316,11 +345,11 @@ const readBatchFile = (dir, name) => {
       index,
       order,
       cells: values,
-      id: TASK_ID.exec(bare(at('task')))?.[0] ?? null,
+      id: ids.task.exec(bare(at('task')))?.[0] ?? null,
       title: bare(at('title')),
       capabilities: bare(at('capabilities')).split(/[,\s]+/).filter((id) => CAPABILITY_ID.test(id)),
       platforms: bare(at('platforms')).split(/[,\s]+/).filter((item) => item && !/^[-–—]$/.test(item)),
-      depends: [...at('depends').matchAll(new RegExp(TASK_ID.source, 'g'))].map(([id]) => id),
+      depends: [...at('depends').matchAll(new RegExp(ids.task.source, 'g'))].map(([id]) => id),
     };
   });
   const works = sectionOf(lines, 'What works after this batch');
@@ -336,15 +365,19 @@ const readBatchFile = (dir, name) => {
 
 const load = (dir) => {
   const state = loadState(dir);
+  const ids = idsOf(state);
   const batches = (Array.isArray(state.batches) ? state.batches : []).filter(isObject)
     .map((entry) => ({ ...entry, id: batchId(entry.id) }))
     .sort((a, b) => Number(a.id) - Number(b.id));
   const files = new Map();
   for (const name of listDir(join(dir, 'batches'))) {
     const id = /^(\d+)-.*\.md$/.exec(name)?.[1];
-    if (id) files.set(batchId(id), readBatchFile(dir, name));
+    if (id) files.set(batchId(id), readBatchFile(dir, name, ids));
   }
-  const taskList = listDir(join(dir, 'tasks')).filter((name) => /^T-\d+.*\.md$/.test(name)).map((name) => readTask(dir, name));
+  const taskNames = listDir(join(dir, 'tasks')).filter((name) => name.endsWith('.md'));
+  const taskList = taskNames.filter((name) => ids.file.test(name)).map((name) => readTask(dir, name, ids));
+  // A task file under another prefix is not read as a task; validate names it
+  const foreign = taskNames.filter((name) => !ids.file.test(name) && /^[A-Z][A-Z0-9]*-\d+/.test(name));
   const tasks = new Map();
   for (const task of taskList) if (task.id && !tasks.has(task.id)) tasks.set(task.id, task);
   // Where each id has its row: { batch, row }; a second row for the same id is a break, reported by validate
@@ -352,7 +385,7 @@ const load = (dir) => {
   for (const [id, batchFile] of files) {
     for (const entry of batchFile.rows) if (entry.id && !rowOf.has(entry.id)) rowOf.set(entry.id, { batch: id, row: entry });
   }
-  return { dir, state, batches, files, taskList, tasks, rowOf };
+  return { dir, state, ids, batches, files, taskList, tasks, rowOf, foreign };
 };
 
 // --- what is computed, never stored (mechanics.md › Statuses, › Batches)
@@ -429,7 +462,7 @@ const warning = finding('warning');
 
 const check = (model) => {
   const found = [];
-  const { dir, state, batches, files, taskList, tasks, rowOf } = model;
+  const { dir, state, ids, batches, files, taskList, tasks, rowOf, foreign } = model;
   const known = new Set(batches.map((batch) => batch.id));
 
   for (const batch of batches) {
@@ -444,16 +477,16 @@ const check = (model) => {
     }
   }
 
-  const ids = new Map();
+  const fileOf = new Map();
   for (const task of taskList) {
     if (!task.meta) {
       found.push(error(task.file, 'no frontmatter'));
       continue;
     }
-    const named = TASK_ID.exec(task.name)?.[0];
+    const named = ids.task.exec(task.name)?.[0];
     if (task.id !== named) found.push(error(task.file, `its id ${task.id} is not the one its file name gives (${named})`));
-    if (ids.has(task.id)) found.push(error(task.file, `${task.id} is also ${ids.get(task.id)}`));
-    else ids.set(task.id, task.file);
+    if (fileOf.has(task.id)) found.push(error(task.file, `${task.id} is also ${fileOf.get(task.id)}`));
+    else fileOf.set(task.id, task.file);
     if (!STATUSES.includes(task.status)) found.push(error(task.file, `status "${task.meta.status ?? ''}" is none of ${STATUSES.join(', ')}`));
     if (!known.has(task.batch)) found.push(error(task.file, `batch "${task.batch}" is not in STATE.json`));
     const at = rowOf.get(task.id);
@@ -502,8 +535,9 @@ const check = (model) => {
   };
   for (const id of edges.keys()) visit(id, []);
 
-  const highest = Math.max(0, ...[...edges.keys()].map((id) => Number(id.slice(2))));
-  if (Number(state.lastTask ?? 0) < highest) found.push(warning('STATE.json', `lastTask is ${state.lastTask ?? 0}, but T-${pad(highest, 3)} exists`));
+  const highest = Math.max(0, ...[...edges.keys()].map(ids.number).filter(Number.isFinite));
+  if (Number(state.lastTask ?? 0) < highest) found.push(warning('STATE.json', `lastTask is ${state.lastTask ?? 0}, but ${ids.format(highest)} exists`));
+  for (const name of foreign) found.push(warning(`tasks/${name}`, `not read as a task: its id does not carry the prefix ${ids.prefix}`));
   if (!statOf(join(dir, 'tasks'))?.isDirectory()) found.push(warning('tasks/', 'no tasks folder'));
   return found;
 };
@@ -703,20 +737,22 @@ const next = (dir, root) => {
 
 const nextId = (dir, count) => {
   const model = load(dir);
+  const { ids } = model;
   const used = [
-    ...model.taskList.map((task) => TASK_ID.exec(task.name)?.[1]),
-    ...model.taskList.map((task) => (task.id ? task.id.slice(2) : null)),
-    ...[...model.files.values()].flatMap((batchFile) => batchFile.rows.map((entry) => entry.id?.slice(2))),
-  ].filter(Boolean).map(Number);
+    ...model.taskList.map((task) => ids.number(ids.task.exec(task.name)?.[0])),
+    ...model.taskList.map((task) => ids.number(task.id)),
+    ...[...model.files.values()].flatMap((batchFile) => batchFile.rows.map((entry) => ids.number(entry.id))),
+  ].filter(Number.isFinite);
   const first = Math.max(Number(model.state.lastTask) || 0, ...used) + 1;
-  const ids = Array.from({ length: count }, (_, i) => `T-${pad(first + i, 3)}`);
+  const given = Array.from({ length: count }, (_, i) => ids.format(first + i));
   writeState(dir, { ...model.state, lastTask: first + count - 1 });
-  print(ids.join('\n'));
+  print(given.join('\n'));
 };
 
 const tick = (dir, id) => {
-  if (!SUBTASK_ID.test(id) || SUBTASK_ID.exec(id)[0] !== id) usage(`tick takes a subtask id, T-NNN.n — not "${id}"`);
   const model = load(dir);
+  const { subtask } = model.ids;
+  if (!subtask.test(id) || subtask.exec(id)[0] !== id) usage(`tick takes a subtask id, ${model.ids.prefix}-NNN.n — not "${id}"`);
   const taskId = id.replace(/\.\d+$/, '');
   const task = model.tasks.get(taskId);
   if (!task) fail(`no task file for ${taskId} in tasks/`);
@@ -750,6 +786,72 @@ const tick = (dir, id) => {
     said.push(`${taskId}: every subtask is closed — ask whether its acceptance criteria hold:`, ...criteria.map((entry) => `  - ${entry.text}`));
   }
   print(said.join('\n'));
+};
+
+// --- prefix
+
+/**
+ * Prefixes the project's name suggests, each with how it was made: the initials of its words (the first three
+ * letters of a one-word name), the first three letters of the first word, the first letter with the next two
+ * consonants. Only those of the right shape and not taken, without repeats.
+ */
+const suggestPrefixes = (project, taken) => {
+  const name = String(project ?? '').trim();
+  const words = name.normalize('NFKD').replace(/[^A-Za-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean).map((word) => word.toUpperCase());
+  if (!words.length) return [];
+  const [first] = words;
+  const consonants = first.slice(1).replace(/[AEIOUY0-9]/g, '');
+  const candidates = [
+    words.length > 1
+      ? { prefix: words.map((word) => word[0]).join('').slice(0, 6), how: `the initials of "${name}"` }
+      : { prefix: first.slice(0, 3), how: `the first letters of "${name}"` },
+    { prefix: first.slice(0, 3), how: `the first three letters of "${words.length > 1 ? first : name}"` },
+    { prefix: `${first[0]}${consonants.slice(0, 2)}`, how: `the first letter and the consonants of "${words.length > 1 ? first : name}"` },
+  ];
+  const seen = new Set();
+  return candidates.filter(({ prefix }) => {
+    if (!PREFIX_SHAPE.test(prefix) || taken.has(prefix) || seen.has(prefix)) return false;
+    seen.add(prefix);
+    return true;
+  });
+};
+
+const prefix = (dir, wanted) => {
+  const model = load(dir);
+  const { state, ids } = model;
+  const modules = Array.isArray(state.blueprint?.fingerprint?.modules) ? state.blueprint.fingerprint.modules : [];
+  const moduleCodes = modules.map((entry) => entry?.code).filter((code) => typeof code === 'string' && code);
+  const taken = new Set([...RESERVED_PREFIXES, ...moduleCodes]);
+  const numbered = Number(state.lastTask) > 0 || model.taskList.length > 0
+    || [...model.files.values()].some((batchFile) => batchFile.rows.some((entry) => entry.id));
+  const example = (of) => `${of.format(1)}, ${of.format(2)} …, subtasks ${of.format(1)}.1`;
+
+  if (wanted === undefined) {
+    const lines = [state.taskPrefix
+      ? `Task prefix: ${ids.prefix} — ${example(ids)}`
+      : `Task prefix: not chosen — ids would be ${LEGACY_PREFIX}-NNN, the legacy form`];
+    if (!state.taskPrefix && numbered) lines.push(`Ids are given as ${LEGACY_PREFIX}-NNN already, so the prefix can no longer change.`);
+    if (!state.taskPrefix && !numbered) {
+      const suggested = suggestPrefixes(state.project, taken);
+      lines.push('Suggestions:', ...(suggested.length ? suggested.map(({ prefix: value, how }) => `  ${value} — ${how}`) : ['  none — STATE.json names no project']));
+      lines.push(`Shape: 2–6 capital letters or digits, a letter first — the form branch-based tools read as a ticket (feat/${suggested[0]?.prefix ?? 'ABC'}-012-slug); not ${[...taken].join(', ')}.`);
+    }
+    print(lines.join('\n'));
+    return;
+  }
+
+  const value = wanted.trim();
+  if (!PREFIX_SHAPE.test(value)) fail(`"${value}" is not a task prefix: 2–6 capital letters or digits, a letter first (ABC gives ABC-012).`);
+  if (value === 'RK') fail('RK is taken: RK- ids are the blueprint\'s risks.');
+  if (value === 'NEW') fail('NEW is taken: NEW-n marks a task a subagent proposes before it is numbered.');
+  if (moduleCodes.includes(value)) fail(`${value} is a module code: ${value}-C03 is a capability id, and ${value}-012 would read as one.`);
+  if (state.taskPrefix === value) {
+    print(`Task prefix is ${value} already — ${example(ids)}.`);
+    return;
+  }
+  if (numbered) fail(`ids are given as ${ids.prefix}-NNN already; another prefix would rename every task file and every reference to it, which this script does not do.`);
+  writeState(dir, { ...state, taskPrefix: value });
+  print(`Task prefix ${value} — ${example(idsFor(value))}.`);
 };
 
 // --- render
@@ -873,6 +975,7 @@ const renderOverview = (model, found, current, updated) => {
   const path = model.state.blueprint?.path ?? '';
   const lines = template
     .replaceAll('{{project name}}', model.state.project ?? '')
+    .replaceAll('{{prefix}}', model.ids.prefix)
     .replaceAll('{{blueprint path}}', path)
     .replace('{{YYYY-MM-DDTHH:MM}}', updated)
     .replace('**{{NN}}**', `**${current.id ?? '—'}**`)
@@ -969,9 +1072,10 @@ const main = () => {
   if (command === 'next') next(dir, root);
   if (command === 'next-id') nextId(dir, Number(options.count ?? 1));
   if (command === 'tick') {
-    if (!rest[0]) usage('tick needs a subtask id, T-NNN.n');
+    if (!rest[0]) usage('tick needs a subtask id, PREFIX-NNN.n');
     tick(dir, rest[0]);
   }
+  if (command === 'prefix') prefix(dir, options.set);
   if (command === 'render') render(dir);
   if (command === 'validate') validate(dir);
 };

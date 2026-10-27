@@ -257,6 +257,29 @@ const replaceIn = (files, path, from, to) => {
   files[path] = files[path].replace(from, to);
 };
 
+/** The fixture's backlog files with every T- id under `prefix` instead, file names included. */
+const toPrefix = (prefix) => (files) => {
+  for (const path of Object.keys(files)) {
+    if (!path.startsWith('docs/backlog/') || path.endsWith('STATE.json')) continue;
+    const text = files[path].replace(/\bT-(\d)/g, `${prefix}-$1`);
+    delete files[path];
+    files[path.replace(/\/T-(\d)/, `/${prefix}-$1`)] = text;
+  }
+};
+
+/** A backlog scaffolded and not cut yet: no batch, no task, nothing numbered. */
+const UNCUT = {
+  ...STATE,
+  project: 'Luxury Resale Marketplace',
+  blueprint: { ...STATE.blueprint, fingerprint: { ...STATE.blueprint.fingerprint, modules: [{ code: 'LUX' }, { code: 'ACC' }] } },
+  lastTask: 0,
+  batches: [],
+  currentBatch: null,
+};
+const withoutTasks = (files) => {
+  for (const path of Object.keys(files)) if (/^docs\/backlog\/(tasks|batches)\//.test(path)) delete files[path];
+};
+
 describe('backlog.mjs', () => {
   after(removeTempDirs);
 
@@ -539,6 +562,82 @@ describe('backlog.mjs', () => {
       const first = snapshot();
       assert.match(ok(run(['render', dir], { env: { BACKLOG_NOW: '2026-10-14T16:21' } })), /batch files changed: none/);
       assert.deepEqual(snapshot().map((text) => text.replace('2026-10-14T16:21', NOW)), first);
+    });
+  });
+
+  describe('prefix', () => {
+    it('suggests prefixes from the project name while none is chosen, leaving out the taken ones', () => {
+      const { dir } = makeBacklog({ state: UNCUT, change: withoutTasks });
+      assert.equal(ok(run(['prefix', dir])), [
+        'Task prefix: not chosen — ids would be T-NNN, the legacy form',
+        'Suggestions:',
+        '  LRM — the initials of "Luxury Resale Marketplace"',
+        '  LXR — the first letter and the consonants of "LUXURY"',
+        'Shape: 2–6 capital letters or digits, a letter first — the form branch-based tools read as a ticket (feat/LRM-012-slug); not RK, NEW, LUX, ACC.',
+        '',
+      ].join('\n'));
+    });
+
+    it('writes the chosen prefix to STATE.json and shows it from then on', () => {
+      const { dir } = makeBacklog({ state: UNCUT, change: withoutTasks });
+      assert.equal(ok(run(['prefix', dir, '--set', 'LRM'])), 'Task prefix LRM — LRM-001, LRM-002 …, subtasks LRM-001.1.\n');
+      assert.equal(readJson(join(dir, 'STATE.json')).taskPrefix, 'LRM');
+      assert.equal(ok(run(['prefix', dir])), 'Task prefix: LRM — LRM-001, LRM-002 …, subtasks LRM-001.1\n');
+      assert.equal(ok(run(['prefix', dir, '--set', 'LRM'])), 'Task prefix is LRM already — LRM-001, LRM-002 …, subtasks LRM-001.1.\n');
+      assert.equal(ok(run(['next-id', dir])), 'LRM-001\n');
+    });
+
+    it('refuses a prefix of the wrong shape, a reserved one and a module code', () => {
+      const { dir } = makeBacklog({ state: UNCUT, change: withoutTasks });
+      for (const value of ['L', 'lrm', 'LRMABCD', '1AB', 'LR-M']) {
+        const result = run(['prefix', dir, '--set', value]);
+        assert.equal(result.status, 1, value);
+        assert.match(result.stderr, /is not a task prefix: 2–6 capital letters or digits, a letter first/);
+      }
+      assert.match(run(['prefix', dir, '--set', 'RK']).stderr, /RK is taken: RK- ids are the blueprint's risks/);
+      assert.match(run(['prefix', dir, '--set', 'NEW']).stderr, /NEW is taken/);
+      assert.match(run(['prefix', dir, '--set', 'LUX']).stderr, /LUX is a module code: LUX-C03 is a capability id/);
+      assert.equal(readJson(join(dir, 'STATE.json')).taskPrefix, undefined);
+    });
+
+    it('refuses a new prefix once ids are given', () => {
+      const { dir } = makeBacklog();
+      assert.match(ok(run(['prefix', dir])), /Ids are given as T-NNN already, so the prefix can no longer change\./);
+      const result = run(['prefix', dir, '--set', 'LRM']);
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /ids are given as T-NNN already; another prefix would rename every task file/);
+    });
+
+    it('runs the whole backlog under its prefix', () => {
+      const { dir } = makeBacklog({ state: { ...STATE, taskPrefix: 'LRM' }, change: toPrefix('LRM') });
+      assert.match(ok(run(['validate', dir])), /The task files, the batch tables and STATE\.json agree\./);
+      assert.match(ok(run(['status', dir])), /\nReady:\n {2}LRM-003 See the dashboard · P1 · M · ACC · web · first LRM-003\.1 The empty dashboard/);
+      assert.equal(ok(run(['next-id', dir])), 'LRM-008\n');
+      assert.match(ok(run(['tick', dir, 'LRM-003.1'])), /^Ticked LRM-003\.1 The empty dashboard\.\nLRM-003 is in progress now\./);
+      assert.equal(run(['tick', dir, 'T-003.1']).status, 2);
+      ok(run(['render', dir]));
+      const overview = readFileSync(join(dir, 'BACKLOG.md'), 'utf8');
+      assert.match(overview, /`\/backlog done LRM-NNN\.n` after each/);
+      assert.match(overview, /\| \[LRM-003\]\(tasks\/LRM-003-dashboard\.md\) \| See the dashboard \|/);
+      assert.doesNotMatch(overview, /\{\{prefix\}\}/);
+    });
+
+    it('names a task file under another prefix and does not read it', () => {
+      const { dir } = makeBacklog({
+        state: { ...STATE, taskPrefix: 'LRM' },
+        change: (files) => {
+          toPrefix('LRM')(files);
+          files['docs/backlog/tasks/T-009-old.md'] = TASKS['T-003-dashboard.md'];
+        },
+      });
+      assert.match(ok(run(['validate', dir])), /warning: tasks\/T-009-old\.md — not read as a task: its id does not carry the prefix LRM/);
+    });
+
+    it('stops on a malformed prefix in STATE.json', () => {
+      const { dir } = makeBacklog({ state: { ...STATE, taskPrefix: 'lrm' } });
+      const result = run(['validate', dir]);
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /STATE\.json's taskPrefix "lrm" is not 2–6 capital letters or digits/);
     });
   });
 

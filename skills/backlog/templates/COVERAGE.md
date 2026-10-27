@@ -16,11 +16,11 @@ counted once, under its least advanced platform.
 
 | Id | Capability | Module › Sub-module | Surfaces | Stage | R/E/S | Q | Task(s) | Status |
 |----|------------|---------------------|----------|-------|-------|---|---------|--------|
-| {{ACC-C03}} | [{{Invite a team member}}]({{blueprint path}}/modules/{{accounts}}.md) | {{ACC › Team}} | web | MVP | 4/3/2 | — | T-012 · T-018 | covered |
-| {{DAT-C05}} | {{Record a reading}} | {{DAT › Capture}} | web, mobile | MVP / next | 3/2/0 | Q-004 | web: T-021 · mobile: T-040 | web covered · mobile outline — batch 05 |
-| {{…}} | {{…}} | | web | MVP | | | T-031 | planned — batch 03 |
+| {{ACC-C03}} | [{{Invite a team member}}]({{blueprint path}}/modules/{{accounts}}.md) | {{ACC › Team}} | web | MVP | 4/3/2 | — | {{prefix}}-012 · {{prefix}}-018 | covered |
+| {{DAT-C05}} | {{Record a reading}} | {{DAT › Capture}} | web, mobile | MVP / next | 3/2/0 | Q-004 | web: {{prefix}}-021 · mobile: {{prefix}}-040 | web covered · mobile outline — batch 05 |
+| {{…}} | {{…}} | | web | MVP | | | {{prefix}}-031 | planned — batch 03 |
 | {{…}} | {{…}} | | web | MVP | | | — | exists — {{backend}} |
-| {{…}} | {{…}} | | web | later | —/—/— | | T-077 | list-only — batch 08 |
+| {{…}} | {{…}} | | web | later | —/—/— | | {{prefix}}-077 | list-only — batch 08 |
 | {{…}} | {{…}} | | web | MVP | | | — | deferred: {{reason}} ({{P-nnn}}) |
 | {{…}} | {{…}} | | web | MVP | | | — | blueprint gap: {{one line, see PLANNING.md}} |
 
@@ -47,5 +47,5 @@ counted once, under its least advanced platform.
 
 | Task | Type | Source | Why it exists |
 |------|------|--------|---------------|
-| T-{{nnn}} | foundation | planning | {{batch 1 cannot run without it: …}} |
-| T-{{nnn}} | bug | manual | {{added by the operator on YYYY-MM-DD}} |
+| {{prefix}}-{{nnn}} | foundation | planning | {{batch 1 cannot run without it: …}} |
+| {{prefix}}-{{nnn}} | bug | manual | {{added by the operator on YYYY-MM-DD}} |

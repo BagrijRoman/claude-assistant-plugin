@@ -42,7 +42,7 @@ project has none.
 | `status` | progress per batch, tasks in progress with their next subtask, ready, blocked by which question, whether the blueprint moved; change nothing |
 | `next` | tasks ready to start now and the next subtask of anything in progress; when only blocked tasks are left, what they wait for and ready tasks of the next detailed batch; writes nothing but the closing of a complete batch |
 | `detail <batch>` | write the tasks of one outlined batch out in full |
-| `done <id> [note]` | mark a subtask (`T-012.3`) or task (`T-012`) done, record a note or a pull request, show what it unblocked; close the batch with the operator when it is complete |
+| `done <id> [note]` | mark a subtask (`ABC-012.3`) or task (`ABC-012`) done, record a note or a pull request, show what it unblocked; close the batch with the operator when it is complete |
 | `add [text]` | add a task the blueprint did not produce: a bug, a chore, a spike, a refinement |
 | `plan <action>` | re-plan: `move` or `drop` a task, `order` a batch, `batch new / move / rename`, `current`, `unblock` an outside blocker |
 | `resync` | compare the blueprint (its changelog, capabilities, stages, modules, questions) with the backlog; propose additions, moves, re-details, follow-ups, blocks, unblocks and drops |
@@ -66,7 +66,7 @@ docs/backlog/
 ├── PLANNING.md            P-NNN slicing decisions; standing criteria; feedback to the blueprint; resync reports
 ├── COVERAGE.md            every blueprint capability id → its task(s), or the reason there is none
 ├── batches/NN-<slug>.md   goal, "what works after this batch", flow → capabilities, the task rows in order
-└── tasks/T-NNN-<slug>.md  one task: frontmatter + scope, subtasks, acceptance criteria, how to verify
+└── tasks/ABC-NNN-<slug>.md  one task: frontmatter + scope, subtasks, acceptance criteria, how to verify
 ```
 
 ### The three units
@@ -74,8 +74,23 @@ docs/backlog/
 | Unit | Id | Size | Done means |
 |------|----|------|------------|
 | Batch | `01`, `02`… | a few tasks; after it something new works end to end | every task done or dropped, and the operator confirmed the *What works after this batch* paragraph |
-| Task | `T-012` | one reviewable change — one pull request per repository it touches | every subtask closed and every acceptance criterion holds |
-| Subtask | `T-012.3` | one sitting of work, one commit | its one-line *done when* holds |
+| Task | `ABC-012` | one reviewable change — one pull request per repository it touches | every subtask closed and every acceptance criterion holds |
+| Subtask | `ABC-012.3` | one sitting of work, one commit | its one-line *done when* holds |
+
+### Task ids and the prefix
+
+`ABC` stands for the backlog's task prefix. The operator picks it at `init`, right after the folder: the
+script suggests up to three from the project's name — its initials, the first three letters of the first word,
+the first letter with the next consonants — leaving out the taken ones, and the operator may type any other,
+an issue tracker's project key for instance. It is 2–6 capital letters or digits, a letter first, and not `RK`
+(the blueprint's risks), `NEW` (a subagent's unnumbered proposal) or a module code (`ACC-012` would read as a
+capability id). It is stored in `STATE.json`'s `taskPrefix` and fixed once the first id is given.
+
+Why a prefix at all: branch-based tools read the ticket from the branch name in the shape
+`[A-Za-z][A-Za-z0-9]+-\d+`, two characters at least before the dash. `apiko-agent`'s plan gate is one: on
+`feat/ABC-012-orders-export` it looks for `docs/features/ABC-012/plan.md`. The old one-letter `T-012` does not
+match, so the gate stayed silent; with a prefix the backlog's task id is the ticket id in every repository.
+A backlog whose `STATE.json` has no `taskPrefix` keeps `T-NNN` and works as before.
 
 ### How it cuts
 
@@ -182,7 +197,7 @@ and how many; and, on `continue` or `status`, the checklist rebuilt from its sta
 
 | Mode | Stages |
 |------|--------|
-| `init [dir]` | Find the blueprint → Folder → Read the blueprint → What exists already → Strategy → Outline → Gate 1 (outline) → Detail batches 1–2 → Gate 2 (detail) |
+| `init [dir]` | Find the blueprint → Folder → Task prefix → Read the blueprint → What exists already → Strategy → Outline → Gate 1 (outline) → Detail batches 1–2 → Gate 2 (detail) |
 | `continue` | The stages of the mode in `STATE.json.pending`, from the step it records |
 | `status` | Hand edits → Blueprint checks → Report |
 | `next` | Hand edits → Blueprint checks → What to work on |
@@ -215,7 +230,8 @@ before 0.15.0 each of them read the whole backlog and regenerated the views by h
 node bin/backlog.mjs status <dir> [--root <project root>]
 node bin/backlog.mjs next <dir> [--root <project root>]
 node bin/backlog.mjs next-id <dir> [--count N]
-node bin/backlog.mjs tick <dir> <T-NNN.n>
+node bin/backlog.mjs tick <dir> <ABC-NNN.n>
+node bin/backlog.mjs prefix <dir> [--set <ABC>]
 node bin/backlog.mjs render <dir>
 node bin/backlog.mjs validate <dir>
 ```
@@ -224,10 +240,11 @@ node bin/backlog.mjs validate <dir>
 |---------|------|--------|
 | `status` | the report of `/backlog status`: a pending mode, the files edited since `STATE.json`, the blueprint checks (moved since the fingerprint, questions opened and closed, its unrecorded edits through `blueprint.mjs changed`), every batch with its state and counts, the current batch's *What works*, in progress, ready, blocked by question and from outside, needs attention, what the files break | nothing |
 | `next` | the answer of `/backlog next`, step by step: a pending `init` stops it; an undetailed current batch is offered for `detail` with the blueprint checks; the tasks in progress with their next subtask; up to five ready tasks of the current batch; what the batch waits for and up to three ready tasks ahead; a complete batch to close; what needs attention | nothing |
-| `next-id` | the next `T-NNN` past `lastTask` and every id in `tasks/` and the batch tables; `--count N` for N in a row | `lastTask` |
+| `next-id` | the next `ABC-NNN` past `lastTask` and every id in `tasks/` and the batch tables; `--count N` for N in a row | `lastTask` |
 | `tick` | ticks one subtask, turns a `todo` task `in-progress`, prints the next open subtask or — once every subtask is ticked or struck through — the acceptance criteria to confirm; refuses a done or dropped task and a struck subtask | the task file |
+| `prefix` | without `--set`, the prefix, or — while none is chosen and no id is given — up to three suggestions from the project's name and the shape a prefix must have; with `--set`, checks it and writes it, refusing a wrong shape, `RK`, `NEW`, a module code, and any change once an id is given | `taskPrefix` |
 | `render` | the regenerated parts of `mechanics.md › Views` and nothing else: `BACKLOG.md` whole, from the skill's template; each batch file's state line and the rows whose task has a file (an outline row stays as written); `COVERAGE.md`'s *Task(s)* cells, the `covered` / `done` status of a row whose tasks all have files (per platform when they differ), its count line; then `currentBatch` (a pin ends when its batch closes), `updated`, and `STATE.json` last | the views, `STATE.json` |
-| `validate` | a task whose batch has no row or whose row sits in another batch, an id its file name does not give, a status none of the four, a ticked subtask on a `todo` task, a dependency that is unknown, dropped, in a later batch or in a cycle (outline rows' dependencies included); warnings for a done task with open subtasks, a `blocked_by` entry that is neither `Q-` nor `ext:`, a `lastTask` below the highest id | nothing |
+| `validate` | a task whose batch has no row or whose row sits in another batch, an id its file name does not give, a status none of the four, a ticked subtask on a `todo` task, a dependency that is unknown, dropped, in a later batch or in a cycle (outline rows' dependencies included); warnings for a done task with open subtasks, a `blocked_by` entry that is neither `Q-` nor `ext:`, a `lastTask` below the highest id, a task file under another prefix (not read as a task) | nothing |
 
 A missing, broken or foreign `STATE.json` stops every command (exit 1) — rebuilding it is the
 operator's call; `validate` exits 1 on an error; usage errors exit 2. `BACKLOG_NOW` sets the stamp
@@ -262,4 +279,5 @@ verbatim (for tests). Dates and numbers are computed; titles, statuses the files
   is not detailed, is pinned); `next-id` past `lastTask` and past a lost session's ids; `tick`, the
   criteria once every subtask is closed, and its refusals; `render`'s overview, batch rows, coverage
   cells and count line, the stamp and the pin, and a second run that changes nothing; `validate` once
-  per break.
+  per break; `prefix`'s suggestions, its writing and its refusals, and the whole fixture run under a
+  prefix of its own, with a file under another prefix named and a malformed one stopping every command.

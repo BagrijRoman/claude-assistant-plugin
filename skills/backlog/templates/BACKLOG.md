@@ -6,8 +6,8 @@ edit these tables. Updated {{YYYY-MM-DDTHH:MM}} · current batch **{{NN}}**.
 
 ## The loop
 
-`/backlog next` → pick a task → work down its subtasks → `/backlog done T-NNN.n` after each; the last
-one closes the task once its acceptance criteria hold (`/backlog done T-NNN` closes a task without
+`/backlog next` → pick a task → work down its subtasks → `/backlog done {{prefix}}-NNN.n` after each; the last
+one closes the task once its acceptance criteria hold (`/backlog done {{prefix}}-NNN` closes a task without
 ticking every subtask). `/backlog add` for anything the blueprint did not foresee, `/backlog plan` to
 move or drop things, `/backlog resync` when the blueprint changes.
 
@@ -23,13 +23,13 @@ move or drop things, `/backlog resync` when the blueprint changes.
 
 | Task | Title | Module | Platforms | Size | First subtask |
 |------|-------|--------|-----------|------|---------------|
-| [T-{{nnn}}](tasks/T-{{nnn}}-{{slug}}.md) | {{title}} | {{ORG}} | {{web}} | {{S/M}} | {{T-nnn.1 title}} |
+| [{{prefix}}-{{nnn}}](tasks/{{prefix}}-{{nnn}}-{{slug}}.md) | {{title}} | {{ORG}} | {{web}} | {{S/M}} | {{prefix}}-{{nnn}}.1 — {{title}} |
 
 ## In progress
 
 | Task | Title | Next subtask |
 |------|-------|--------------|
-| [T-{{nnn}}](tasks/T-{{nnn}}-{{slug}}.md) | {{title}} | {{T-nnn.k — title}} |
+| [{{prefix}}-{{nnn}}](tasks/{{prefix}}-{{nnn}}-{{slug}}.md) | {{title}} | {{prefix}}-{{nnn}}.k — {{title}} |
 
 ## Needs attention
 
@@ -37,7 +37,7 @@ Tasks flagged by `resync` or `add` (`review`), and what a hand edit left inconsi
 
 | Task | Why |
 |------|-----|
-| [T-{{nnn}}](tasks/T-{{nnn}}-{{slug}}.md) | {{needs-review: ACC-C03's rules changed / needs-detail / a subtask is ticked but the task is todo}} |
+| [{{prefix}}-{{nnn}}](tasks/{{prefix}}-{{nnn}}-{{slug}}.md) | {{needs-review: ACC-C03's rules changed / needs-detail / a subtask is ticked but the task is todo}} |
 
 ## Blocked by blueprint questions
 
@@ -45,15 +45,15 @@ Run `/blueprint decide` to close these; `/backlog resync` lifts the blocks.
 
 | Question | Holds up | Built on its provisional choice | Batch |
 |----------|----------|---------------------------------|-------|
-| {{Q-nnn}} — {{one line}} | {{T-nnn, T-nnn}} | {{T-nnn}} | {{NN}} |
+| {{Q-nnn}} — {{one line}} | {{prefix}}-{{nnn}}, {{prefix}}-{{nnn}} | {{prefix}}-{{nnn}} | {{NN}} |
 
 ## Blocked outside the blueprint
 
-`/backlog plan unblock T-NNN` when the blocker is gone.
+`/backlog plan unblock {{prefix}}-NNN` when the blocker is gone.
 
 | Task | Waits for | Since |
 |------|-----------|-------|
-| [T-{{nnn}}](tasks/T-{{nnn}}-{{slug}}.md) | {{credentials for the payment sandbox}} | {{YYYY-MM-DD}} |
+| [{{prefix}}-{{nnn}}](tasks/{{prefix}}-{{nnn}}-{{slug}}.md) | {{credentials for the payment sandbox}} | {{YYYY-MM-DD}} |
 
 ## Legend
 

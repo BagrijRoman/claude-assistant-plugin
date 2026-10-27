@@ -196,11 +196,11 @@ Subtasks are the list a developer works down. Their shape, in the task file:
 
 ```
 ## Subtasks
-- [ ] T-012.1 — Record an invitation: who invited whom, expiry, single-use link
+- [ ] ABC-012.1 — Record an invitation: who invited whom, expiry, single-use link
       done when: an invitation exists and can be listed by the team owner
-- [ ] T-012.2 — Send the invitation email with the link
+- [ ] ABC-012.2 — Send the invitation email with the link
       done when: the invitee receives a mail that opens the accept page
-- [x] ~~T-012.4 — Remind the invitee after three days~~ moved → T-019.6
+- [x] ~~ABC-012.4 — Remind the invitee after three days~~ moved → ABC-019.6
 ```
 
 Rules:
@@ -221,7 +221,7 @@ Rules:
 - **Provisional subtasks** — built on an open question's provisional choice — say `(provisional,
   Q-nnn)` in their line.
 - **Closed is ticked.** A subtask moved to another task or dropped is ticked and struck through, with
-  `moved → T-0xx.n` or `dropped: <reason>` after it; it counts as closed. Ids are never renumbered.
+  `moved → ABC-0xx.n` or `dropped: <reason>` after it; it counts as closed. Ids are never renumbered.
 
 ## Acceptance criteria and How to verify
 

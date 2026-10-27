@@ -33,7 +33,7 @@ resumes it after a *Stop here*, and shows where things stand every time after.
 | `status` | Progress per batch, what is in progress, ready, blocked and by what, whether the blueprint moved; change nothing |
 | `next` | The tasks ready to start now, and the next subtask of anything in progress; writes nothing but the closing of a complete batch, with the operator |
 | `detail <batch>` | Write the tasks of one outlined batch out in full: scope, subtasks, acceptance criteria |
-| `done <id> [note]` | Mark a subtask (`T-012.3`) or a task (`T-012`) done; show what it unblocked; close the batch when it is complete |
+| `done <id> [note]` | Mark a subtask (`ABC-012.3`) or a task (`ABC-012`) done; show what it unblocked; close the batch when it is complete |
 | `add [text]` | Add a task the blueprint did not produce — a bug, a chore, a spike, something learned on the way |
 | `plan <action>` | Re-plan: move or drop a task, reorder a batch, add, move or rename a batch, set the current batch, lift an outside blocker |
 | `resync` | The blueprint changed: find new, changed, moved and retired capabilities, opened and closed questions; propose changes |
@@ -110,12 +110,12 @@ Templates for every file are in `templates/` next to this file
 
 ```
 <backlog dir>/
-├── STATE.json             blueprint path + fingerprint, repositories, strategy, last task id, batches, pending mode
+├── STATE.json             blueprint path + fingerprint, task prefix, repositories, strategy, last task id, batches, pending mode
 ├── BACKLOG.md             the overview: progress per batch, ready now, in progress, blocked by what
 ├── PLANNING.md            P-NNN slicing decisions; standing criteria; feedback to the blueprint; resync reports
 ├── COVERAGE.md            every blueprint capability id → the task(s) that deliver it, or why none does
 ├── batches/NN-<slug>.md   goal, "what works after this batch", flow → capabilities, the task rows in order
-└── tasks/T-NNN-<slug>.md  one task: frontmatter (data) + scope, subtasks, acceptance criteria, how to verify
+└── tasks/ABC-NNN-<slug>.md  one task: frontmatter (data) + scope, subtasks, acceptance criteria, how to verify
 ```
 
 ## The three units
@@ -123,8 +123,15 @@ Templates for every file are in `templates/` next to this file
 | Unit | Id | What it is | Done means |
 |------|----|------------|------------|
 | **Batch** | `01`, `02`… | a portion of work after which something new works end to end | every task done or dropped, and the operator confirmed the *What works after this batch* paragraph |
-| **Task** | `T-012` | one reviewable change — one pull request per repository it touches | every subtask closed and every acceptance criterion holds |
-| **Subtask** | `T-012.3` | one sitting of work, one commit | its *done when* line holds |
+| **Task** | `ABC-012` | one reviewable change — one pull request per repository it touches | every subtask closed and every acceptance criterion holds |
+| **Subtask** | `ABC-012.3` | one sitting of work, one commit | its *done when* line holds |
+
+**The task prefix.** Every task id starts with the backlog's prefix — `ABC` in this documentation —
+chosen by the operator at `init` from the script's suggestions and kept in `STATE.json`'s `taskPrefix`:
+2–6 capital letters or digits, a letter first, never `RK`, `NEW` or a module code. That is the shape a
+branch-based tool reads as a ticket — `feat/ABC-012-slug` names task `ABC-012`, which is how
+`apiko-agent`'s plan gate finds the plan — so a task id serves as the ticket id in every repository.
+The prefix is fixed once the first id is given; a backlog without `taskPrefix` keeps the legacy `T-NNN`.
 
 A batch is **vertical**: the thinnest version of a user flow across the modules it touches, not a
 layer ("all the data first, all the screens later"). The test is the paragraph at the top of each
@@ -200,7 +207,7 @@ The operator always sees which stage the run is in, what is done and what comes 
 
 | Mode | Stages |
 |------|--------|
-| `init [dir]` | Find the blueprint → Folder → Read the blueprint → What exists already → Strategy → Outline → Gate 1 (outline) → Detail batches 1–2 → Gate 2 (detail) |
+| `init [dir]` | Find the blueprint → Folder → Task prefix → Read the blueprint → What exists already → Strategy → Outline → Gate 1 (outline) → Detail batches 1–2 → Gate 2 (detail) |
 | `continue` | The stages of the mode in `STATE.json.pending`, from the step it records |
 | `status` | Hand edits → Blueprint checks → Report |
 | `next` | Hand edits → Blueprint checks → What to work on |
@@ -237,5 +244,5 @@ The operator always sees which stage the run is in, what is done and what comes 
 - `BACKLOG.md` shows the batches, the tasks ready now and the questions that block tasks.
 - Nothing was created outside the backlog folder: no scratch file in the project root, `/tmp` or
   the scratchpad, and nothing in the blueprint.
-- The operator knows the daily loop: `/backlog next` → work → `/backlog done T-NNN.n` after each
+- The operator knows the daily loop: `/backlog next` → work → `/backlog done ABC-NNN.n` after each
   subtask; the last one closes the task once its criteria hold.
