@@ -1198,6 +1198,33 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T42 — `/showcase` without the Microcopy and tone step · `done`
+
+The operator asked for the Microcopy and tone step (step 6, `microcopy`, the Design child page
+`design/microcopy.html`) to be taken out of the skill entirely. Applied to the skill; no release, the
+version stays.
+
+What was done:
+- `SKILL.md` (the description, the Design row of the site table, the order of making, the Progress
+  stages), `phases.md` (the Contents, the section-intake row, the `## Step 6` section),
+  `sections.md` (the Microcopy item under Design), `templates/pages.mjs` (the `microcopy` child and
+  its sections, so no `nav.design.microcopy.*` keys), `templates/STATE.json` (`steps.microcopy`),
+  `templates/README.md`, `templates/i18n/lang.js`, `bin/skillResume.mjs` (the stage), the docs
+  pages and the root README: the step is gone.
+- The steps after it moved up one: Components is 6, … Principles, Decisions, Changelog, Next steps
+  19, Audit 20; the section intake covers steps 1–19; every *Needs* column, heading, anchor and
+  "step n" reference follows; the progress line reads `7/21 Components`.
+- Where a later step took its words from the Microcopy page — Components, States, Email templates,
+  Charts, the *Languages* paragraph — the words now come from the documentation and the sample
+  world, in the product's voice as the Principles page sets it or plainly (a *Words* paragraph in
+  `phases.md › Section intake`), each text's translation written into every dictionary when the
+  text is written. The `data-i18n` keys and every dictionary holding every key are unchanged.
+- `tests/skillResume.test.mjs` (21 stages, 22 keys, `7/21`), `tests/showcaseFrame.test.mjs` (intake
+  rows 1–19), a comment in `tests/structure.test.mjs`.
+
+Done when:
+- `npm test` passes (434).
+
 ## T41 — `/showcase` section intake: every section asked for before it is made; a design baseline followed · `done` (0.22.0)
 
 On STS-apiko-esg-core (2026-10-22) the operator asked that, before each section is generated, the skill

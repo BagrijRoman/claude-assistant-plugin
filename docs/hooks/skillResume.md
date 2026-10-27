@@ -34,7 +34,7 @@ It is a notice, not a guard: it blocks nothing and writes nothing.
 | a blueprint whose `phase` is not `done` | `▸ /blueprint · 6/8 Capabilities (L3) · not started · docs/blueprint — /blueprint resumes it` |
 | a phase at its gate | `… · 5/8 Modules (L2) · waits for the operator at its gate · …` |
 | modules whose agent failed | `… · failed: DAT l2, ORG l3 · …` |
-| a showcase whose `step` is not `done` | `▸ /showcase · 8/22 Components · waits for the operator at its gate · docs/showcase — /showcase resumes it` |
+| a showcase whose `step` is not `done` | `▸ /showcase · 7/21 Components · waits for the operator at its gate · docs/showcase — /showcase resumes it` |
 | a showcase with an unanswered question (`pending`) | `… · a question waits for the operator · …` |
 | a backlog whose `pending` names a mode | `▸ /backlog · detail stopped at gate · docs/backlog — /backlog continue resumes it` |
 | a research run past its brief (`research`, `curate`, `review`) | `▸ /research · 2/4 Research · round 2 cut off while running · docs/research/2026-10-14-fleet — /research resumes it` |
@@ -63,7 +63,7 @@ It is a notice, not a guard: it blocks nothing and writes nothing.
      `init`, `continue` row of its `SKILL.md › Progress`), its status from `phases`, and the modules whose
      `l2` or `l3` is `failed`, removed modules left out;
    - **showcase** — whose `step` is one of its steps: the stage's number and name (the `init [dir]`,
-     `continue` row of its `SKILL.md › Progress`; step 20's two keys share a stage), its status from
+     `continue` row of its `SKILL.md › Progress`; step 19's two keys share a stage), its status from
      `steps`, and whether `pending` holds a question;
    - **backlog** — whose `pending` names a mode: the mode and the step it stopped at;
    - **research** — whose `phase` is `research`, `curate` or `review`: the phase's number and stage name
@@ -77,7 +77,7 @@ It is a notice, not a guard: it blocks nothing and writes nothing.
 ```
 [dev-assistant] skill-resume: unfinished work in this project —
 - /blueprint in docs/blueprint: phase "capabilities" (6/8 Capabilities (L3) · not started); see mechanics.md › A fresh context
-- /showcase in docs/showcase: step "components" (8/22 Components · in progress); see phases.md › A fresh context
+- /showcase in docs/showcase: step "components" (7/21 Components · in progress); see phases.md › A fresh context
 When the operator runs the command, resume from that STATE.json as the skill says: read only what the current phase, step or mode needs, not the documents of the ones already approved.
 ```
 

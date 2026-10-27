@@ -2,8 +2,9 @@
 // every key here is a data-i18n key in a page or in the navigation that build.mjs writes.
 // `/showcase audit` lists the keys the pages use that this file lacks, and the keys here that no
 // page uses. The texts of the product itself (screens, components, emails) come from the
-// Microcopy and tone page: write them there first, then here. An entry for an element that holds
-// markup (a <code>, a tag) is HTML, with the same markup.
+// documentation and the sample world: write each one's translation here when the page that shows
+// it is written. An entry for an element that holds markup (a <code>, a tag) is HTML, with the
+// same markup.
 window.SHOWCASE_I18N = window.SHOWCASE_I18N || {};
 window.SHOWCASE_I18N['{{LANG}}'] = {
   // ── The site's own interface ──

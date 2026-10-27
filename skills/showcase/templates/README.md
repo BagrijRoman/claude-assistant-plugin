@@ -52,7 +52,8 @@ alone and larger. **Escape** leaves it.
 - A heavy page is a generator (`tools/gen<Page>.mjs`), not hand-written HTML.
 - Where the site proposes something the product does not have, it says "proposed".
 - Sample data is for a fictional company ({{SAMPLE_COMPANY}}); see `sample.mjs`.
-- The texts come from the Microcopy and tone page; every translatable text carries a `data-i18n` key.
+- The texts come from the documentation and the sample world, in the product's voice or plainly;
+  every translatable text carries a `data-i18n` key, and every dictionary has its translation.
 - Every animation has a still version: the site honours `prefers-reduced-motion`.
 
 ## To add

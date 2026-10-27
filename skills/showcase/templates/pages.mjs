@@ -154,18 +154,6 @@ export const BANDS = [
             ],
           },
           {
-            id: 'microcopy', path: 'design/microcopy.html', title: 'Microcopy and tone', desc: 'How the product speaks: its voice, and the patterns for buttons, errors, empty states, confirmations and notifications, in every language of the interface.',
-            sections: [
-              { id: 'voice', title: 'Voice', desc: 'Who is speaking and how.' },
-              { id: 'buttons', title: 'Buttons and links', desc: 'Verbs, length, capitalisation.' },
-              { id: 'errors', title: 'Errors', desc: 'What went wrong, what to do; never whose fault.' },
-              { id: 'emptyStates', title: 'Empty states', desc: 'What this is for and the first thing to do.' },
-              { id: 'confirmations', title: 'Confirmations', desc: 'Before a destructive action; after a success.' },
-              { id: 'notifications', title: 'Notifications and emails', desc: 'Subject lines, the first sentence, the one action.' },
-              { id: 'languages', title: 'Languages', desc: 'The same message in every interface language, side by side.' },
-            ],
-          },
-          {
             id: 'states', path: 'design/states.html', title: 'States', desc: 'What a screen shows when it has nothing, is loading, failed, is closed to a role, is offline or has just succeeded — the picture, the words and the action.',
             sections: [
               { id: 'empty', title: 'Empty', desc: 'Nothing yet, and nothing matching a search or a filter.' },

@@ -1,6 +1,6 @@
 ---
 name: showcase
-description: Builds the project's design showcase — a static site in docs/showcase/ that shows the customer the product before it exists (what it is and for whom, the technology stack with official marks, the architecture in diagrams, what keeps the data safe in the customer's words, then the design — colors, type, logo, icons, words, states — illustrations, layouts — sign-in, the app's shell and the 404, led by animated pictures of the domain — components, key screens, flows with a step player, emails) and gives the team what every screen is drawn with (tokens, components, icons, microcopy, decisions). Reads the whole documentation folder; the operator decides every fork; theme and interface language switch everywhere. Human-invoked only.
+description: Builds the project's design showcase — a static site in docs/showcase/ that shows the customer the product before it exists (what it is and for whom, the technology stack with official marks, the architecture in diagrams, what keeps the data safe in the customer's words, then the design — colors, type, logo, icons, states — illustrations, layouts — sign-in, the app's shell and the 404, led by animated pictures of the domain — components, key screens, flows with a step player, emails) and gives the team what every screen is drawn with (tokens, components, icons, decisions). Reads the whole documentation folder; the operator decides every fork; theme and interface language switch everywhere. Human-invoked only.
 argument-hint: "[init [dir] | continue | status | section <id> | flow <id> | pick <section> <variant> | add | audit | open]"
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(node:*), Bash(ls:*), Bash(mkdir:*), Bash(cp:*), Bash(find:*), AskUserQuestion, Agent, SendUserFile
@@ -11,7 +11,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(node:*), Bash(ls:*), Bash(mkd
 You build a static site that shows a product before it exists. Two readers look at it: the
 **customer**, who should recognise their product in the first minute — its mark, its first screen,
 its shell, its flows; and the **team**, who will build it and needs the pieces every screen is made
-of — tokens, components, icons, the words, the stack. One site serves both, in that order.
+of — tokens, components, icons, the stack. One site serves both, in that order.
 
 The site is plain HTML and CSS served by a tiny Node script, with no dependencies, so it opens on
 any machine and from a zip. Its frame — menu, theme and language switches, presentation mode, the
@@ -54,7 +54,7 @@ colors, fetched once by `tools/fetchTechMarks.mjs`, never redrawn.
 only decide what is visible. A heavy page is written by a generator in `tools/` from data, never
 by hand: the texts can then carry their language keys, and a change is made once.
 
-**The operator decides.** Before every section is made — steps 1 to 20 — they say whether they
+**The operator decides.** Before every section is made — steps 1 to 19 — they say whether they
 want it at all: **full**, **simplified** or **skipped**, and what to take into account in making it
 (`phases.md › Section intake`); nothing of a step starts before that answer. The color scheme, the
 stack, which mark, which layout, which flows and
@@ -127,7 +127,7 @@ order is the order of a customer's attention, not the order of making:
 | Group | Root sections, in order, with what unfolds under each |
 |-------|-------------------------------------------------------|
 | **Product** | **Product** (the home page: what it is · who uses it · modules · how it works · sample company · about this site; child page **Technology stack** — each technology with its official mark, one line, a link to its site) · **Architecture** (diagrams: the system in its world · its parts · modules · how data moves · where it runs · one request) · **Security** (in the customer's words: your data · who gets in · nothing is lost · against attacks · every change on record · what is promised, and what is not yet) · **Flows** (one page per flow, with the step player — right after Security: the product working, step by step, is the weightiest part for the customer, so it stands in the first group) · **Screens** (child page: Key screens — right after Flows) |
-| **Design** | **Design** (child pages: Principles · Colors · Typography · Spacing and layout · Radius and shadows · Motion · Logo · Loaders · Icons · Microcopy and tone · States) · **Illustrations** (for states · from the domain · in place · reserve) · **Layouts** (child pages: Auth layout · App layout · Not found page — variants led by animated pictures of the domain) · **Email templates** (a root of its own right after Layouts: the Template, then one item per letter — the common letters, then the product's own) · **Components** (one item per component) · **Charts** (a root of its own right after Components, only when the product has figures: one section per use of a chart in the product, each drawn where the product shows it — on the home screen, in a report, beside a target — not a gallery of chart types) |
+| **Design** | **Design** (child pages: Principles · Colors · Typography · Spacing and layout · Radius and shadows · Motion · Logo · Loaders · Icons · States) · **Illustrations** (for states · from the domain · in place · reserve) · **Layouts** (child pages: Auth layout · App layout · Not found page — variants led by animated pictures of the domain) · **Email templates** (a root of its own right after Layouts: the Template, then one item per letter — the common letters, then the product's own) · **Components** (one item per component) · **Charts** (a root of its own right after Components, only when the product has figures: one section per use of a chart in the product, each drawn where the product shows it — on the home screen, in a report, beside a target — not a gallery of chart types) |
 | **Project** | Decisions · Changelog · Next steps |
 
 The names are the team's words in every language: in Ukrainian Layouts is «Лейаути» (Auth layout
@@ -141,7 +141,7 @@ honoured by every animation.
 
 ## The order of making
 
-Dependencies decide it, not the menu. Each step from 1 to 20 starts with its section intake — full,
+Dependencies decide it, not the menu. Each step from 1 to 19 starts with its section intake — full,
 simplified or skipped, and the operator's wishes — and ends with a gate: the operator looks at the
 site, and approves or sends it back. A skipped step has no gate. The key is the step's name in `STATE.json › steps`.
 
@@ -153,22 +153,21 @@ site, and approves or sends it back. A skipped step has no gate. The key is the 
 | 3 Frame | `frame` | the folder scaffolded, tokens from the scheme, starting pages; the Product page from the reading and the Technology stack page with the official marks; the site opens | 1, 2 |
 | 4 Foundations | `foundations` | tokens finished; the Design pages Colors, Typography, Spacing and layout, Radius and shadows, Motion, with live swatches and contrast | 3 |
 | 5 Logo | `logo` | marks from ideas in the product, at every size; one picked; then the Loaders page, the picked mark set in motion | 4 |
-| 6 Microcopy and tone | `microcopy` | voice and patterns in every language — the source of every string that follows, so it comes before the first step that writes words | 0 |
-| 7 Components | `components` | the standard set, the product's own, a reserve; styled to the project | 4, 6 |
-| 8 Icons | `icons` | two groups only: the base standard icons the components and screens use, and the icons of the product's domain; on their grid | 7 |
-| 9 Illustrations | `illustrations` | a picture for every state a screen can be in and for the cases of the domain, some moving; a reserve | 4, 5 |
-| 10 States | `states` | picture + words + action for empty, loading, error, access, offline, done | 6, 9 |
-| 11 Auth layout | `signIn` | Layouts: several, every one with an animated scene of the domain; one picked | 7, 9 |
-| 12 App layout | `appLayout` | Layouts: several shells with a folding sidebar, most with the product's moving pictures in place; one picked | 7, 9 |
-| 13 Not found page | `notFound` | Layouts: several, each a moving picture with the 404 in it; one picked | 9 |
-| 14 Key screens | `screens` | the main screens in device frames per surface, in the picked shell | 7, 10, 12 |
-| 15 Flows | `flows` | list approved → each description approved → built with the step player, the controls of each step highlighted in the order they are used | 14 |
-| 16 Email templates | `emails` | the root section Email templates (in Design, after Layouts): the template, then the common letters and the product's own — each a menu item with a picture of its own in the product's colors | 6, 9 |
-| 17 Charts | `charts` | only when the product has figures: the root section Charts (in Design, after Components) — one section per use of a chart in the product, each drawn where the product shows it (in the picked shell or as the card), from an approved plan, with the library chosen in step 2 | 4, 7, 12 |
-| 18 Architecture | `architecture` | the architecture drawn for the customer: diagrams of the system in its world, its parts, modules, data, deployment, one request | 2 |
-| 19 Security | `security` | the security page in the customer's words: where the data lives and who reaches it, what guards it from loss and from attack, what stays on record, what is not promised yet — every claim from the documentation, marked done or planned | 2, 18 |
-| 20 Principles · Decisions · Changelog · Next | `principles`, `project` | the pages about the project | all |
-| 21 Audit | `audit` | both themes × every language; the checks in site.md | all |
+| 6 Components | `components` | the standard set, the product's own, a reserve; styled to the project | 4 |
+| 7 Icons | `icons` | two groups only: the base standard icons the components and screens use, and the icons of the product's domain; on their grid | 6 |
+| 8 Illustrations | `illustrations` | a picture for every state a screen can be in and for the cases of the domain, some moving; a reserve | 4, 5 |
+| 9 States | `states` | picture + words + action for empty, loading, error, access, offline, done | 8 |
+| 10 Auth layout | `signIn` | Layouts: several, every one with an animated scene of the domain; one picked | 6, 8 |
+| 11 App layout | `appLayout` | Layouts: several shells with a folding sidebar, most with the product's moving pictures in place; one picked | 6, 8 |
+| 12 Not found page | `notFound` | Layouts: several, each a moving picture with the 404 in it; one picked | 8 |
+| 13 Key screens | `screens` | the main screens in device frames per surface, in the picked shell | 6, 9, 11 |
+| 14 Flows | `flows` | list approved → each description approved → built with the step player, the controls of each step highlighted in the order they are used | 13 |
+| 15 Email templates | `emails` | the root section Email templates (in Design, after Layouts): the template, then the common letters and the product's own — each a menu item with a picture of its own in the product's colors | 8 |
+| 16 Charts | `charts` | only when the product has figures: the root section Charts (in Design, after Components) — one section per use of a chart in the product, each drawn where the product shows it (in the picked shell or as the card), from an approved plan, with the library chosen in step 2 | 4, 6, 11 |
+| 17 Architecture | `architecture` | the architecture drawn for the customer: diagrams of the system in its world, its parts, modules, data, deployment, one request | 2 |
+| 18 Security | `security` | the security page in the customer's words: where the data lives and who reaches it, what guards it from loss and from attack, what stays on record, what is not promised yet — every claim from the documentation, marked done or planned | 2, 17 |
+| 19 Principles · Decisions · Changelog · Next | `principles`, `project` | the pages about the project | all |
+| 20 Audit | `audit` | both themes × every language; the checks in site.md | all |
 
 ## Variants and picks
 
@@ -176,7 +175,7 @@ Logo and the three Layouts — auth, app, not found — are made as **several va
 a customer chooses better between things than from a description. Each variant is a section with
 an id; `/showcase pick <section> <variant>` marks the chosen one `Selected`, moves it first, writes
 `site.mjs › selected`, fills the group's row in `DECISIONS.md` and regenerates the Decisions page
-once it exists (step 20). The others stay as alternatives — the Decisions page is where the
+once it exists (step 19). The others stay as alternatives — the Decisions page is where the
 customer sees what was considered.
 
 ## Progress
@@ -191,7 +190,7 @@ The operator always sees which stage the run is in, what is done and what comes 
   keep the items current; without one, the checklist in the chat is enough.
 - **The line.** At every change of stage or step, one line:
   `▸ /showcase · <n>/<N> <stage> · <step>`, plus `· <k>/<m>` while units are counted —
-  `▸ /showcase · 8/22 Components · building · 3/5`. The marks, the numbers and the command are fixed;
+  `▸ /showcase · 7/21 Components · building · 3/5`. The marks, the numbers and the command are fixed;
   the stage and the step are in the operator's language.
 - **Units.** A stage that works through units — document groups read, component groups, marks,
   flows, letters, pages audited per theme and language — counts them in the line, and the task list
@@ -204,7 +203,7 @@ The operator always sees which stage the run is in, what is done and what comes 
 
 | Mode | Stages |
 |------|--------|
-| `init [dir]`, `continue` | Intake → Color scheme → Technology → Frame → Foundations → Logo → Microcopy and tone → Components → Icons → Illustrations → States → Auth layout → App layout → Not found page → Key screens → Flows → Email templates → Charts → Architecture → Security → Principles, Decisions, Changelog, Next steps → Audit |
+| `init [dir]`, `continue` | Intake → Color scheme → Technology → Frame → Foundations → Logo → Components → Icons → Illustrations → States → Auth layout → App layout → Not found page → Key screens → Flows → Email templates → Charts → Architecture → Security → Principles, Decisions, Changelog, Next steps → Audit |
 | `status` | Read the state → Report |
 | `section <id>` | Section intake → Plan → Approval → Build → Gate |
 | `flow <id>` | Description → Approval → Build → Gate |

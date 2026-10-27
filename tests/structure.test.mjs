@@ -174,7 +174,7 @@ describe('files a skill names', () => {
   // A placeholder — `{{YYYY-MM-DD}}` in a template's heading, `<date>` in the reference — matches any text.
   const normalise = (text) => text.replace(/[*`]/g, '').replace(/\{\{[^}]*\}\}|<[^>]*>/g, '…').trim();
   const headings = (file) => [...readFileSync(file, 'utf8').matchAll(/^#{1,6}\s+(.+?)\s*$/gm)].map(([, text]) => normalise(text));
-  // A reference may shorten a heading to its first words: `sections.md › Microcopy` for "Microcopy and tone".
+  // A reference may shorten a heading to its first words: `sections.md › Technology stack` for "Technology stack (…)".
   const names = (heading, wanted) => heading === wanted || heading.startsWith(`${wanted} `);
 
   for (const skill of skills) {

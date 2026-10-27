@@ -10,7 +10,7 @@ level down (the stack under Product, the pages of Design, the key screens, each 
 
 ### Product (`index.html`, the home page)
 What the customer reads first: the product, not the site. Written by `tools/genProduct.mjs` in the
-Frame step from `SOURCES.md` and `sample.mjs`, and again in step 20.
+Frame step from `SOURCES.md` and `sample.mjs`, and again in step 19.
 - **What it is**: the product in one paragraph — what it does, for whom, the problem it solves — and
   three or four promises it keeps (from the brief's goals), each a short line with an icon.
 - **Who uses it**: one card per role — the role, one line of what they do, where (web, phone, a
@@ -148,17 +148,13 @@ status — then the list of its pages (`<div data-children>`). Its child pages, 
   product's own subjects, drawn for it, each with the thing it stands for. Every icon at 16 px with its
   name as used in code and where it is used, in both themes; *Sizes and rules* — the grid, the stroke, 16 / 20 / 24; where an icon stands alone
   and where it needs a label; the icons that mean a status and must keep their shape.
-- **Microcopy and tone** (`design/microcopy.html`): *Voice* — who speaks and how, in three lines;
-  the words the product uses and avoids (from the glossary). *Buttons and links*, *Errors*, *Empty
-  states*, *Confirmations*, *Notifications and emails* — the pattern, a *do / don't* pair, the
-  cases. *Languages* — the same messages in every interface language, side by side, in a table: the
-  source of the dictionaries.
 - **States** (`design/states.html`): one section per state — **empty** (nothing yet; nothing
   matching), **loading** (skeletons; when a spinner), **error** (a page that did not load; a form
   that did not save), **access** (a door closed to a role; a session ended), **offline** (no
   connection; changes waiting — only when the product works offline; otherwise what a lost
-  connection shows), **done**. Each: the picture (from Illustrations), the words (from Microcopy),
-  the one action, where it appears in the product, drawn in place.
+  connection shows), **done**. Each: the picture (from Illustrations), the words (from the
+  documentation, in the product's voice or plainly), the one action, where it appears in the
+  product, drawn in place.
 
 ### Illustrations (`illustrations/index.html`)
 A root section of its own: the pictures are what makes the product feel like itself.
@@ -225,7 +221,7 @@ the Design group over its title.
   alert; *The product's own* — what its flows send, each named after the moment it is sent.
   Each letter 600 px, in `mail()`, filled into the template: subject and sender as a mail client
   shows them; a picture of its own about that moment, in the product's colors and from its domain;
-  one message in the voice of Microcopy; one action button; the footer with why they received it.
+  one message in the product's voice, or plainly; one action button; the footer with why they received it.
   Light theme is the letter's own; the dark theme shows how a dark mail client renders it.
 - The `sections` of its entry in `pages.mjs` are the Template, then one per letter in the order of
   the page — the common letters, then the product's own. A planned showcase starts with the Template
@@ -250,7 +246,7 @@ the shell — so the customer sees a figure in its place and not a chart in a va
   hue alone (a label, a pattern or a marker beside every color); the rules of axes (units on the
   axis or in the title, a zero baseline for bars, tick counts), legend (direct labels where they
   fit), tooltip (what it shows, how it opens by keyboard); the empty and the loading state of a
-  chart, in the words of Microcopy and the look of States; reduced motion (a chart that draws
+  chart, in the product's words and the look of States; reduced motion (a chart that draws
   itself stands finished).
 - **One section per use**, in the order of the plan; its anchor is the use's id, written with
   `block()`, and the menu lists it. Each section has: *who looks at it* (the role); *where it stands*

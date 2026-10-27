@@ -13,7 +13,7 @@
 // Security; Email templates in Design right after Layouts — and to the shape of Email templates: a root
 // of its own whose menu items are the Template and a section per letter; Charts a planned root right after
 // Components, with no child under Design. The section intake asked before every step is held to its table
-// (one row per step 1–20, a simplified scope for each) and the template's STATE.json to an empty scope.
+// (one row per step 1–19, a simplified scope for each) and the template's STATE.json to an empty scope.
 
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -549,9 +549,9 @@ describe('showcase section intake', () => {
   const phases = readFileSync(new URL('../skills/showcase/references/phases.md', import.meta.url), 'utf8');
   const intake = phases.slice(phases.indexOf('\n## Section intake\n'), phases.indexOf('\n## A fresh context\n'));
 
-  it('gives every step from 1 to 20 a row with a full and a simplified scope, in order', () => {
+  it('gives every step from 1 to 19 a row with a full and a simplified scope, in order', () => {
     const rows = [...intake.matchAll(/^\| (\d+) [^|]+\| ([^|]+) \| ([^|]+) \|$/gm)];
-    assert.deepEqual(rows.map(([, n]) => Number(n)), Array.from({ length: 20 }, (_, i) => i + 1));
+    assert.deepEqual(rows.map(([, n]) => Number(n)), Array.from({ length: 19 }, (_, i) => i + 1));
     for (const [row, , full, simple] of rows) {
       assert.ok(full.trim() && simple.trim() && full.trim() !== simple.trim(), row);
     }

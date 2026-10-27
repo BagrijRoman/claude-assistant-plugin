@@ -16,7 +16,7 @@ A customer cannot picture a product from a requirements document, and a team can
 from a mood board. The same static site answers both: the customer sees their product — its mark,
 its first screen, its shell, its flows step by step, its emails — before a line of it exists; the
 team gets what every screen is drawn with — the color scheme and tokens, the components with
-their states, the icons, the words, the stack — and a page that says what was decided and why.
+their states, the icons, the stack — and a page that says what was decided and why.
 
 The author has made this site for several products by hand; the frame (menu, theme switch,
 in-place navigation, live token values) was rebuilt each time and the procedure lived in memory.
@@ -79,7 +79,7 @@ customer's attention:
 | Group | Root sections, with what unfolds under each |
 |-------|---------------------------------------------|
 | Product | **Product**, the home page (what it is · who uses it · modules · how it works · sample company · about this site; child page **Technology stack**: each technology with its official mark, one line and a link to its site) · **Architecture** (diagrams for the customer: the system in its world · its parts · modules · how data moves · where it runs · one request) · **Security** (in the customer's words, every claim from the documentation and marked done or planned: your data · who gets in · nothing is lost · against attacks · every change on record · what is promised, and what is not yet) · **Flows** (a page per flow with the step player — right after Security, since the product working step by step is the weightiest part for the customer) · **Screens** (child page: Key screens — right after Flows) |
-| Design | **Design** (child pages: Principles · Colors · Typography · Spacing and layout · Radius and shadows · Motion · Logo · Loaders · Icons · Microcopy and tone · States) · **Illustrations** (for states · from the domain · in place · reserve) · **Layouts** (Auth layout · App layout · Not found page — the variants led by animated pictures of the domain) · **Email templates** (a root of its own right after Layouts: the Template, then one item per letter — the common letters, then the product's own; a click scrolls to the letter and the menu marks the one in view) · **Components** (one item per component) · **Charts** (a root of its own right after Components, only when the product has figures: one section per use of a chart in the product, each drawn where the product shows it — not a gallery of chart types) |
+| Design | **Design** (child pages: Principles · Colors · Typography · Spacing and layout · Radius and shadows · Motion · Logo · Loaders · Icons · States) · **Illustrations** (for states · from the domain · in place · reserve) · **Layouts** (Auth layout · App layout · Not found page — the variants led by animated pictures of the domain) · **Email templates** (a root of its own right after Layouts: the Template, then one item per letter — the common letters, then the product's own; a click scrolls to the letter and the menu marks the one in view) · **Components** (one item per component) · **Charts** (a root of its own right after Components, only when the product has figures: one section per use of a chart in the product, each drawn where the product shows it — not a gallery of chart types) |
 | Project | Decisions · Changelog · Next steps |
 
 The names are the team's words in every language: in Ukrainian Layouts is «Лейаути» and Email
@@ -96,8 +96,9 @@ gate where the operator looks at the site and approves: **Intake** (the reading,
 **Color scheme** (confirmed from the design, or three proposals shown side by side on mini-UI
 before anything is drawn) → **Technology** (a dialog per layer) → **Frame** (the folder
 scaffolded, tokens from the scheme, the Product page from the reading and the Technology stack
-page with the official marks, a starting page for every other section — the site opens) → Foundations → Logo (and the Loaders made from the picked mark) → **Microcopy and tone** (the source of every string that follows, in
-every language, so before the first step that writes words) → Components → Icons (two groups only: the base
+page with the official marks, a starting page for every other section — the site opens) → Foundations → Logo (and the Loaders made from the picked mark) → Components (their words, and those of every later
+step, from the documentation and the sample world, each translated into every dictionary as it is
+written) → Icons (two groups only: the base
 standard icons the components and screens use, and the icons of the product's domain) → Illustrations
 → States → **Layouts** (Auth layout → App layout → Not found page) → Key screens → **Flows** → Email templates → Charts →
 **Architecture** → **Security** (one line per claim from what the documentation decided, then a page in
@@ -106,7 +107,7 @@ Principles, Decisions, Changelog, Next steps → **Audit**.
 
 ### How it decides with the operator
 
-Before every section is made (steps 1–20) the skill asks whether it is wanted: **full**,
+Before every section is made (steps 1–19) the skill asks whether it is wanted: **full**,
 **simplified** (a reduced scope per section, written in `phases.md › Section intake` — one mark
 instead of twelve, the components the screens use instead of the whole set, one diagram instead of
 six) or **skipped** (planned in the menu, a later step draws what it needs in place), and what to take
@@ -126,7 +127,7 @@ one `Selected` and keeps the others as alternatives for the Decisions page.
 
 ### Tokens
 
-A showcase is twenty-two steps with a gate each, and every turn sends the whole context again; a step built
+A showcase is twenty-one steps with a gate each, and every turn sends the whole context again; a step built
 on top of the ones before pays for their readings, plans, builders' replies and generated pages, none of
 which it reads. So the skill cuts only what the next step does not use:
 
@@ -170,7 +171,7 @@ and how many; and, on `continue` or `status`, the checklist rebuilt from its sta
 
 | Mode | Stages |
 |------|--------|
-| `init [dir]`, `continue` | Intake → Color scheme → Technology → Frame → Foundations → Logo → Microcopy and tone → Components → Icons → Illustrations → States → Auth layout → App layout → Not found page → Key screens → Flows → Email templates → Charts → Architecture → Security → Principles, Decisions, Changelog, Next steps → Audit |
+| `init [dir]`, `continue` | Intake → Color scheme → Technology → Frame → Foundations → Logo → Components → Icons → Illustrations → States → Auth layout → App layout → Not found page → Key screens → Flows → Email templates → Charts → Architecture → Security → Principles, Decisions, Changelog, Next steps → Audit |
 | `status` | Read the state → Report |
 | `section <id>` | Section intake → Plan → Approval → Build → Gate |
 | `flow <id>` | Description → Approval → Build → Gate |
@@ -222,13 +223,13 @@ still to come (T19).
 - **Guidance plus a template, not enforcement.** The frame is tested code; the content is prose
   the model follows. A hand edit to a generated page is lost on the next generator run — the
   README of the site says so.
-- **Long.** A full showcase is twenty-two steps with a gate each; it spans sessions. `continue`
+- **Long.** A full showcase is twenty-one steps with a gate each; it spans sessions. `continue`
   resumes from `STATE.json`.
 - **Illustrations and animated panels are where the model's taste shows.** Variants and picks
   exist so the operator chooses between drawn things rather than from descriptions; expect to
   reject some.
-- **Translations are generated.** The Microcopy page is the place to correct them; the
-  dictionaries follow.
+- **Translations are generated.** Each one is written into the dictionaries with the text it
+  translates, in the product's voice or plainly; `i18n/<lang>.js` is the place to correct them.
 - **Technology marks must be files in the folder.** `fetchTechMarks.mjs` takes them from Simple Icons
   (CC0 files of trademarked marks) once, with the network; a technology Simple Icons lacks needs a URL
   from its own site, or its card shows the initials on a tile.

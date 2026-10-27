@@ -2,7 +2,7 @@
 // how it works, the sample company, and about this site (the catalog, where the content comes from, how
 // to read it), then the list of its child pages (the Technology stack). The rendering is the frame's;
 // the content is the project's: fill the arrays marked FILL in the Frame step from SOURCES.md (the
-// reading) and keep the people and the company in sample.mjs. Run again when they change (step 20).
+// reading) and keep the people and the company in sample.mjs. Run again when they change (step 19).
 //
 //   node tools/genProduct.mjs && node build.mjs
 //

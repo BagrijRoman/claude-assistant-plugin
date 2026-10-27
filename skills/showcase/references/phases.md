@@ -15,13 +15,12 @@ must have is in [sections.md](sections.md); how pages are written, in [site.md](
 - [Step 2 — Technology](#step-2--technology)
 - [Step 3 — Frame](#step-3--frame)
 - [Steps 4–5 — Foundations, Logo](#steps-45--foundations-logo)
-- [Step 6 — Microcopy and tone](#step-6--microcopy-and-tone)
-- [Steps 7–9 — Components, Icons, Illustrations](#steps-79--components-icons-illustrations)
-- [Steps 10–14 — States, Layouts, Key screens](#steps-1014--states-layouts-key-screens)
-- [Step 15 — Flows](#step-15--flows)
-- [Steps 16–19 — Email templates, Charts, Architecture, Security](#steps-1619--email-templates-charts-architecture-security)
-- [Step 20 — Principles, Decisions, Changelog, Next steps](#step-20--principles-decisions-changelog-next-steps)
-- [Step 21 — Audit](#step-21--audit)
+- [Steps 6–8 — Components, Icons, Illustrations](#steps-68--components-icons-illustrations)
+- [Steps 9–13 — States, Layouts, Key screens](#steps-913--states-layouts-key-screens)
+- [Step 14 — Flows](#step-14--flows)
+- [Steps 15–18 — Email templates, Charts, Architecture, Security](#steps-1518--email-templates-charts-architecture-security)
+- [Step 19 — Principles, Decisions, Changelog, Next steps](#step-19--principles-decisions-changelog-next-steps)
+- [Step 20 — Audit](#step-20--audit)
 - [Other modes](#other-modes)
 
 ---
@@ -46,7 +45,7 @@ words in it.
 
 **The gate.** At the end of a step: run `node build.mjs`, tell the operator what to open (the page,
 both themes, each language), show it as above, list the decisions taken and what is still open, add a dated entry to
-`CHANGELOG.md` (the Changelog page is made from it in step 20), then ask (`AskUserQuestion`, header
+`CHANGELOG.md` (the Changelog page is made from it in step 19), then ask (`AskUserQuestion`, header
 `Gate`): **Approve** (Recommended when nothing is pending) / **Revise** — they say what / **Stop
 here** — state saved. Never start the next step before approval; after it, the next step starts in a
 fresh context (`phases.md › A fresh context`).
@@ -55,7 +54,7 @@ fresh context (`phases.md › A fresh context`).
 choice, reason, a blueprint `D-` id when one applies. SC-001 to SC-008 are reserved in the template
 for the decisions every showcase takes — fill that row; any other decision (a section simplified
 or skipped, the wishes for one, the fonts, the voice, the list of flows) is appended from SC-009 in the order taken. The Decisions page is
-generated from it by `tools/genDecisions.mjs`, written in step 20 and run again after every later
+generated from it by `tools/genDecisions.mjs`, written in step 19 and run again after every later
 `pick`.
 
 **Plans before work.** Every section that is a set of things — marks, cases, components, screens,
@@ -95,9 +94,9 @@ already decides for it.
 
 ## Section intake
 
-Before every step from 1 to 20 makes anything, the operator says whether they want the section, how
+Before every step from 1 to 19 makes anything, the operator says whether they want the section, how
 much of it, and what to take into account. Nothing of a step — no plan, no proposal, no subagent — starts
-before this answer. Intake (0) and Audit (21) have none.
+before this answer. Intake (0) and Audit (20) have none.
 
 1. **Ask** (`AskUserQuestion`, two questions in one call, header `Section` and `Wishes`), the first
    question's text in three short lines: what the full section shows, what the simplified one shows
@@ -133,26 +132,31 @@ before this answer. Intake (0) and Audit (21) have none.
 | 3 Frame | the Product page and the Technology stack page with official marks | the Product page; the stack as a plain list without marks |
 | 4 Foundations | Colors, Typography, Spacing and layout, Radius and shadows, Motion, each with live values and contrast | Colors and Typography; spacing, radius, shadows and motion as one token table on the Design page |
 | 5 Logo | 6–12 marks at every size, one picked; the Loaders page | the baseline's mark, or three marks to pick from; one loader in Components, no Loaders page |
-| 6 Microcopy and tone | voice options, every pattern, every language side by side | the voice in one paragraph and the twenty strings the screens use most, in every language |
-| 7 Components | the standard set, the product's own, a reserve; variants, states, sizes, properties | the components the planned screens and flows use, default and one state each, no properties table, no reserve |
-| 8 Icons | the base and domain groups on their grid, with the rules | the icons the screens use, on one sheet |
-| 9 Illustrations | for states, from the domain, in place, a reserve; some moving | one still picture per state and one domain scene |
-| 10 States | a section per state: picture, words, action, where it appears | one table of states with words and actions; pictures for empty and error only |
-| 11 Auth layout | 3–5 variants, each with a moving scene, one picked | one layout, its scene still |
-| 12 App layout | 2–4 shells, folded and unfolded, tablet and phone, one picked | one shell (the baseline's when there is one), desktop and phone |
-| 13 Not found page | 3–5 variants, one picked | one |
-| 14 Key screens | every screen the flows need, on every surface of its actors | the screens the flows need, on the main surface |
-| 15 Flows | the list, a description per flow, each built and gated | the one to three main flows, their descriptions approved together |
-| 16 Email templates | the template, the common letters and the product's own, a picture each | the template and the product's own letters, one shared picture |
-| 17 Charts | a section per use of a chart in the product | the one or two uses the key screens show |
-| 18 Architecture | the six diagrams | one diagram: the system in its world, with its parts |
-| 19 Security | the six parts, with drawings | one page of short paragraphs per part, done / planned tags, no drawings |
-| 20 Principles · Decisions · Changelog · Next | all four pages | Decisions and Next steps |
+| 6 Components | the standard set, the product's own, a reserve; variants, states, sizes, properties | the components the planned screens and flows use, default and one state each, no properties table, no reserve |
+| 7 Icons | the base and domain groups on their grid, with the rules | the icons the screens use, on one sheet |
+| 8 Illustrations | for states, from the domain, in place, a reserve; some moving | one still picture per state and one domain scene |
+| 9 States | a section per state: picture, words, action, where it appears | one table of states with words and actions; pictures for empty and error only |
+| 10 Auth layout | 3–5 variants, each with a moving scene, one picked | one layout, its scene still |
+| 11 App layout | 2–4 shells, folded and unfolded, tablet and phone, one picked | one shell (the baseline's when there is one), desktop and phone |
+| 12 Not found page | 3–5 variants, one picked | one |
+| 13 Key screens | every screen the flows need, on every surface of its actors | the screens the flows need, on the main surface |
+| 14 Flows | the list, a description per flow, each built and gated | the one to three main flows, their descriptions approved together |
+| 15 Email templates | the template, the common letters and the product's own, a picture each | the template and the product's own letters, one shared picture |
+| 16 Charts | a section per use of a chart in the product | the one or two uses the key screens show |
+| 17 Architecture | the six diagrams | one diagram: the system in its world, with its parts |
+| 18 Security | the six parts, with drawings | one page of short paragraphs per part, done / planned tags, no drawings |
+| 19 Principles · Decisions · Changelog · Next | all four pages | Decisions and Next steps |
+
+**Words.** The words of the product — on a screen, in a component, a state, a flow or a letter —
+come from the documentation and the sample world, written in the product's voice as the Principles
+page sets it, or plainly while there is none: short, the user's own terms from the glossary, an
+error that says what to do next.
 
 **Languages.** The pages are written in the default language. Every translatable text carries
-`data-i18n`; every dictionary `i18n/<lang>.js` gets the key as soon as the text exists, with the
-translation from the Microcopy page — you add the keys a page introduced (a subagent returns
-them) right after its generator runs. `templates/i18n/lang.js` is the skeleton of a dictionary.
+`data-i18n`; every dictionary `i18n/<lang>.js` gets the key as soon as the text exists, with its
+translation into that language written at the same time — you add the keys a page introduced (a
+subagent returns them, each with its translation into every language) right after its generator
+runs. `templates/i18n/lang.js` is the skeleton of a dictionary.
 
 ## A fresh context
 
@@ -247,12 +251,12 @@ A dialog, not a lookup. Propose a stack from: what the operator has (their start
 they name them; the product's code), what the documentation implies (surfaces → platforms, offline,
 integrations), and what the blueprint's architecture names. Ask per layer, 2–4 questions per round:
 web client, mobile client (if a mobile surface exists), backend, data store, hosting, and the
-charts library when the product has figures (the options of step 17). Options: your
+charts library when the product has figures (the options of step 16). Options: your
 recommendation first · the alternative worth considering · *what the product already uses* when
 code exists; the operator types their own. Ask about the libraries the documentation leaves open
 too (internationalisation, icons, charts). Record SC-003 with the reasons, the charts library as
 SC-008. For every technology chosen, note its official site: the Technology stack page (step 3)
-shows each with its mark, one line and that link; the Architecture page (step 18) draws them.
+shows each with its mark, one line and that link; the Architecture page (step 17) draws them.
 
 ## Step 3 — Frame
 
@@ -310,28 +314,19 @@ Each follows the same shape: **plan → approve → build in parallel → build.
   the Loaders item of `sections.md › Design` says, the keyframes in `components.css › Loader`. The Logo gate shows
   both pages.
 
-## Step 6 — Microcopy and tone
-
-It needs only the Intake, and comes before Components — the first step that puts words on a
-sample. Decide the voice with the operator (two or three options: plain and warm · precise and
-formal · brisk and playful — with a sample error message in each). Then the patterns of
-`sections.md › Design` (Microcopy and tone) with examples, and the **languages** section: the same messages in every
-interface language, side by side. From here on every string on a screen, in a component or a
-letter is taken from this page, and its translations go to the dictionaries.
-
-## Steps 7–9 — Components, Icons, Illustrations
+## Steps 6–8 — Components, Icons, Illustrations
 
 The shape of steps 4–5: **plan → approve → build in parallel → build.mjs → gate**.
 
-- **Components (7).** Plan: the standard set in `pages.mjs` + the product's own from the reading
+- **Components (6).** Plan: the standard set in `pages.mjs` + the product's own from the reading
   (a capability that needs a component the standard set lacks) + a reserve for later (name why
   each might be needed). Approve. Subagents per group (inputs; display; feedback; navigation;
   shell), each writing its part of `components/index.html` as `tools/parts/components/<group>.mjs`
   — variants, states, sizes and a properties table per component, each naming its source or
-  `proposed`, the words from Microcopy — and returning its `components.css` blocks;
+  `proposed`, the words from the documentation and the sample world (*Words* above) — and returning its `components.css` blocks;
   `tools/genComponents.mjs` puts the parts together. Restyle the starter classes to the project.
   Samples use the cast and data of `sample.mjs`.
-- **Icons (8).** Two kinds only, nothing else is drawn: **base** — the standard icons the components,
+- **Icons (7).** Two kinds only, nothing else is drawn: **base** — the standard icons the components,
   the shell and the planned screens use (actions, navigation, status, files), named and drawn as the
   icon library chosen in step 2 has them; and **from the domain** — the product's own subjects the
   library has no fit for (for a carbon product: a scope, an emission source by kind, a factor, a
@@ -339,7 +334,7 @@ The shape of steps 4–5: **plan → approve → build in parallel → build.mjs
   "should have it": each names where it is used. Plan the two lists with that column; approve
   (`plans/icons.md`). The sprite in `assets/showcase.js` is the start — what it holds beyond the
   two lists is removed; `design/icons.html` shows the two groups with names, the grid and the rules.
-- **Illustrations (9).** A root section of its own. Plan, in two lists: **for states** — a picture
+- **Illustrations (8).** A root section of its own. Plan, in two lists: **for states** — a picture
   for every state a screen can be in (empty, nothing found, error, no access, locked or closed,
   offline when the product has it, done) — and **from the domain** — the scenes of the product's
   world the reading gives (its places, its objects, its moments: a first setup, an import, an
@@ -349,41 +344,41 @@ The shape of steps 4–5: **plan → approve → build in parallel → build.mjs
   text, no faces; some with CSS animation that stops under `prefers-reduced-motion`; the sections
   For states, From the domain, In place and Reserve.
 
-## Steps 10–14 — States, Layouts, Key screens
+## Steps 9–13 — States, Layouts, Key screens
 
-- **States (10).** One section per state: the picture (from Illustrations), the words (from
-  Microcopy), the action; where it appears in the product; the loading section shows skeletons
+- **States (9).** One section per state: the picture (from Illustrations), the words (from the
+  documentation, as *Words* above says), the action; where it appears in the product; the loading section shows skeletons
   and when a spinner is right instead.
-- **Layouts (11–13)** — a root section of its own, `sections.md › Layouts`; its three pages are three
+- **Layouts (10–12)** — a root section of its own, `sections.md › Layouts`; its three pages are three
   steps, each **plan → approve → build → pick**, and pictures lead every one of them. A variant's plan
   line names its composition **and its scene**: which picture from Illustrations, or which new one,
   what moves in it, what it shows still. Scenes are drawn on the session's model, on `--ill-*` tokens,
   their motion in CSS keyframes on tokens, still and complete under reduced motion; a new scene goes
   into `assets/illustrations.js` and onto Illustrations' *In place*. When Illustrations is planned
   away, the scenes are drawn here all the same.
-  - **Auth layout (11).** Plan: 3–5 variants, each one line — a composition (form beside a panel,
+  - **Auth layout (10).** Plan: 3–5 variants, each one line — a composition (form beside a panel,
     the scene full screen with the form on a card, a band above a narrow form, the data moving behind
     the form) and an animated scene, each a different idea of the product (its data moving, its
     domain drawn, its promise); every variant has one. Approve (`plans/signIn.md`).
     `tools/genSignIn.mjs`: each a `variant` with the full screen in a desktop device frame, the
     phone frame beside it, the other screens before the product (invitation, forgotten password,
     verification sent) small; the form uses the components. The operator picks one.
-  - **App layout (12).** Plan: 2–4 shells — sidebar that folds to icons, sidebar with grouped
+  - **App layout (11).** Plan: 2–4 shells — sidebar that folds to icons, sidebar with grouped
     menus, top navigation, rail + panel — each one line, with where its pictures stand (the welcome
     page of a new account, a setup card at the foot of the sidebar, a header scene, the empty state
     in the shell); most carry a moving picture, one stays plain for the contrast. Approve
     (`plans/appLayout.md`). `tools/genAppLayout.mjs`: each a `variant` with the shell around a
     real-looking page, the sidebar folded and unfolded, the menu's states, the user menu; tablet and
     phone drawn. Pick one; it becomes the shell of every later screen.
-  - **Not found page (13).** Plan: 3–5 ideas, each a picture from the product's world with a moving
+  - **Not found page (12).** Plan: 3–5 ideas, each a picture from the product's world with a moving
     detail and the 404 worked into it. Approve (`plans/notFound.md`). `tools/genNotFound.mjs`:
     `variant`s on their own full screen; pick one.
-- **Key screens (14).** Plan: the screens the flows will need, from the documentation (a
+- **Key screens (13).** Plan: the screens the flows will need, from the documentation (a
   dashboard, the main list, a record, a form). Approve. One generator per screen or group,
   rendering in `device()` frames for every surface the brief gives the screen's actors, inside the
   picked shell.
 
-## Step 15 — Flows
+## Step 14 — Flows
 
 Two approvals, by design.
 
@@ -409,9 +404,9 @@ Two approvals, by design.
    switch for free.
 4. Gate per flow or per batch of flows, as the operator prefers.
 
-## Steps 16–19 — Email templates, Charts, Architecture, Security
+## Steps 15–18 — Email templates, Charts, Architecture, Security
 
-- **Email templates (16).** Plan: the common letters (invitation, verification code, password reset,
+- **Email templates (15).** Plan: the common letters (invitation, verification code, password reset,
   welcome, digest, security alert) and the product's own, proposed from the flows and the
   documentation's notifications (what is sent, to whom, when) — each with its subject, its one
   action and its picture, one line each. Approve (`plans/emails.md`). Email templates is a root section of
@@ -433,15 +428,15 @@ Two approvals, by design.
      added to the Illustrations page's *In place*. When Illustrations is planned away, drawn here
      all the same.
   3. `tools/genEmails.mjs` with `mail(...)`: every letter in the template, 600 px, shown as a mail
-     client shows it, with subject and sender, the sample cast and company; words from Microcopy,
-     or — when Microcopy is skipped — in the tone the requirements set. It writes
+     client shows it, with subject and sender, the sample cast and company; the words from the
+     documentation, in the product's voice or the tone the requirements set (*Words* above). It writes
      `emails/index.html`: the Template, a heading *Common letters* over those letters, a heading
      *The product's own* over the rest, each letter a `block()` whose id is the letter's. Letters
      may be built by subagents per group, each writing `tools/parts/emails/<group>.mjs`. A flow
      that shows a letter imports `letter(id, marks)` from this generator instead of drawing it
      again. `node build.mjs` — the menu lists the Template and every letter, and marks the one in
      view as the page scrolls.
-- **Charts (17).** Only when the product has figures. The library is SC-008, chosen in step 2
+- **Charts (16).** Only when the product has figures. The library is SC-008, chosen in step 2
   (ask now only if it was left open): **static SVG on tokens** (Recommended: no dependency, exact
   style, both themes free) · a vendored UMD library (Chart.js, ECharts, uPlot) when the operator
   wants live tooltips · none.
@@ -464,14 +459,14 @@ Two approvals, by design.
      `tools/parts/charts/<group>.mjs`. `node build.mjs` — the menu lists the uses.
   A product without figures: `steps.charts` is `skipped` and the `charts` entry is taken out of
   `pages.mjs`.
-- **Architecture (18).** A root section, drawn for the customer, not for the team. Plan: the
+- **Architecture (17).** A root section, drawn for the customer, not for the team. Plan: the
   diagrams the reading supports (`sections.md › Architecture`), one line each. Approve.
   `tools/genArchitecture.mjs`: each diagram an inline SVG on tokens — boxes with the technology's
   mark from `assets/tech/` where one stands for it, arrows named by what they carry, a legend — with
   two or three sentences beside it of what it shows; the one-request section numbered step by step.
   Load the `artifact-diagramming` skill when it is available for how to draw a diagram that shows
   the real mechanism and stays legible in both themes.
-- **Security (19).** A root section after Architecture, in the customer's words — for the buyer,
+- **Security (18).** A root section after Architecture, in the customer's words — for the buyer,
   their IT and the procurement questionnaire that asks "where does our data live and who can see
   it" before anyone asks about a feature. Plan from what the documentation already decided — the
   blueprint's cross-cutting concerns (access control, audit and history, review and locking,
@@ -488,7 +483,7 @@ Two approvals, by design.
   Never a certification that was not obtained, never a figure (a recovery time, a retention period)
   the documentation did not set.
 
-## Step 20 — Principles, Decisions, Changelog, Next steps
+## Step 19 — Principles, Decisions, Changelog, Next steps
 
 - **Principles.** 5–7, from the brief's goals and the decisions: each a sentence, a reason, a
   *do* and a *don't* drawn with the components. Ask the operator to confirm the list first.
@@ -503,7 +498,7 @@ Two approvals, by design.
   documentation — each a title, one paragraph of what and why, where it came from. Ask the
   operator which ideas to keep.
 
-## Step 21 — Audit
+## Step 20 — Audit
 
 The checks in [site.md › Audit](site.md#audit), run on both themes and every language. The
 mechanical ones — every page there, build idempotent, no values outside tokens, the dark sets
@@ -525,7 +520,7 @@ their stage, picks made and pending, planned sections. Write nothing.
 answer recommended) → plan (or re-plan, keeping what the operator approved unless they say
 otherwise) → build → gate.
 
-**`flow <id>`** — the description and build of one flow; `flow new` runs step 15's two approvals
+**`flow <id>`** — the description and build of one flow; `flow new` runs step 14's two approvals
 for a new one and adds it to the list.
 
 **`pick <section> <variant>`** — confirm the variant exists; set `site.mjs › selected[section]`;
@@ -537,6 +532,6 @@ to SC-007; a group made with `add` gets the next `SC-nnn`); regenerate the Decis
 **`add`** — a page or a section outside the standard list: ask what, where in the menu, a
 generator or hand-written; add to `pages.mjs`; `genPages` for the start; build.
 
-**`audit`** — step 21 alone, at any time.
+**`audit`** — step 20 alone, at any time.
 
 **`open`** — `node open.mjs` from the showcase folder (background), tell the operator the address.
