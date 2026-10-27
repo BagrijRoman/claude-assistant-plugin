@@ -240,6 +240,14 @@ what it is for and the one rule that matters; *Variants* with a table (variant, 
 for); *States* (default, hover, focus, disabled, loading, error as applies); *Sizes*; *Properties* as
 a table; its source in the product's code or `proposed`. Samples use the cast and data of
 `sample.mjs`. The reserve components are marked *reserve* with one line of why they may be needed.
+**Every list that opens is the product's own.** A select, a combobox, a dropdown menu, the month and
+year of a date picker: a trigger in the field's look and a popup drawn on tokens (surface, border,
+overlay radius and shadow; the hovered option in the brand's soft tint, the chosen one with a check;
+groups, dividers, disabled options, a long list that scrolls), with the keyboard (↑ ↓ Home End,
+type-ahead, Enter or Space to choose, Escape to close and focus back on the trigger) and ARIA
+(`combobox`, `listbox`, `option`, `aria-selected`), opening above when there is no room below. Never
+the browser's or the system's native popup, which ignores the theme and the scheme; a native
+`<select>` stays only as a hidden fallback for a form, if at all. The samples open and choose live.
 
 ### Charts (`charts/index.html`)
 A root of its own in Design, right after Components, and only when the product has figures; its key

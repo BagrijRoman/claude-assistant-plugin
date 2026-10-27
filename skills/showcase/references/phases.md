@@ -325,6 +325,9 @@ The shape of steps 4–5: **plan → approve → build in parallel → build.mjs
   — variants, states, sizes and a properties table per component, each naming its source or
   `proposed`, the words from the documentation and the sample world (*Words* above) — and returning its `components.css` blocks;
   `tools/genComponents.mjs` puts the parts together. Restyle the starter classes to the project.
+  Every list that opens — select, combobox, dropdown menu, the pickers of a date picker — is a styled
+  component of its own with its keyboard and ARIA, never the native popup (`sections.md ›
+  Components`); the inputs group's brief says so, and the gate checks an open list in both themes.
   Samples use the cast and data of `sample.mjs`.
 - **Icons (7).** Two kinds only, nothing else is drawn: **base** — the standard icons the components,
   the shell and the planned screens use (actions, navigation, status, files), named and drawn as the

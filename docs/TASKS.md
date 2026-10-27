@@ -1198,6 +1198,23 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T45 — `/showcase` Components: every list that opens is a styled component, never the native popup · `done`
+
+The operator saw a select open as the system's native menu (its own colors, a blue highlight) in the
+middle of a themed page, and asked that the skill require a styled one. Applied to the skill; no
+release, the version stays.
+
+What was done:
+- `sections.md` (Components): every list that opens — select, combobox, dropdown menu, a date
+  picker's month and year — is a trigger in the field's look and a popup on tokens, with the keyboard
+  and ARIA, opening above when there is no room; never the native popup; a native `<select>` only as a
+  hidden form fallback; the samples open and choose live.
+- `phases.md` (Components step): the same rule in the inputs group's brief, checked at the gate on
+  an open list in both themes.
+
+Done when:
+- `npm test` passes.
+
 ## T44 — `/showcase` Email templates: the operator chooses animated GIF or still pictures · `done`
 
 The operator asked that the letters' pictures be animated when wanted, and that the skill ask it
