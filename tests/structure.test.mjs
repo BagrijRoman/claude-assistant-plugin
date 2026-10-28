@@ -346,3 +346,14 @@ describe('a fresh context at the gates', () => {
     });
   }
 });
+
+// Claude Code installs the plugin into a cache folder named by its version, from a directory marketplace too, so a
+// change ships only with a new version, and the marketplace entry must name the same one (T50).
+describe('plugin version', () => {
+  it('is the same in plugin.json and marketplace.json', () => {
+    const plugin = JSON.parse(readFileSync(new URL('.claude-plugin/plugin.json', ROOT), 'utf8'));
+    const market = JSON.parse(readFileSync(new URL('.claude-plugin/marketplace.json', ROOT), 'utf8'));
+    const entry = market.plugins.find(({ name }) => name === plugin.name);
+    assert.equal(entry?.version, plugin.version, `marketplace.json names ${plugin.name} ${entry?.version}, plugin.json ${plugin.version}`);
+  });
+});

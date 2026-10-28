@@ -64,16 +64,14 @@ Restart Claude Code and check that `dev-assistant` is listed in `/plugin`.
 
 ## Update after changes
 
-How a change reaches Claude Code depends on where the plugin was installed from.
+Wherever the plugin was installed from — this folder as a local `directory` marketplace (as on the author's
+machine) or a git marketplace — Claude Code copies it to `~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/`
+and runs that copy, so a change arrives only with a new version. A change committed under the same version never
+reaches a session: 0.22.0 was cached before the task prefix (T46) landed, and `/backlog render` went on writing
+`T-NNN` into a backlog of `LRM-NNN` tasks (T50).
 
-**From this folder** (a local `directory` marketplace, as on the author's machine): the hooks run straight
-from the working copy, so a change is live after a Claude Code restart, with no version bump. The flip side:
-an unfinished edit is live in every session too, so run `npm test` before restarting.
-
-**From a git marketplace** (any other machine): the plugin is copied to
-`~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/`, and a change arrives only with a new version:
-
-1. Bump `version` in both `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`, and publish it.
+1. Bump `version` in both `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` (`npm test` fails
+   when they differ), and publish it.
 2. Each user refreshes the marketplace and the plugin, then restarts Claude Code:
 
 ```bash

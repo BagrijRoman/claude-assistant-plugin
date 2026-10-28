@@ -1198,6 +1198,25 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T50 — Release 0.23.0: the work committed under 0.22.0 reaches the sessions · `done` (0.23.0)
+
+The operator found that `/backlog render` broke the Luxury Resale Marketplace backlog: every task there is
+`LRM-NNN`, and the rendered `BACKLOG.md` came back with `T-NNN` in the loop and the batch counts gone. The
+script on `dev` reads `taskPrefix` (T46); the one that ran was 0.22.0's, from
+`~/.claude/plugins/cache/bagrijroman/dev-assistant/0.22.0/`, cached before T46. The README said a `directory`
+marketplace runs the working copy with no version bump, and T42–T49 were committed on that belief with "no
+release, the version stays" — none of them reached a session. `marketplace.json` still named 0.20.0.
+
+What was done:
+- `version` 0.23.0 in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`.
+- `tests/structure.test.mjs › plugin version`: the two files must name the same version.
+- `README.md › Update after changes`: a change reaches a session only with a new version, from this folder too.
+
+Done when:
+- `npm test` passes; after `claude plugin marketplace update bagrijroman`, `claude plugin update
+  dev-assistant@bagrijroman` and a restart, `/backlog render` on a backlog with `taskPrefix: "LRM"` keeps the
+  `LRM-NNN` ids.
+
 ## T49 — `/showcase` Flows on two devices, built side by side · `done`
 
 On the Luxury Resale Marketplace showcase the operator asked that the customer's flows show the website
