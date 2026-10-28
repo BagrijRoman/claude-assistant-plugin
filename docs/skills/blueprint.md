@@ -2,7 +2,7 @@
 
 | Command | Invoked by | Script | Since |
 |---------|------------|--------|-------|
-| `/blueprint [init [dir] \| continue \| status \| module <name> [full] \| decide \| restructure \| feedback [file] \| export]` | a human only (`disable-model-invocation`) | [bin/blueprint.mjs](../../bin/blueprint.mjs) — see [The script](#the-script) | 0.8.0 |
+| `/blueprint [init [dir] \| continue \| status \| module <name>… [full] \| decide \| restructure \| feedback [file] \| export]` | a human; the model only as `module <name>… full`, when the operator chose in `/backlog` to deepen now | [bin/blueprint.mjs](../../bin/blueprint.mjs) — see [The script](#the-script) | 0.8.0 |
 
 Files: [skills/blueprint/SKILL.md](../../skills/blueprint/SKILL.md) (the entry point),
 [skills/blueprint/references/](../../skills/blueprint/references/) (the procedure, one file per stretch
@@ -41,7 +41,7 @@ project, or starts one when there is none — so `/blueprint` is both the first 
 | `init [dir]` | choose the output folder, scaffold it, run Intake |
 | `continue` | find the blueprint by its `STATE.json`, list what was edited by hand, resume the phase it is in — units whose agent failed last time first — reading only what that phase needs; on a finished blueprint, log the hand edits in `CHANGELOG.md` and offer the other modes |
 | `status` | report phase, counts, hand edits, failed units, what `validate` finds and what waits for the operator; change nothing |
-| `module <name> [full]` | re-run the module and capability phases for one module, keeping its capability ids; `full` deepens a module whose capabilities were left as a list, turning each list entry into the full block under the same id |
+| `module <name>… [full]` | re-run the module and capability phases for one module or several at once — one writer per module side by side, one gate — keeping their capability ids; `full` deepens modules whose capabilities were left as a list, turning each list entry into the full block under the same id; a `full` run stopped half-way is resumed by `continue` and named by the `skill-resume` hook |
 | `decide` | walk through the open questions only |
 | `restructure` | add, split, merge, rename or remove a module after the map is frozen: a decision, then the map, roadmap, state and files, then a consistency check |
 | `feedback [file]` | take a customer's or a colleague's comments: registered verbatim as a source, split into items; questions answered, every requested change put to the operator (accept / accept with a change / decline / defer) and recorded with who asked for it |
@@ -207,7 +207,7 @@ and how many; and, on `continue` or `status`, the checklist rebuilt from its sta
 | `init`, `continue` | Intake → Reading the input → Brief → Architecture → Modules (L2) → Capabilities (L3) → Consistency review → Adequacy review |
 | `continue` on a finished blueprint | Hand edits → Changelog → Status → What can follow |
 | `status` | Hand edits → State and counts → Validate → Report |
-| `module <name>` | Find the module → Modules (L2) → Capabilities (L3) → Gate → Stamp |
+| `module <name>…` | Find the modules → Modules (L2) → Capabilities (L3), one writer per module side by side → Questions → Gate → Stamp |
 | `decide` | Open questions (counted) → Apply the decisions → README → Report and stamp |
 | `restructure` | The change and its decision → Architecture and roadmap → Module files → Modules re-run → Gate → Stamp |
 | `feedback [file]` | Register → Items → Questions to the operator → Apply → Gate → Stamp |

@@ -13,7 +13,9 @@ nothing — not even `updated`.
 
 ## continue after done
 
-`/blueprint` on a blueprint whose `phase` is `"done"` has no phase to resume. Run `changed`; read what
+`/blueprint` on a blueprint whose `phase` is `"done"` has no phase to resume — unless a module has
+`l3Plan: "full"` with `l3` `pending` or `failed`: then a `module … full` run stopped half-way, and
+`continue` resumes it for those modules (`module` › *Resuming*). Otherwise run `changed`; read what
 it lists and add a `CHANGELOG.md` line, mode `hand edit`, for each change; offer `module` for the
 modules whose sources changed (`mechanics.md › Hand edits`); run `stamp`. Then report as `status`
 does, and offer what can follow: `decide` for the open questions, `feedback` for comments, `module` or
@@ -35,6 +37,27 @@ asks for this before it details a batch). Set the module's `l3Plan` to `full` an
 for it, with the extra instruction to turn each list entry into the full block under the same id and
 to keep everything else; a capability with a later stage of its own stays a list entry. Before phase 5
 starts, setting `l3Plan` is all it does, and phase 5 then writes the module in full. Gate as above.
+
+**Several modules** — `/blueprint module accounts payments listings full` — run as one: find every
+name first (an unknown one stops the run before anything is written, naming it); tell the operator how
+many writers will run; then the steps above for all of them together — one writer per module, side by
+side in waves as in phase 4, each with only its own module's brief; merge module by module, each
+module's ids reserved under its own code; the open points of every module into one set of question
+rounds, the *how to take them* question first when they come to more than four; one `validate`, one
+gate for the whole run, one `CHANGELOG.md` line per module, one `stamp`. A failed writer marks its
+module `failed` and is retried before the gate (`mechanics.md › Subagents`); the gate names it if it
+failed twice.
+
+**Resuming.** A `full` run writes, before its first writer, `l3Plan: "full"` and `l3: "pending"` on
+every module it deepens, and each module's merge sets `l3` to `done` or `failed`. A finished blueprint
+with a module at `l3Plan: "full"` and `l3` `pending` or `failed` therefore holds an unfinished run:
+`continue` resumes it for those modules — the failed ones first — and the `skill-resume` hook names it
+after `/clear`.
+
+**Started from `/backlog`.** The model may start `module <name>… full` itself, through the Skill tool,
+when `/backlog` needs those modules deepened and the operator chose there to deepen them now
+(`SKILL.md › How to read the arguments`, *Who starts it*). Nothing changes in the run: the questions and the gate go to the
+operator. After its gate, the recommended next step is `/backlog`, which picks the detail up again.
 
 ## decide
 

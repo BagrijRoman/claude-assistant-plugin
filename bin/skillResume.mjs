@@ -107,10 +107,24 @@ const findStates = (root) => {
 };
 
 const blueprint = (state) => {
+  const modules = Array.isArray(state.modules) ? state.modules.filter((entry) => entry && !entry.removed) : [];
+  if (state.phase === 'done') {
+    // A `module … full` run stopped half-way: its modules were set to a full plan and are not written yet
+    const deepening = modules.filter((entry) => entry.l3Plan === 'full' && ['pending', 'failed'].includes(entry.l3));
+    if (!deepening.length) return null;
+    const failed = deepening.filter((entry) => entry.l3 === 'failed').map((entry) => entry.code);
+    return {
+      where: `module ${deepening.map((entry) => entry.code).join(', ')} full stopped half-way`,
+      status: '',
+      extra: failed.length ? `failed: ${failed.join(', ')}` : '',
+      model: `mode "module … full" for ${deepening.map((entry) => entry.code).join(', ')}`,
+      command: '/blueprint',
+      reference: 'modes.md › module',
+    };
+  }
   const index = BLUEPRINT_PHASES.findIndex(([key]) => key === state.phase);
   if (index < 0) return null;
   const [key, name] = BLUEPRINT_PHASES[index];
-  const modules = Array.isArray(state.modules) ? state.modules.filter((entry) => entry && !entry.removed) : [];
   const failed = modules.flatMap((entry) => ['l2', 'l3'].filter((level) => entry[level] === 'failed').map((level) => `${entry.code} ${level}`));
   return {
     where: `${index + 1}/${BLUEPRINT_PHASES.length} ${name}`,

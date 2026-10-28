@@ -1,8 +1,7 @@
 ---
 name: blueprint
-description: Turns raw project input (idea, documents, requirements, references, similar products) into a set of English product-design documents — brief, architecture, modules, capabilities — plus a log of every decision taken with the operator. Multi-session, phase-gated, resumable from the files it writes. Human-invoked only.
-argument-hint: "[init [dir] | continue | status | module <name> [full] | decide | restructure | feedback [file] | export]"
-disable-model-invocation: true
+description: Turns raw project input (idea, documents, requirements, references, similar products) into a set of English product-design documents — brief, architecture, modules, capabilities — plus a log of every decision taken with the operator. Multi-session, phase-gated, resumable from the files it writes. Invoked by the operator; the model invokes it on its own only as `module <name>… full`, when the operator chose in /backlog to deepen the modules a batch needs.
+argument-hint: "[init [dir] | continue | status | module <name>… [full] | decide | restructure | feedback [file] | export]"
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(node:*), Bash(ls:*), Bash(mkdir:*), Bash(mv:*), Bash(date:*), Bash(textutil:*), AskUserQuestion, Agent
 ---
 
@@ -28,7 +27,7 @@ is only needed to name the folder up front or to start a second blueprint.
 | `init [dir]` | Start a new blueprint: choose the output folder, scaffold it, run phase 0 (Intake) |
 | `continue` | Find the existing blueprint, read `STATE.json`, resume the phase it is in — units that failed last time first — reading only what that phase needs (`mechanics.md › A fresh context`); on a finished blueprint, log the hand edits and offer the modes below |
 | `status` | Report phase, counts, hand edits, failed units, what `validate` finds and what waits for the operator; change nothing |
-| `module <name> [full]` | Re-run phases 4–5 for one module only (after a decision changed it, or the operator edited it); `full` deepens a module whose capabilities were left as a list |
+| `module <name>… [full]` | Re-run phases 4–5 for one module, or for several at once — their writers side by side, one gate for all (after a decision changed them, or the operator edited them); `full` deepens modules whose capabilities were left as a list |
 | `decide` | Walk through `OPEN-QUESTIONS.md` only; close what the operator is ready to close |
 | `restructure` | Add, split, merge, rename or remove a module after the map is frozen |
 | `feedback [file]` | Take a customer's or a colleague's comments on the blueprint: answer the questions, put every requested change to the operator, record the outcome |
@@ -38,6 +37,12 @@ To find an existing blueprint, glob for `**/STATE.json` (skip `node_modules`, `.
 files whose JSON has `"kind": "blueprint"`. One match — use it. Several — ask which. None — with no
 argument, say "no blueprint here yet, starting one" and run `init`; with an explicit mode other
 than `init`, say so and stop.
+
+**Who starts it.** The operator, by typing the command. The model starts it on its own in one case
+only: `module <name>… full`, when `/backlog` needs those modules deepened before it details a batch and
+the operator chose there to deepen them now. Every other mode, and every other reason, waits for the
+operator to type it. A run started that way is the same run — the same writers, the same questions to
+the operator, the same gate — and the gate's answer is the operator's.
 
 ## Two rules that never bend
 
@@ -306,7 +311,7 @@ The operator always sees which stage the run is in, what is done and what comes 
 | `init`, `continue` | Intake → Reading the input → Brief → Architecture → Modules (L2) → Capabilities (L3) → Consistency review → Adequacy review |
 | `continue` on a finished blueprint | Hand edits → Changelog → Status → What can follow |
 | `status` | Hand edits → State and counts → Validate → Report |
-| `module <name>` | Find the module → Modules (L2) → Capabilities (L3) → Gate → Stamp |
+| `module <name>…` | Find the modules → Modules (L2) → Capabilities (L3), one writer per module side by side → Questions → Gate → Stamp |
 | `decide` | Open questions (counted) → Apply the decisions → README → Report and stamp |
 | `restructure` | The change and its decision → Architecture and roadmap → Module files → Modules re-run → Gate → Stamp |
 | `feedback [file]` | Register → Items → Questions to the operator → Apply → Gate → Stamp |
@@ -341,6 +346,6 @@ The operator always sees which stage the run is in, what is done and what comes 
 - `04-review.md` lists every gap and improvement from phase 7 with its outcome (accepted → `D-`,
   deferred → `Q-`, rejected with the reason); no finding is left without an outcome.
 - `README.md` indexes every file and the operator has seen both review reports.
-- The operator knows the blueprint is theirs to edit, and that `/blueprint module <name>`,
+- The operator knows the blueprint is theirs to edit, and that `/blueprint module <name>…`,
   `/blueprint decide` or `/blueprint feedback` re-enters it later, and `/blueprint export` gives
   them one document to send.

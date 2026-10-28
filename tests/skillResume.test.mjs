@@ -109,6 +109,26 @@ describe('skill-resume', () => {
       '▸ /blueprint · 5/8 Modules (L2) · waits for the operator at its gate · failed: DAT l2 · blueprint — /blueprint resumes it');
   });
 
+  it('names a `module … full` run left half-way on a finished blueprint, and stays silent for one that ended', () => {
+    const root = makeTempDir();
+    writeState(root, 'docs/blueprint', blueprint('done', 'approved', {
+      modules: [
+        { code: 'ACC', l3Plan: 'full', l3: 'done' },
+        { code: 'PAY', l3Plan: 'full', l3: 'pending' },
+        { code: 'LST', l3Plan: 'full', l3: 'failed' },
+        { code: 'CAT', l3Plan: 'list', l3: 'list-only' },
+        { code: 'OLD', l3Plan: 'full', l3: 'pending', removed: 'D-004' },
+      ],
+    }));
+    const { systemMessage, hookSpecificOutput } = output(start(root));
+    assert.equal(systemMessage, '▸ /blueprint · module PAY, LST full stopped half-way · failed: LST · docs/blueprint — /blueprint resumes it');
+    assert.match(hookSpecificOutput.additionalContext, /mode "module … full" for PAY, LST .*see modes\.md › module\n/);
+
+    const ended = makeTempDir();
+    writeState(ended, 'docs/blueprint', blueprint('done', 'approved', { modules: [{ code: 'ACC', l3Plan: 'full', l3: 'done' }] }));
+    assert.deepEqual(start(ended), { status: 0, stdout: '', stderr: '' });
+  });
+
   it('tells where an unfinished showcase stands, and a question it waits on', () => {
     const root = makeTempDir();
     writeState(root, 'docs/showcase', showcase('components', 'awaiting-approval', { pending: { question: 'Which buttons?' } }));

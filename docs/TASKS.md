@@ -1198,6 +1198,30 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T48 — `/blueprint module` takes several modules, and `/backlog` can start the deepening · `done`
+
+The operator, cutting a backlog over a blueprint whose fourteen modules were all kept as lists, had to type
+`/blueprint module <name> full` six times, one gate each, before batches 1 and 2 could be detailed — and asked
+that the command be one an agent can run. Applied to the skills; no release, the version stays.
+
+What was done:
+- `/blueprint module <name>… [full]` takes several modules: every name is found before anything is written,
+  one writer per module side by side, merges per module code, one set of question rounds, one gate, one
+  `CHANGELOG.md` line per module, one stamp (`modes.md › module`, `SKILL.md`).
+- A `full` run writes `l3Plan: "full"` and `l3: "pending"` before its writers, so a run cut off half-way is
+  visible: `continue` on a finished blueprint resumes it, and `bin/skillResume.mjs` names it after `/clear`
+  (a test covers the half-way run and the finished one).
+- `disable-model-invocation` is gone from `/blueprint`; *Who starts it* allows the model one run only —
+  `module <name>… full`, when the operator chose in `/backlog` to deepen now. The questions and the gate stay
+  the operator's.
+- `/backlog`: `detail` step 1 gathers the list-only modules of the batch (of both batches inside `init`) and
+  asks *Deepen them now* / *In a fresh context* / *Detail the rest*; *now* starts the one run through the
+  Skill tool (`Skill` added to its tools); `init`'s Depth question recommends outline-first when the list-only
+  capabilities sit in most modules. `SKILL.md › Deepening the blueprint`, `docs/skills/*`, the README rows.
+
+Done when:
+- `npm test` passes.
+
 ## T47 — `/backlog` split by repository: a task per repository and platform under a parent · `done`
 
 The operator asked that tasks be cut per repository and per platform — backend, web, mobile — each

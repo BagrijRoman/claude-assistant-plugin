@@ -3,7 +3,7 @@ name: backlog
 description: Cuts a finished blueprint (the product-design documents made by /blueprint) into a backlog of batches, tasks and subtasks that can be worked through one portion at a time — each batch leaves something working end to end. Keeps the backlog alive afterwards: next task, mark done, add manual tasks, re-plan, resync after the blueprint changes. Multi-session, resumable from the files it writes. Human-invoked only.
 argument-hint: "[init [dir] | continue | status | next | detail <batch> | done <id> [note] | add [text] | plan <action> | resync]"
 disable-model-invocation: true
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(node:*), Bash(ls:*), Bash(mkdir:*), Bash(mv:*), Bash(find:*), Bash(date:*), AskUserQuestion, Agent
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(node:*), Bash(ls:*), Bash(mkdir:*), Bash(mv:*), Bash(find:*), Bash(date:*), AskUserQuestion, Agent, Skill
 ---
 
 # Backlog
@@ -82,7 +82,15 @@ backlog was cut from.
 
 The blueprint's **depth** decides how much there is to cut: a capability the depth only *lists* (a
 heading, who, source and one line — no rules yet) becomes an outline row and waits until the blueprint
-describes it in full; it is never treated as a gap. Capabilities are cited by their **ids**
+describes it in full; it is never treated as a gap.
+
+**Deepening the blueprint.** When the batches about to be detailed need list-only capabilities, the
+modules that hold them are deepened in one run: `/blueprint module <name>… full`, every module named
+at once — its writers work side by side and it gates once. Ask first (`modes.md › detail`, step 1);
+when the operator chooses to deepen now, start it yourself with the Skill tool
+(this plugin's `blueprint` skill, `args: "module accounts payments full"`) — the one `/blueprint` run
+this skill may start. Its questions and its gate are the operator's; when it is approved, come back to
+the step that asked. This is not an edit of the blueprint by the backlog: `/blueprint` writes it. Capabilities are cited by their **ids**
 (`ORG-C03`), which never change — not by headings, which do.
 
 ## The output folder

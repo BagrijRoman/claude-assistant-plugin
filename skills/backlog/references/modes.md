@@ -33,10 +33,13 @@ with the script's `render` (`mechanics.md › The script`), which regenerates th
    what that costs — the blueprint will still change, and its `CHANGELOG.md` only starts when it is
    done, so the first `resync` has to compare everything — and ask whether to continue. When the
    first-stage capabilities are list-only by the blueprint's depth (`slicing.md › Stages`), batches 1
-   and 2 cannot be detailed: ask (header `Depth`) **Deepen the blueprint first** (Recommended — the
-   operator runs `/blueprint module <name> full` for each module whose first-stage capabilities are
-   list-only) / **Cut them as an outline only** (a `P-` record
-   later; batches 1 and 2 then stay outline-only until the blueprint is deeper).
+   and 2 cannot be detailed: ask (header `Depth`) **Deepen the blueprint first** (Recommended when
+   those capabilities sit in a few modules — one `/blueprint module <name>… full` run for every module
+   whose first-stage capabilities are list-only, named in the option) / **Outline first, deepen what
+   batches 1 and 2 need** (Recommended when they sit in most modules — a `P-` record later; batches 1
+   and 2 stay outline-only, and the detail step deepens only their modules, see `detail`, step 1).
+   Deepening first: offer to run that one command now (`SKILL.md › What the blueprint must have`, *Deepening the blueprint*), or stop
+   with it for the operator; `init` resumes after it.
 2. **Choose the folder** — `SKILL.md › The output folder`. When the chosen folder already holds a
    backlog, ask: **Open it** (Recommended — run `/backlog` on it) / **Start another in a different
    folder**; never scaffold over it. Scaffold from `templates/`: copy each file, fill the placeholders
@@ -152,9 +155,14 @@ routine of `done`.
 1. **Check.** The batch exists. Run the blueprint checks; when the blueprint moved, ask (header
    `Blueprint`): **Resync first** (Recommended) / **Detail anyway**. `pending` names this batch →
    resume at its step. A capability on its rows that is list-only (`slicing.md › Stages`) cannot be
-   detailed: say so and point the operator at the blueprint — `/blueprint module <name> full` when the
-   module was left as a list, or the capability's stage through `/blueprint feedback` when its own
-   later stage keeps it one — and detail the rest; the batch cannot complete until that row is detailed too. The batch
+   detailed. When its module was left as a list, gather every such module of the batch — of both
+   batches inside `init` — and ask (header `Deepen`): **Deepen them now** (Recommended — one
+   `/blueprint module <name>… full` run for all of them, `SKILL.md › What the blueprint must have`, *Deepening the blueprint*, then this
+   step again) / **In a fresh context** (stop here with that one command and `/clear` before it; the
+   next `/backlog` resumes this step) / **Detail the rest** (the batch cannot complete until those rows
+   are detailed too). A capability whose own later stage keeps it a list goes to `/blueprint feedback`
+   instead. After a deepening the blueprint has moved: take its new fingerprint for the modules
+   deepened and their `R/E/S` in `COVERAGE.md` before the detailers start. The batch
    is far ahead (more than one beyond the next undetailed batch) → ask **Detail it now** / **Wait until
    it comes into view** (Recommended). The batch is already detailed → detail only the tasks with
    `review: needs-detail`, without asking; re-detailing a whole batch is a question, keeps every id and

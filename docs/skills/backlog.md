@@ -293,7 +293,9 @@ verbatim (for tests). Dates and numbers are computed; titles, statuses the files
 - **Subtasks in product terms** leave the technical breakdown to whoever picks the task up; a
   task is an input to that work, not a substitute for it.
 - **Depth limits detail.** Capabilities the blueprint only lists cannot be detailed until the
-  blueprint describes them in full; the blueprint has no one-step way to deepen a single module yet.
+  blueprint describes them in full. `detail` gathers the modules the batch needs and, when the operator
+  agrees, starts one `/blueprint module <name>… full` run for all of them — the only `/blueprint` run this
+  skill starts; its questions and gate stay the operator's.
 - **One blueprint per backlog.** A product described by several blueprints is not supported.
 
 ## Tests
