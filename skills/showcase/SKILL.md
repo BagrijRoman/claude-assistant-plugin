@@ -161,7 +161,7 @@ site, and approves or sends it back. A skipped step has no gate. The key is the 
 | 11 App layout | `appLayout` | Layouts: several shells with a folding sidebar, most with the product's moving pictures in place; one picked | 6, 8 |
 | 12 Not found page | `notFound` | Layouts: several, each a moving picture with the 404 in it; one picked | 8 |
 | 13 Key screens | `screens` | the main screens in device frames per surface, in the picked shell | 6, 9, 11 |
-| 14 Flows | `flows` | list approved → each description approved → built with the step player, the controls of each step highlighted in the order they are used | 13 |
+| 14 Flows | `flows` | list approved → each description approved → built with the step player, the controls of each step highlighted in the order they are used, a customer's step on the website and the app side by side | 13 |
 | 15 Email templates | `emails` | the root section Email templates (in Design, after Layouts): the template, then the common letters and the product's own — each a menu item with a picture of its own in the product's colors | 8 |
 | 16 Charts | `charts` | only when the product has figures: the root section Charts (in Design, after Components) — one section per use of a chart in the product, each drawn where the product shows it (in the picked shell or as the card), from an approved plan, with the library chosen in step 2 | 4, 6, 11 |
 | 17 Architecture | `architecture` | the architecture drawn for the customer: diagrams of the system in its world, its parts, modules, data, deployment, one request | 2 |

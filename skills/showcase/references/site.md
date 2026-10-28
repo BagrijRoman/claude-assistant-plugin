@@ -172,6 +172,21 @@ on its wrapper. `data-flow-target=""` rings without a number. A flow with target
 button in the bar that turns rings and numbers off, for a clean screen; the choice is kept for the
 site.
 
+**Two devices.** A step of a customer — a buyer, a seller, a visitor — who uses both the website and
+the app is drawn on both, side by side, so the client sees the two versions at once:
+
+```js
+screen: flowPair(device('desktop', web), device('phone', app))   // tools/lib/html.mjs
+```
+
+The same action carries the same number on both devices, and the player lights equal numbers together.
+The web page in a pair is cut at the height that shows the step, so its controls must stand near the
+top. A step on one surface only — a staff member on the admin web, a letter — stands alone: `flowSolo(…)`. A push on the phone is paired with its letter on the web, or with the site's own
+notification where there is no letter. One frame per device: a key screen's markup that already holds a
+`device()` frame is used as it is, never wrapped again. A screen drawn again in a later step keeps its
+ids — `flowPlayer` gives the repeats the step's number, with the labels and aria references that point
+at them.
+
 The player (`assets/flow.js`, loaded by the flow page) shows one step, keeps `#step-n` in the
 address, gives ← → (taking the keys from the page turner while a flow is on the page), *All
 steps*, *Full screen* (the browser's, or an overlay). The bar shows the title of the step on

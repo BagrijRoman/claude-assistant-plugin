@@ -1198,6 +1198,28 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T49 — `/showcase` Flows on two devices, built side by side · `done`
+
+On the Luxury Resale Marketplace showcase the operator asked that the customer's flows show the website
+and the app together, so the client sees both versions of every step, and that the flows be built in
+parallel. What that run needed is brought into the frame and the references. Applied to the skills; no
+release, the version stays.
+
+What was done:
+- `assets/flow.js`: controls with the same `data-flow-target` number light together — one action on two
+  devices.
+- `tools/lib/html.mjs › flowPlayer`: a screen drawn again in a later step gets its repeated ids numbered by
+  the step (`id--s3`), with the `for` and aria references inside that step (a test covers it).
+- `tools/lib/html.mjs › flowPair(web, app)` and `flowSolo(screen)`; `assets/site.css`: `.fl-pair` (website beside the phone, labelled, the web page cut at the height that
+  shows the step) and `.fl-solo` (a staff step or a letter alone); `flows.ui.web` / `flows.ui.app` in the
+  dictionary.
+- `site.md › Flows` (two devices, one frame per device, a push paired with its letter), `sections.md`,
+  `phases.md › Step 14` (one builder per flow, the shared brief in `plans/flows/BUILD.md`, flow data added to
+  `sample.mjs` before the builders), `SKILL.md`, `docs/skills/showcase.md`.
+
+Done when:
+- `npm test` passes.
+
 ## T48 — `/blueprint module` takes several modules, and `/backlog` can start the deepening · `done`
 
 The operator, cutting a backlog over a blueprint whose fourteen modules were all kept as lists, had to type

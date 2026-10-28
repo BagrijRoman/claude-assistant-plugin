@@ -57,6 +57,8 @@ window.SHOWCASE_I18N['{{LANG}}'] = {
   'overview.how.sample': 'Names and figures are invented for a fictional company; see <code>sample.mjs</code>.',
   'flows.list.title': 'The flows',
   'flows.list.desc': 'Sign-in first, then the flows of the product, in the order they are met.',
+  'flows.ui.web': 'Website',
+  'flows.ui.app': 'App',
 
   // ── Navigation: nav.<page id>, nav.<page id>.desc, nav.<page id>.<section id>, nav.band.<id>, and a
   //    child page under its root: nav.<root id>.<child id> (a flow: nav.flows.<flow id>) ──

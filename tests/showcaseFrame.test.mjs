@@ -273,6 +273,22 @@ describe('showcase flow player markup', () => {
     const { flowMark } = await html;
     assert.equal(flowMark(2), '<span class="flow__mark">2</span>');
   });
+
+  it('puts a customer step on the website and in the app side by side, labelled', async () => {
+    const { flowPair, flowSolo } = await html;
+    assert.match(flowPair('<i>web</i>', '<i>app</i>'), /fl-pair__label" data-i18n="flows\.ui\.web">Website<\/span><i>web<\/i>[\s\S]*data-i18n="flows\.ui\.app">App<\/span><i>app<\/i>/);
+    assert.equal(flowSolo('<i>x</i>'), '<div class="fl-solo"><i>x</i></div>');
+  });
+
+  it('numbers the ids of a screen drawn again in a later step, with the labels that point at them', async () => {
+    const { flowPlayer } = await html;
+    const screen = '<label for="amount">Offer</label><input id="amount"><div id="page"></div>';
+    const out = flowPlayer({ id: 'f', title: 'F', steps: [{ title: 'A', screen }, { title: 'B', screen }] });
+    assert.equal((out.match(/ id="amount"/g) ?? []).length, 1);
+    assert.match(out, / id="amount--s2"/);
+    assert.match(out, / for="amount--s2"/);
+    assert.match(out, / id="page--s2"/);
+  });
 });
 
 describe('showcase frame, a flow added after the frame', () => {

@@ -121,7 +121,8 @@ always possible; every answer is a row in `DECISIONS.md` and a card on the Decis
 section that is a set of things — marks, cases, components, screens, flows, letters — is first a
 plan the operator edits, then built; the approved plan is kept in `plans/`, so a session that ends
 between the approval and the build loses nothing. Flows take two approvals: the list, then each
-flow's description (actor, start, steps, end, alternative paths) before its screens are drawn. Logo,
+flow's description (actor, start, steps, end, alternative paths) before its screens are drawn; a
+customer's step is drawn on the website and in the app side by side, the same action numbered alike. Logo,
 sign-in layouts, app layout and the not-found page are made as variants; `pick` marks the chosen
 one `Selected` and keeps the others as alternatives for the Decisions page.
 

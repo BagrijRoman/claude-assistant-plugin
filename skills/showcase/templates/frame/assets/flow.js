@@ -107,14 +107,18 @@
       flow.querySelectorAll('.is-flow-now').forEach(function (node) { node.classList.remove('is-flow-now'); });
       var targets = targetsOf(steps[at]);
       if (targets.length === 0 || reduceMotion.matches || flow.classList.contains('flow--plain')) return;
+      // Controls with the same number are one action shown on two devices (web and phone side by side):
+      // they light together
+      var keys = targets.map(function (node, index) { var n = node.getAttribute('data-flow-target'); return n === '' ? 'i' + index : n; });
+      var groups = keys.filter(function (key, index) { return keys.indexOf(key) === index; });
       var turn = 0;
-      var beats = targets.length > 1 ? targets.length + 1 : 1;
+      var beats = groups.length > 1 ? groups.length + 1 : 1;
       function step() {
         if (!document.body.contains(flow)) {
           clearInterval(walkTimer);
           return;
         }
-        targets.forEach(function (node, index) { node.classList.toggle('is-flow-now', index === turn); });
+        targets.forEach(function (node, index) { node.classList.toggle('is-flow-now', keys[index] === groups[turn]); });
         turn = (turn + 1) % beats;
       }
       step();

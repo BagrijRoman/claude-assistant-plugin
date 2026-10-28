@@ -83,7 +83,8 @@ flows as tiles, sign-in first, each with its actor and goal — build.mjs writes
 from `children` in `pages.mjs`, in that order, the text of a tile being the flow's `desc`. Each
 flow page: the hero (actor, start, end), then the player (`flowPlayer()`): one step at a time — the
 screen drawn with the picked shell and the components, the controls the user acts on in that step
-ringed and numbered in the order of acting, the note under it (what the user did, naming those
+ringed and numbered in the order of acting — a customer's step on the website and in the app side
+by side, numbered alike, a staff step on its one surface (`site.md › Flows`) — the note under it (what the user did, naming those
 controls by their numbers, and what they see), the counter "Step n of N", the step's title, ← →,
 *All steps*, *Full screen*. Alternative paths (an error, a cancel) are steps too, marked in the
 note. A control on a screen may lead on (`data-go="step-n"`).

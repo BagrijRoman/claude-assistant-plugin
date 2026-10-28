@@ -411,6 +411,13 @@ Two approvals, by design.
    `node build.mjs` — the menu and the Flows index list it. Record `built`. The player gives the
    step counter, the title, ← →, All steps, Full screen and the walking highlight with its Hints
    switch for free.
+   Flows are independent, so their builders run side by side, one per flow, each writing only its
+   generator, its CSS part and its dictionary part. Their shared brief goes to `plans/flows/BUILD.md`:
+   the files each may write, the screens and letters to reuse, *two devices* and *one frame per device*
+   (`site.md › Flows`), and the check — every step screenshotted in both themes and both languages, each
+   looked at before the reply. Their data comes from `sample.mjs`: what the flows need beyond the key
+   screens (dates, numbers, the words people write) is added there before the builders start, never
+   invented by each.
 4. Gate per flow or per batch of flows, as the operator prefers.
 
 ## Steps 15–18 — Email templates, Charts, Architecture, Security

@@ -128,10 +128,23 @@ ${body}
  */
 export function flowPlayer(flow) {
   const hinted = flow.steps.some((step) => /\sdata-flow-target\b/.test(step.screen));
+  // A screen drawn again in a later step brings its ids again: there they get the step's number, and so
+  // do the labels and aria references that point at them inside that step
+  const seen = new Set();
+  const screens = flow.steps.map((step, index) => {
+    const ids = [...step.screen.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]);
+    const again = new Set(ids.filter((id) => seen.has(id)));
+    ids.forEach((id) => seen.add(id));
+    if (again.size === 0) return step.screen;
+    return step.screen.replace(/\s(id|for|aria-labelledby|aria-describedby|aria-controls)="([^"]+)"/g, (whole, name, value) => {
+      const next = value.split(' ').map((id) => (again.has(id) ? `${id}--s${index + 1}` : id)).join(' ');
+      return ` ${name}="${next}"`;
+    });
+  });
   const steps = flow.steps.map((step, index) => `      <li class="flow__step${index === 0 ? ' is-current' : ''}" data-step id="step-${index + 1}" data-title="${escapeHtml(step.title)}">
         <p class="flow__step-head"><strong>${index + 1}</strong> <span class="flow__step-title"${attr('data-i18n', step.titleKey)}>${escapeHtml(step.title)}</span></p>
         <div class="flow__screen">
-${step.screen}
+${screens[index]}
         </div>
         ${step.note ? `<p class="flow__note"${attr('data-i18n', step.noteKey)}>${step.note}</p>` : ''}
       </li>`).join('\n');
@@ -155,6 +168,15 @@ ${steps}
 
 /** The number of a step's target in its note — "Types the email ${flowMark(1)}" — as its badge looks. */
 export const flowMark = (number) => `<span class="flow__mark">${escapeHtml(number)}</span>`;
+
+/** A step of a customer's flow on two devices: the website (a desktop frame) beside the app (a phone frame). */
+export const flowPair = (web, app) => `<div class="fl-pair">
+  <div class="fl-pair__col"><span class="fl-pair__label" data-i18n="flows.ui.web">Website</span>${web}</div>
+  <div class="fl-pair__col"><span class="fl-pair__label" data-i18n="flows.ui.app">App</span>${app}</div>
+</div>`;
+
+/** A step on one surface — a staff member's, or a letter — alone in the middle. */
+export const flowSolo = (screen) => `<div class="fl-solo">${screen}</div>`;
 
 /** A screen inside a device frame: phone, tablet or desktop. */
 export const device = (kind, screen) =>

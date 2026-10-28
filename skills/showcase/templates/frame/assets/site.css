@@ -215,6 +215,19 @@ html.present .sc-present-exit { display: inline-flex; }
 .device--desktop { width: 100%; aspect-ratio: 16 / 10; border-radius: var(--radius-card); }
 .device__screen { width: 100%; height: 100%; overflow: auto; background: var(--color-page); }
 .devices { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); align-items: start; }
+/* A step of a flow on two devices: the website beside the app, the same action numbered alike on both;
+   the web page is cut at the height that shows the step. A staff step or a letter stands alone. */
+.fl-pair { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px; align-items: start; padding: 24px; }
+.fl-pair__col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.fl-pair__label { color: var(--color-muted); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; }
+.fl-pair .device--phone { zoom: 0.64; }
+.fl-pair .device--desktop { aspect-ratio: auto; }
+.fl-pair .device--desktop .device__screen { height: auto; max-height: 672px; overflow: hidden; }
+.fl-solo { display: flex; justify-content: center; padding: 24px; }
+.fl-solo .device--phone { zoom: 0.8; }
+.fl-solo .device--desktop { aspect-ratio: auto; }
+.fl-solo .device--desktop .device__screen { height: auto; overflow: hidden; }
+@media (max-width: 960px) { .fl-pair { grid-template-columns: minmax(0, 1fr); justify-items: center; } }
 
 /* ── Email frame: a 600 px letter as a mail client shows it ── */
 
