@@ -34,7 +34,7 @@ the project.
 | `init [dir]` | choose the folder, read the documentation (or take a showcase's reading), settle the scheme, then the tabs in order |
 | `continue` | read `STATE.json`, resume the step it is in — from the files, in a fresh context (`phases.md › A fresh context`) |
 | `status` | the steps and their state, the rounds of review, the picks, the page's address, what waits for the operator; change nothing |
-| `tab <id>` | make or remake one tab — `scheme`, `logo`, `loaders`, `icons`, `states`, `scenes`, `onboarding`, `emails`, `reserve` — through its intake, plan, drawing and review |
+| `tab <id>` | make or remake one tab — `scheme`, `direction`, `logo`, `loaders`, `icons`, `states`, `scenes`, `onboarding`, `emails`, `reserve` — through its intake, plan, drawing and review |
 | `revise` | take the operator's revisions from the chat for the tab in review, redraw those pictures only, rebuild, republish, ask again |
 | `pick logo <id> [<id>…]` | the first id is the primary mark, the rest the shortlist the loaders are made from |
 | `add` | a picture the catalog lacks, into one tab, through that tab's review |
@@ -61,6 +61,11 @@ of one file. The script's `check` refuses anything else.
 **One page holds every picture**, so no picture may clash with another: no `id` attribute inside a
 drawing, no gradient, filter or mask (they need ids), and every class and keyframe starts with the
 picture's own id (`empty__lid`, `empty-settle`). `check` refuses a clash.
+
+**The manner first, the number after.** Nothing is drawn fifteen or thirty times before the
+operator has chosen how the set is drawn: the Direction step shows three manners on sheets of four
+samples each, and a big tab (States, Scenes, Onboarding, Email templates) starts with a trial of a
+few pictures reviewed before the rest. A revision of the manner is then cheap.
 
 **The operator sees before choosing.** Nothing is approved from words: the tab is built and
 published, the operator looks at it in both themes, and only then do you ask. Revisions come **in
@@ -95,6 +100,9 @@ already there:
   what the operator asks for.
 - **A design baseline** in the documentation — tokens, a palette, a logo, drawn screens, a
   Figma export: the scheme and the mark follow it, and the set proposes only where it is silent.
+- **References the operator gives** at Intake — pictures they like, sites, brands, a mood board,
+  as files or addresses: a reader describes each one's traits (line, angle, detail, palette, mood,
+  motion) into `SOURCES.md › References`; the Direction step builds its proposals from them.
 - **The documentation itself** otherwise — requirements, a blueprint (`01-brief.md`,
   `02-architecture.md`, `GLOSSARY.md`, module files), feature files, notes — read by subagents, one
   per group, returning under fixed headings: the product in a paragraph; the actors; the objects,
@@ -130,12 +138,12 @@ illustration-samples/
 ├── tokens.css                      every value, light and dark — the scheme
 ├── review/                         while a review is on; removed by the save
 │   ├── manifest.json               every picture: id, title, idea, file, words, tags
-│   ├── logo/ loaders/ icons/ states/ scenes/ onboarding/ emails/ reserve/   the drafts, <id>.svg
+│   ├── direction/ logo/ loaders/ icons/ states/ scenes/ onboarding/ emails/ reserve/   the drafts, <id>.svg
 │   ├── index.html · artifact.html  the review page (from disk; the fragment the artifact is published from)
 │   └── screenshots/                the page per theme, when a browser is at hand
 └── after the save:
     ├── manifest.json · index.html · artifact.html
-    ├── logo/ loaders/ icons/ states/ scenes/ onboarding/ emails/ reserve/
+    ├── direction/ logo/ loaders/ icons/ states/ scenes/ onboarding/ emails/ reserve/
     └── illustrations.js            the sprite: every picture as a <symbol>, with its styles
 ```
 
@@ -164,7 +172,7 @@ manifest or a file; never edit `index.html` or `artifact.html` by hand.
 ## The page
 
 One page, tabs along the top — **Overview** (the colors every picture is drawn with, the status of
-each tab, how to review) · **Color scheme** · **Logo** · **Loaders** · **Icons** · **States** ·
+each tab, how to review) · **Color scheme** · **Direction** · **Logo** · **Loaders** · **Icons** · **States** ·
 **Scenes** · **Onboarding** · **Email templates** · **Reserve** — a theme switch (light · dark · system) that
 every picture follows, a switch between the schemes considered that redraws every picture on the
 one the viewer picks (the chosen scheme is the page's own), a *Replay* on every moving picture and
@@ -175,7 +183,7 @@ address stays the same through every round.
 
 ## The order of making
 
-Each step from 1 to 9 starts with its **tab intake** — full, simplified or skipped, and what to
+Each step from 1 to 10 starts with its **tab intake** — full, simplified or skipped, and what to
 take into account (`phases.md › Tab intake`) — and ends with the operator's approval of the tab on
 the page. The key is the step's name in `STATE.json › steps`.
 
@@ -183,15 +191,16 @@ the page. The key is the step's name in `STATE.json › steps`.
 |------|-----|-------|-------|
 | 0 Intake | `intake` | the folder, the reading (or a showcase's), the name, the language, the cast the letters go to | — |
 | 1 Color scheme | `scheme` | the tokens — from a showcase or a design baseline, confirmed; otherwise three schemes on the page, one chosen; the tab stays, the chosen one marked | the reading |
-| 2 Logo | `logo` | **15 marks** from ideas in the product, on three grounds and at five sizes, with the wordmark; reviewed; one picked as primary and two or three shortlisted | 1 |
-| 3 Loaders | `loaders` | for the primary mark and each shortlisted one, 3–5 loaders from the mark's own parts, at 64 / 32 / 16 px, one determinate; in place | 2 |
-| 4 Icons | `icons` | the icons of the product's own subjects, on the 16 px grid in the mark's manner, at 16 / 20 / 24, each with where it is used | 2 |
-| 5 States | `states` | a picture for every state a screen can be in — the catalog's and the product's own — each with its words and its action, drawn in place | 1 |
-| 6 Scenes | `scenes` | scenes from the product's world — a sign-in panel, a hero, an announcement, the 404, a letter's band | 1 |
-| 7 Onboarding | `onboarding` | the first minutes with the product — the welcome, the first thing to do, the setup's steps, the empty workspace, the tour — each with its words | 1, 5 |
-| 8 Email templates | `emails` | the template with its parts named, then every letter — the common ones and the product's own — filled in, a picture each | 2, 1 |
-| 9 Reserve | `reserve` | pictures for situations the product will meet later, each with when; proposed from the catalog and the documentation | 5 |
-| 10 Save | `save` | every tab approved → `save`; the sprite; the README; the set published once more as the saved set | all |
+| 2 Direction | `direction` | **the manner of the whole set, settled before anything is drawn in number**: three directions, each a sheet of four samples — a mark, an icon, a state, a letter band — in one hand, told apart by line, angle, detail, accent and motion, built from the references and the reading; one chosen, or mixed; its sheet becomes the builders' reference | 1, the references |
+| 3 Logo | `logo` | **15 marks** from ideas in the product, on three grounds and at five sizes, with the wordmark; reviewed; one picked as primary and two or three shortlisted | 1 |
+| 4 Loaders | `loaders` | for the primary mark and each shortlisted one, 3–5 loaders from the mark's own parts, at 64 / 32 / 16 px, one determinate; in place | 2 |
+| 5 Icons | `icons` | the icons of the product's own subjects, on the 16 px grid in the mark's manner, at 16 / 20 / 24, each with where it is used | 2 |
+| 6 States | `states` | a picture for every state a screen can be in — the catalog's and the product's own — each with its words and its action, drawn in place; **a trial of 3–4 first**, reviewed, then the rest | 2 |
+| 7 Scenes | `scenes` | scenes from the product's world — a sign-in panel, a hero, an announcement, the 404, a letter's band | 1 |
+| 8 Onboarding | `onboarding` | the first minutes with the product — the welcome, the first thing to do, the setup's steps, the empty workspace, the tour — each with its words | 1, 5 |
+| 9 Email templates | `emails` | the template with its parts named, then every letter — the common ones and the product's own — filled in, a picture each; a trial of 3 letters first | 3, 2 |
+| 10 Reserve | `reserve` | pictures for situations the product will meet later, each with when; proposed from the catalog and the documentation | 5 |
+| 11 Save | `save` | every tab approved → `save`; the sprite; the README; the set published once more as the saved set | all |
 
 ## Variants and picks
 
@@ -213,7 +222,7 @@ The operator always sees which stage the run is in, what is done and what comes 
   enough.
 - **The line.** At every change of stage or step, one line:
   `▸ /illustrations · <n>/<N> <stage> · <step>`, plus `· <k>/<m>` while units are counted —
-  `▸ /illustrations · 3/11 Logo · drawing · 9/15`. The marks, the numbers and the command are
+  `▸ /illustrations · 4/12 Logo · drawing · 9/15`. The marks, the numbers and the command are
   fixed; the stage and the step are in the operator's language.
 - **Units.** A stage that works through units — document groups read, marks, loaders, pictures,
   letters, revisions — counts them in the line, and the task list gets an item per unit while there
@@ -227,7 +236,7 @@ The operator always sees which stage the run is in, what is done and what comes 
 
 | Mode | Stages |
 |------|--------|
-| `init [dir]`, `continue` | Intake → Color scheme → Logo → Loaders → Icons → States → Scenes → Onboarding → Email templates → Reserve → Save |
+| `init [dir]`, `continue` | Intake → Color scheme → Direction → Logo → Loaders → Icons → States → Scenes → Onboarding → Email templates → Reserve → Save |
 | `status` | Read the state → Report |
 | `tab <id>` | Tab intake → Plan → Approval → Draw → Publish → Review → Approve |
 | `revise` | Read the revisions → Redraw → Publish → Review |

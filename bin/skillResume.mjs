@@ -73,6 +73,7 @@ const SHOWCASE_STATUS = {
 const ILLUSTRATIONS_STAGES = [
   ['intake', 'Intake'],
   ['scheme', 'Color scheme'],
+  ['direction', 'Direction'],
   ['logo', 'Logo'],
   ['loaders', 'Loaders'],
   ['icons', 'Icons'],

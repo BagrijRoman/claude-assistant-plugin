@@ -12,6 +12,7 @@ you need before drawing.
 - [The file](#the-file)
 - [Tokens](#tokens)
 - [Deriving the picture tokens from a brand](#deriving-the-picture-tokens-from-a-brand)
+- [Direction](#direction)
 - [Composition](#composition)
 - [Animation](#animation)
 - [Marks](#marks)
@@ -78,6 +79,24 @@ When the scheme comes from a showcase or a baseline that has no `--ill-*` of its
 - The dark set is not an inversion: the line goes light, the fills go dark, the accent lightens so
   it reads on dark, the ground stays a touch above the page. Check a picture on both themes before
   the operator sees it.
+
+## Direction
+
+The hand of the set, chosen once on a sheet of four samples (`phases.md › Step 2 — Direction`) and
+then held in every picture. A direction is a position on five axes; the plan names each, the chosen
+sheet shows them, and every builder's brief repeats them:
+
+| Axis | The choices | What it changes |
+|------|-------------|-----------------|
+| **Line** | outlines in `--ill-line` (2.5 units; or 2 for a lighter hand) · flat faces with no outline, edges from the fills meeting · outline only on the subject, flat around it | the first impression: drawn or built |
+| **Angle** | front-on · three-quarter with one visible side · isometric | how much depth a picture carries, how a shelf or a box reads |
+| **Detail** | spare (the subject and its ground) · furnished (a second object, a texture of dots or lines) · rich (a scene) | the time a picture takes to read; richer pictures need larger sizes |
+| **Accent** | one touch of `--ill-accent` per picture · the accent and its tint as a field · a mark in one color, two, or more | where the eye lands; how the mark sits in the product's chrome |
+| **Motion** | settle (things come to rest) · drift (things pass through) · draw (things appear stroke by stroke) | the character of every animation in the set |
+
+The references the operator gave at Intake set the starting position; a direction may take them
+as they are, calm them, or answer them. The sheet is not a style guide in words: it is four
+pictures a builder keeps open while drawing, and a reviewer compares a new picture against.
 
 ## Composition
 
@@ -164,7 +183,7 @@ Every picture moves — minimally, to tell its story — except a mark and an ic
   optical size at 16 px is the test — nothing finer than the stroke, no more than two ideas, no
   diagonal under 30° that will alias.
 - The manner of the chosen icon library (the stroke, the corners) and of the mark; the domain's
-  own subjects only (`phases.md › Step 4 — Icons`).
+  own subjects only (`phases.md › Step 5 — Icons`).
 
 ## Pictures
 

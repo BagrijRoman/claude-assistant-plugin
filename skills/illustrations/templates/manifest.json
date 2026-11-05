@@ -13,6 +13,13 @@
       "items": []
     },
     {
+      "id": "direction",
+      "kind": "directions",
+      "title": "Direction",
+      "lead": "The manners considered before anything was drawn in number: each a sheet of four samples — a mark, an icon, a state, a letter band — in one hand. The chosen one is the hand of the whole set.",
+      "items": []
+    },
+    {
       "id": "logo",
       "kind": "marks",
       "title": "Logo",

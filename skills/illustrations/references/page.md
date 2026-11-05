@@ -45,6 +45,14 @@ set after; `save` needs every tab approved; `sprite` takes `--out <file>`.
         "light": { "--color-primary": "#…", "--ill-accent": "#…", "…": "…" },
         "dark":  { "--color-primary": "#…", "…": "…" },
         "sample": "scheme/sample.svg" } ] },
+    { "id": "direction", "kind": "directions", "title": "Direction", "lead": "…", "items": [
+      { "id": "linework", "title": "Linework", "idea": "why", "selected": true,
+        "axes": { "line": "2.5 outline", "angle": "three-quarter", "detail": "furnished", "accent": "one touch", "motion": "settle" },
+        "samples": [
+          { "id": "linework-mark", "kind": "marks", "file": "direction/linework-mark.svg" },
+          { "id": "linework-icon", "kind": "icons", "file": "direction/linework-icon.svg" },
+          { "id": "linework-state", "kind": "pictures", "file": "direction/linework-state.svg", "animated": true },
+          { "id": "linework-letter", "kind": "letters", "file": "direction/linework-letter.svg", "animated": true } ] } ] },
     { "id": "logo", "kind": "marks", "title": "Logo", "lead": "…", "items": [
       { "id": "valley", "title": "Valley", "idea": "…", "file": "logo/valley.svg", "from": "where in the product", "selected": true, "shortlist": false } ] },
     { "id": "loaders", "kind": "loaders", "title": "Loaders", "lead": "…", "words": { "button": "Saving…", "panel": "Loading your sites…", "start": "Starting Name" }, "items": [
@@ -70,6 +78,10 @@ set after; `save` needs every tab approved; `sprite` takes `--out <file>`.
 - `scheme` items carry their own `light` and `dark` sets — the one place raw values are allowed,
   since they serve the choice — and the chosen one is `selected`; the tab stays in the saved set.
 - `animated` shows the *Moving* tag and the *Replay*; `motion` is one line of what moves.
+- `directions` items carry `samples` instead of a file — one of each kind, each checked as a
+  picture of that kind (`marks` and `icons` on `--lg-*`, `pictures` and `letters` on `--ill-*`),
+  its classes prefixed by the sample's id — and `axes`; the chosen direction is `selected`; the tab
+  stays in the saved set, its sheets are moved with the rest but are not part of the sprite.
 
 ## The page
 
@@ -83,6 +95,7 @@ from `STATE.json`, the live values of the picture tokens, and how to review.
 | Kind | The page shows |
 |------|----------------|
 | `scheme` | each scheme on its own strip — a button, a chip, a link, a selected row and the sample picture — with its swatches; the chosen one marked |
+| `directions` | a sheet per direction, one under the other: its mark on three grounds, its icon at 16 / 20 / 24, its state picture, its letter band; the axes under it; the chosen one marked |
 | `marks` | the lineup: every mark on the page, on the inverted surface and on the brand color, then at 16 px; a card per mark: three grounds, the wordmark, 16 / 24 / 32 / 64 / 128, where it comes from; `Selected` and `Shortlist` |
 | `loaders` | grouped by mark: each at 64 / 32 / 16, the determinate one at 0 / 33 / 66 / 100 %; then *In place*: a button at work, a panel loading, the application starting |
 | `icons` | a row on the page and on the inverted surface, then each at 16 / 20 / 24 with its name and where it is used |

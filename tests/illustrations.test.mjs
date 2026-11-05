@@ -24,6 +24,17 @@ const MANIFEST = {
       { id: 'slate', title: 'Slate', idea: 'Quiet.', selected: true, light: { '--color-primary': '#334455', '--ill-accent': '#334455' }, dark: { '--color-primary': '#aabbcc', '--ill-accent': '#aabbcc' }, sample: 'states/empty.svg' },
       { id: 'moss', title: 'Moss', idea: 'Green.', light: { '--color-primary': '#225533' }, dark: { '--color-primary': '#88cc99' } },
     ] },
+    { id: 'direction', kind: 'directions', title: 'Direction', lead: 'Manners.', items: [
+      { id: 'linework', title: 'Linework', idea: 'Outlines, three-quarter view.', selected: true, axes: { line: '2.5 outline', angle: 'three-quarter', detail: 'two faces and a shadow', accent: 'once' }, samples: [
+        { id: 'valley', kind: 'marks', file: 'direction/valley.svg' },
+        { id: 'site', kind: 'icons', file: 'direction/site.svg' },
+        { id: 'empty', kind: 'pictures', file: 'direction/empty.svg', animated: true },
+        { id: 'invitation', kind: 'letters', file: 'direction/invitation.svg', animated: true },
+      ] },
+      { id: 'flat', title: 'Flat', idea: 'No outlines.', samples: [
+        { id: 'valley', kind: 'marks', file: 'direction/valley.svg' },
+      ] },
+    ] },
     { id: 'logo', kind: 'marks', title: 'Logo', lead: 'Marks.', items: [
       { id: 'valley', title: 'Valley', idea: 'Two ridges and a sun.', file: 'logo/valley.svg', selected: true, from: 'the sites' },
     ] },
@@ -57,6 +68,9 @@ const set = ({ approved = true, manifest = MANIFEST } = {}) => {
   writeFileSync(join(dir, 'STATE.json'), JSON.stringify(state, null, 2));
   mkdirSync(join(dir, 'review'));
   for (const folder of ['logo', 'loaders', 'icons', 'states', 'emails']) cpSync(join(TEMPLATES, 'examples', folder), join(dir, 'review', folder), { recursive: true });
+  // the direction sheet reuses the examples as its samples, under the tab's folder
+  mkdirSync(join(dir, 'review', 'direction'));
+  for (const [folder, file] of [['logo', 'valley'], ['icons', 'site'], ['states', 'empty'], ['emails', 'invitation']]) cpSync(join(TEMPLATES, 'examples', folder, `${file}.svg`), join(dir, 'review', 'direction', `${file}.svg`));
   writeFileSync(join(dir, 'review', 'manifest.json'), JSON.stringify(manifest, null, 2));
   return dir;
 };
@@ -80,7 +94,7 @@ describe('illustrations.mjs build', () => {
     const dir = set();
     const result = run('build', dir);
     assert.equal(result.status, 0, result.stderr);
-    assert.match(result.stdout, /Wrote review\/index\.html and review\/artifact\.html with 5 pictures/);
+    assert.match(result.stdout, /Wrote review\/index\.html and review\/artifact\.html with 9 pictures/);
     const page = readFileSync(join(dir, 'review', 'index.html'), 'utf8');
     const fragment = readFileSync(join(dir, 'review', 'artifact.html'), 'utf8');
     assert.match(page, /^<!doctype html>/);
@@ -88,7 +102,7 @@ describe('illustrations.mjs build', () => {
     assert.doesNotMatch(fragment, /<!doctype|<html lang|<head>|<body>/);
     // the tabs in the manifest's order, after the overview; one panel each, the overview on show
     const tabs = [...page.matchAll(/role="tab" aria-controls="([^"]+)"/g)].map(([, id]) => id);
-    assert.deepEqual(tabs, ['overview', 'scheme', 'logo', 'loaders', 'icons', 'states', 'emails']);
+    assert.deepEqual(tabs, ['overview', 'scheme', 'direction', 'logo', 'loaders', 'icons', 'states', 'emails']);
     assert.match(page, /<section class="panel" role="tabpanel" id="overview">/);
     assert.match(page, /<section class="panel" role="tabpanel" id="states" hidden>/);
     // every picture once as a symbol with its own prefix, its styles in the head, referenced by <use>
@@ -128,6 +142,11 @@ describe('illustrations.mjs build', () => {
     assert.match(page, /<div class="wrap" data-scheme-chosen="slate">/);
     assert.match(page, /data-scheme-switch>.*data-scheme-use="slate" aria-pressed="true".*data-scheme-use="moss" aria-pressed="false"/);
     assert.match(page, /data-scheme-use="moss" aria-pressed="false">Try it on every picture</);
+    // a direction is a sheet of its samples, each a symbol of its own, the chosen one marked, its axes listed
+    assert.match(page, /<article class="direction item--selected" data-item id="direction-linework">/);
+    for (const id of ['dir-valley', 'dir-site', 'dir-empty', 'dir-invitation']) assert.equal(page.split(`<symbol id="${id}"`).length - 1, 1, `${id} once`);
+    assert.match(page, /<div class="direction__cell direction__cell--letter">.*<use href="#dir-invitation"\/>/);
+    assert.match(page, /<dt>Angle<\/dt><dd>three-quarter<\/dd>/);
     // the chosen scheme marked, its sample drawn once as a symbol of its own; icons at three sizes on two grounds
     assert.match(page, /<article class="scheme scheme-slate item--selected"/);
     assert.match(page, /<symbol id="scheme-slate"/);
@@ -166,7 +185,7 @@ describe('illustrations.mjs check', () => {
   it('passes the four example pictures', () => {
     const result = run('check', set());
     assert.equal(result.status, 0, result.stdout + result.stderr);
-    assert.match(result.stdout, /^5 pictures checked: every file is there/m);
+    assert.match(result.stdout, /^10 pictures checked: every file is there/m);
   });
 
   it('reports a raw color, a raw duration, a text, an id and a class or keyframe not the picture\'s own', () => {
@@ -210,9 +229,10 @@ describe('illustrations.mjs check', () => {
 
   it('reports the manifest\'s faults: a missing file, two items on one id, a loader from an unknown mark, two marks selected, an id not in kebab-case', () => {
     const dir = set({ manifest: withManifest((manifest) => {
-      manifest.tabs[1].items.push({ id: 'Peak', title: 'Peak', file: 'logo/peak.svg', selected: true });
-      manifest.tabs[2].items[0].mark = 'river';
-      manifest.tabs[4].items.push({ id: 'empty', title: 'Again', file: 'states/empty.svg' });
+      manifest.tabs[2].items.push({ id: 'Peak', title: 'Peak', file: 'logo/peak.svg', selected: true });
+      manifest.tabs[3].items[0].mark = 'river';
+      manifest.tabs[5].items.push({ id: 'empty', title: 'Again', file: 'states/empty.svg' });
+      manifest.tabs[1].items[1].samples = [{ id: 'Bad', kind: 'marks', file: 'direction/none.svg' }, { id: 'odd', kind: 'loaders', file: 'direction/valley.svg' }];
     }) });
     const result = run('check', dir);
     assert.equal(result.status, 1);
@@ -221,6 +241,15 @@ describe('illustrations.mjs check', () => {
     assert.match(result.stdout, /^error: review\/manifest\.json — tab "logo": more than one mark is selected$/m);
     assert.match(result.stdout, /^error: review\/manifest\.json — loader "valley-turn" is drawn from the mark "river", which the logo tab does not have$/m);
     assert.match(result.stdout, /^error: review\/manifest\.json — tab "states": two items share the id "empty"$/m);
+    assert.match(result.stdout, /^error: review\/manifest\.json — direction "flat": a sample's id "Bad" is not kebab-case$/m);
+    assert.match(result.stdout, /^error: review\/manifest\.json — direction "flat": sample "Bad" names direction\/none\.svg, and there is no such file$/m);
+    assert.match(result.stdout, /^error: review\/manifest\.json — direction "flat": sample "odd" has the kind "loaders" \(one of marks, icons, pictures, letters\)$/m);
+  });
+
+  it('checks a direction\'s samples as pictures of their kind', () => {
+    const dir = set();
+    edit(dir, 'review/direction/valley.svg', 'fill="var(--lg-accent)"', 'fill="#123456"');
+    assert.match(run('check', dir).stdout, /^error: review\/direction\/valley\.svg:\d+ — the color #123456 is a raw value; draw with --lg-\* tokens$/m);
   });
 
   it('reports dark sets that disagree, in either direction, and a dark value with no light one', () => {
@@ -256,8 +285,13 @@ describe('illustrations.mjs save and sprite', () => {
     const dir = set({ approved: false });
     const result = run('save', dir);
     assert.equal(result.status, 1);
-    assert.match(result.stderr, /not every tab is approved — scheme \(awaiting-review\), logo \(awaiting-review\), loaders \(awaiting-review\), icons \(awaiting-review\), states \(awaiting-review\), emails \(awaiting-review\)/);
+    assert.match(result.stderr, /not every tab is approved — scheme \(awaiting-review\), direction \(awaiting-review\), logo \(awaiting-review\), loaders \(awaiting-review\), icons \(awaiting-review\), states \(awaiting-review\), emails \(awaiting-review\)/);
     assert.ok(existsSync(join(dir, 'review', 'manifest.json')), 'nothing moved');
+  });
+
+  it('refuses a directions tab with no chosen direction', () => {
+    const dir = set({ manifest: withManifest((manifest) => { delete manifest.tabs[1].items[0].selected; }) });
+    assert.match(run('save', dir).stderr, /the directions tab has no chosen direction/);
   });
 
   it('refuses a scheme tab with no chosen scheme', () => {
@@ -269,9 +303,9 @@ describe('illustrations.mjs save and sprite', () => {
     const dir = set();
     const result = run('save', dir);
     assert.equal(result.status, 0, result.stderr);
-    assert.match(result.stdout, /^Saved 5 pictures into .*: manifest\.json, index\.html, artifact\.html, illustrations\.js written, review\/ removed, STATE\.json done/m);
+    assert.match(result.stdout, /^Saved 9 pictures into .*: manifest\.json, index\.html, artifact\.html, illustrations\.js written, review\/ removed, STATE\.json done/m);
     assert.ok(!existsSync(join(dir, 'review')), 'review/ is gone');
-    for (const file of ['logo/valley.svg', 'loaders/valley-turn.svg', 'icons/site.svg', 'states/empty.svg', 'emails/invitation.svg', 'manifest.json', 'index.html', 'artifact.html', 'illustrations.js']) {
+    for (const file of ['logo/valley.svg', 'loaders/valley-turn.svg', 'icons/site.svg', 'states/empty.svg', 'emails/invitation.svg', 'direction/invitation.svg', 'manifest.json', 'index.html', 'artifact.html', 'illustrations.js']) {
       assert.ok(existsSync(join(dir, file)), `missing ${file}`);
     }
     const state = JSON.parse(readFileSync(join(dir, 'STATE.json'), 'utf8'));
@@ -285,10 +319,11 @@ describe('illustrations.mjs save and sprite', () => {
     for (const id of ['lg-valley', 'ld-valley-turn', 'ic-site', 'ill-empty', 'ill-invitation']) assert.ok(sprite.includes(`<symbol id=\\"${id}\\"`), `${id} in the sprite`);
     assert.match(sprite, /@keyframes empty-settle/);
     assert.match(sprite, /dev-assistant-illustrations/);
+    assert.doesNotMatch(sprite, /dir-valley/, 'a direction sheet is not part of the product\'s sprite');
     // a second save has nothing to save; check and build still work on the saved set
     assert.match(run('save', dir).stderr, /nothing to save: no review\/manifest\.json/);
     assert.equal(run('check', dir).status, 0);
-    assert.match(run('build', dir).stdout, /Wrote \.\/index\.html and \.\/artifact\.html with 5 pictures/);
+    assert.match(run('build', dir).stdout, /Wrote \.\/index\.html and \.\/artifact\.html with 9 pictures/);
     assert.match(readFileSync(join(dir, 'index.html'), 'utf8'), /<symbol id="scheme-slate"/, 'the chosen scheme keeps its sample after the save');
   });
 

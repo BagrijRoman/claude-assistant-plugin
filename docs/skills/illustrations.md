@@ -40,7 +40,7 @@ own; the set takes a showcase's scheme and reading instead of asking again.
 | `init [dir]` | choose the folder, read the documentation (or take a showcase's reading and scheme), settle the scheme, then the tabs in order |
 | `continue` | resume the step in `STATE.json` |
 | `status` | steps, rounds, picks, the page's address; change nothing |
-| `tab <id>` | make or remake one tab through its intake, plan, drawing and review |
+| `tab <id>` | make or remake one tab through its intake, plan, drawing (a trial first on a big tab) and review |
 | `revise` | apply the operator's revisions from the chat to the tab in review, republish |
 | `pick logo <id> [<id>…]` | the primary mark and the shortlist the loaders are made from |
 | `add` | a picture the catalog lacks, into one tab |
@@ -52,7 +52,8 @@ own; the set takes a showcase's scheme and reading instead of asking again.
 
 The skill reads the documentation through subagents the way `/showcase` does, or takes a showcase's
 `SOURCES.md`, `tokens.css`, cast, mark and plans when one exists; a design baseline in the
-documentation fixes the scheme and the mark. It writes into `illustration-samples/` at the project
+documentation fixes the scheme and the mark. References the operator gives at Intake — pictures,
+sites, brands — are read for their traits (line, angle, detail, palette, mood, motion), never copied. It writes into `illustration-samples/` at the project
 root by default, proposed in a dialog with alternatives; whatever folder is chosen is its working
 folder, and writes stay in it: nothing is created outside it, not even for a moment. While a review
 is on, the drafts live under `review/`; the set itself is written by the save.
@@ -64,7 +65,7 @@ illustration-samples/
 ├── plans/<tab>.md                 the approved plan of each tab
 ├── review/                        until the save: manifest.json, <tab>/<id>.svg, index.html, artifact.html, screenshots/
 └── after the save: manifest.json · index.html · artifact.html · illustrations.js
-    · logo/ loaders/ icons/ states/ scenes/ onboarding/ emails/ reserve/   <id>.svg
+    · direction/ logo/ loaders/ icons/ states/ scenes/ onboarding/ emails/ reserve/   <id>.svg
 ```
 
 ### The page
@@ -72,7 +73,8 @@ illustration-samples/
 One self-contained page — tokens, styles, scripts and every picture inline, nothing from the
 network — with tabs along the top: **Overview** (the colors every picture is drawn with, each tab's
 status, how to review) · **Color scheme** (the schemes considered on strips of mini-UI, the chosen
-one marked; it stays in the set) · **Logo** (the lineup of every mark on three grounds and at 16
+one marked; it stays in the set) · **Direction** (the manners considered, each a sheet of four
+samples — a mark, an icon, a state, a letter band — the chosen one the hand of the set) · **Logo** (the lineup of every mark on three grounds and at 16
 px; a card per mark with the wordmark and five sizes) · **Loaders** (each at 64 / 32 / 16, the
 determinate one at four shares, three in-place samples) · **Icons** (the domain's own, at 16 / 20 /
 24) · **States** · **Scenes** · **Onboarding** · **Reserve** (each picture at its size and in place
@@ -93,14 +95,16 @@ opens `review/index.html` from disk.
 
 **Intake** (the folder; a showcase found and taken; or the reading; the name, the language, the
 cast; the empty page published once, so the address exists from the start) → **Color scheme**
-(confirmed from a showcase or a baseline, or three proposals on the page, one chosen) → **Logo**
-(fifteen marks from five ideas tried three ways; the lineup looked at; a primary picked and two or
+(confirmed from a showcase or a baseline, or three proposals on the page, one chosen) →
+**Direction** (three manners on sheets of four samples each, built from the references and the
+reading, told apart by line, angle, detail, accent and motion; one chosen or mixed, before anything
+is drawn in number) → **Logo** (fifteen marks from five ideas tried three ways; the lineup looked at; a primary picked and two or
 three shortlisted) → **Loaders** (3–5 per mark of the primary and the shortlist, one determinate;
 in place) → **Icons** (the domain's own subjects in the mark's manner) → **States** (the catalog's
-and the product's own, each with words and action) → **Scenes** (a sign-in panel, a hero, an
+and the product's own, each with words and action; a trial of four reviewed before the rest) → **Scenes** (a sign-in panel, a hero, an
 announcement, the 404, a letter band, the domain's moments) → **Onboarding** (welcome, first step,
 setup steps, empty workspace, tour) → **Email templates** (the common letters, the ones beyond
-them, the product's own; a picture each) → **Reserve** → **Save**.
+them, the product's own; a picture each; a trial of three letters first) → **Reserve** → **Save**.
 
 Before every tab the skill asks whether it is wanted — **full**, **simplified** (a reduced scope
 per tab, in `phases.md › Tab intake`) or **skipped** — and what to take into account; the wishes go
@@ -120,7 +124,7 @@ and how many; and, on `continue` or `status`, the checklist rebuilt from its sta
 
 | Mode | Stages |
 |------|--------|
-| `init [dir]`, `continue` | Intake → Color scheme → Logo → Loaders → Icons → States → Scenes → Onboarding → Email templates → Reserve → Save |
+| `init [dir]`, `continue` | Intake → Color scheme → Direction → Logo → Loaders → Icons → States → Scenes → Onboarding → Email templates → Reserve → Save |
 | `status` | Read the state → Report |
 | `tab <id>` | Tab intake → Plan → Approval → Draw → Publish → Review → Approve |
 | `revise` | Read the revisions → Redraw → Publish → Review |
@@ -148,9 +152,9 @@ and how many; and, on `continue` or `status`, the checklist rebuilt from its sta
 
 | Command | Does | Reports |
 |---------|------|---------|
-| `build <dir>` | the page from `review/manifest.json` and the SVG files (or from the saved set's `manifest.json`): every file parsed once, its styles into the head once, a `<symbol>` per id, the tabs in the manifest's order — `index.html` (a whole document) and `artifact.html` (the fragment to publish) | `Wrote review/index.html and review/artifact.html with 42 pictures`; a file that is not an SVG stops it |
-| `check <dir>` | the manifest: every file there, ids kebab-case and unique per tab, at most one mark selected, a loader's mark known, a saved scheme tab with a chosen scheme, a file outside its tab's folder (warning); every SVG: a viewBox, no raw color (hex, a color function, a named value, a token of another family), no `<text>`, `<image>`, gradient, pattern, filter, mask, clip or marker, no `id`, every class and keyframe starting with the picture's id, every animation on a `--ill-duration` token, a size over 24 KB (warning); `tokens.css`: the two dark sets declare the same tokens with the same values, every dark token has a light one | `error: review/states/empty.svg:12 — the color #abcdef is a raw value; draw with --ill-* tokens`, one per line; exit 1 on an error |
-| `save <dir>` | refuses while a tab is not `approved` in `STATE.json` (names them), while the scheme tab has no chosen scheme, or while a named file is missing; otherwise moves every file out of `review/` into the set's folder (a scheme's sample too), writes `manifest.json`, `index.html`, `artifact.html` and `illustrations.js`, removes `review/`, marks `save` done and `step` `done` with the date | `Saved 42 pictures into …` |
+| `build <dir>` | the page from `review/manifest.json` and the SVG files (or from the saved set's `manifest.json`): every file parsed once, its styles into the head once, a `<symbol>` per id, the tabs in the manifest's order, a direction's samples as a sheet — `index.html` (a whole document) and `artifact.html` (the fragment to publish) | `Wrote review/index.html and review/artifact.html with 42 pictures`; a file that is not an SVG stops it |
+| `check <dir>` | the manifest: every file there, ids kebab-case and unique per tab, at most one mark selected, a loader's mark known, a saved scheme tab with a chosen scheme and a saved directions tab with a chosen direction, a direction's samples of a known kind with files, a file outside its tab's folder (warning); every SVG: a viewBox, no raw color (hex, a color function, a named value, a token of another family), no `<text>`, `<image>`, gradient, pattern, filter, mask, clip or marker, no `id`, every class and keyframe starting with the picture's id, every animation on a `--ill-duration` token, a size over 24 KB (warning); `tokens.css`: the two dark sets declare the same tokens with the same values, every dark token has a light one | `error: review/states/empty.svg:12 — the color #abcdef is a raw value; draw with --ill-* tokens`, one per line; exit 1 on an error |
+| `save <dir>` | refuses while a tab is not `approved` in `STATE.json` (names them), while the scheme tab has no chosen scheme or the directions tab no chosen direction, or while a named file is missing; otherwise moves every file out of `review/` into the set's folder (a scheme's sample too), writes `manifest.json`, `index.html`, `artifact.html` and `illustrations.js`, removes `review/`, marks `save` done and `step` `done` with the date | `Saved 42 pictures into …` |
 | `sprite <dir> [--out <file>]` | `illustrations.js`: one script that puts every picture into a page as `<symbol>`s (`lg-`, `ld-`, `ic-`, `ill-`) with a `<style>` of their keyframes; from the drafts while a review is on | `Wrote …/illustrations.js with 42 symbols` |
 
 Usage errors exit 2.
@@ -168,7 +172,7 @@ Usage errors exit 2.
   need from the SVG files and the sprite.
 - **Revisions by id.** A revision that names no picture is applied to the tab; one that names a
   picture that does not exist is asked about.
-- **Long.** Eleven steps with a review each; it spans sessions and resumes from `STATE.json`.
+- **Long.** Twelve steps with a review each; it spans sessions and resumes from `STATE.json`.
 
 ## Tests
 
@@ -177,11 +181,12 @@ Usage errors exit 2.
   the page and the fragment (tabs in order, one symbol per id, styles once, both dark sets, the
   lineup, the sizes, the selected mark in the top bar, the loaders' sizes and shares, the in-place
   samples, the letter's anatomy and words, the id chips, the scheme strips on their own values, the
-  icons' rows); the check passes the examples and reports a raw color, a color function, a raw
+  icons' rows, a direction's sheet with its samples as symbols and its axes); the check passes the examples and reports a raw color, a color function, a raw
   duration, a text, an id, a class, a selector and a keyframe not the picture's own, a family
   crossed, a gradient, a missing file, two items on one id, a loader from an unknown mark, two marks
-  selected, an id not in kebab-case, dark sets that disagree in either direction and a dark token
-  with no light one; the save refuses a draft tab and a scheme not chosen, then moves the files,
+  selected, an id not in kebab-case, a direction's sample without a file or of a wrong kind, a sample
+  checked as a picture of its kind, dark sets that disagree in either direction and a dark token
+  with no light one; the save refuses a draft tab, a scheme not chosen and a direction not chosen, then moves the files,
   writes the page, manifest and sprite and marks the state done; the sprite goes where it is told;
   a foreign state and a bad command line stop it.
 - [tests/structure.test.mjs](../../tests/structure.test.mjs) — the skill directory, `SKILL.md`

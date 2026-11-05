@@ -7,10 +7,14 @@
   "docs": "{{relative path to the documentation folder that was read}}",
   "showcase": null,
   "lang": "en",
-  "scheme": { "source": null, "decision": null },
+  "scheme": {
+    "source": null,
+    "decision": null
+  },
   "steps": {
     "intake": "in-progress",
     "scheme": "pending",
+    "direction": "pending",
     "logo": "pending",
     "loaders": "pending",
     "icons": "pending",
@@ -24,7 +28,17 @@
   "step": "intake",
   "scope": {},
   "rounds": {},
-  "selected": { "scheme": null, "logo": null, "shortlist": [] },
-  "artifact": { "url": null, "publishedAt": null },
-  "pending": null
+  "selected": {
+    "scheme": null,
+    "direction": null,
+    "logo": null,
+    "shortlist": []
+  },
+  "artifact": {
+    "url": null,
+    "publishedAt": null
+  },
+  "pending": null,
+  "batches": {},
+  "references": []
 }

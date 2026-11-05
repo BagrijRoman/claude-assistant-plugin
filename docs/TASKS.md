@@ -1198,6 +1198,32 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T52 — `/illustrations` Direction first: the manner on three sheets before anything is drawn in number · `done` (0.25.0)
+
+After the first build (T51) the operator asked how the skill could be better, and proposed showing the
+concept and the direction of the drawing first, then generating the rest. Agreed, with two companions.
+
+What was done (0.25.0):
+- **Direction (step 2)**, between Color scheme and Logo: three manners, each a sheet of four samples — a
+  mark, an icon, a state, a letter band — in one hand, told apart on five axes (line, angle, detail,
+  accent, motion; `drawing.md › Direction`), built from the references and the reading; one chosen or
+  mixed (a mixed sheet is drawn and shown before the choice is final); the chosen axes become the hand
+  of the set, carried word for word into every builder's brief with the sheet's files as reference. The
+  tab stays in the set. `bin/illustrations.mjs`: the `directions` kind (items with `samples` and `axes`;
+  each sample checked as a picture of its kind; the sheet on the page; moved at the save, not in the
+  sprite); `templates/manifest.json`, `STATE.json` (`direction` step, `selected.direction`, `batches`,
+  `references`); the hook's stages (`4/12 Logo`).
+- **A trial before the number**: States, Scenes, Onboarding, Email templates and Reserve are drawn in two
+  batches — 3–4 pictures the plan marks *trial*, reviewed, then the rest on the trial's files as
+  reference; `batches.<key>` is `trial` until then (`phases.md › Common mechanics`).
+- **References at Intake**: pictures, sites, brands the operator likes, read by a subagent for their
+  traits into `SOURCES.md › References`, never copied; the Direction step starts from them.
+- SKILL.md, the references, `docs/skills/illustrations.md`, the index rows, the tests; version 0.25.0.
+
+Done when:
+- `npm test` passes.
+- On a real project the operator chooses a direction from the three sheets before the marks are drawn.
+
 ## T51 — `/illustrations`: the project's illustration set, reviewed on a shared page, saved when every tab is approved · `done` (0.24.0)
 
 Asked for by the operator on 2026-11-05: a skill that draws the project's illustrations from what its

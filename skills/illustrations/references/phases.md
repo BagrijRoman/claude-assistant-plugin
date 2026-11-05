@@ -13,13 +13,14 @@ artifact work in [page.md](page.md).
 - [A fresh context](#a-fresh-context)
 - [Step 0 — Intake](#step-0--intake)
 - [Step 1 — Color scheme](#step-1--color-scheme)
-- [Step 2 — Logo](#step-2--logo)
-- [Step 3 — Loaders](#step-3--loaders)
-- [Step 4 — Icons](#step-4--icons)
-- [Steps 5–7 — States, Scenes, Onboarding](#steps-57--states-scenes-onboarding)
-- [Step 8 — Email templates](#step-8--email-templates)
-- [Step 9 — Reserve](#step-9--reserve)
-- [Step 10 — Save](#step-10--save)
+- [Step 2 — Direction](#step-2--direction)
+- [Step 3 — Logo](#step-3--logo)
+- [Step 4 — Loaders](#step-4--loaders)
+- [Step 5 — Icons](#step-5--icons)
+- [Steps 6–8 — States, Scenes, Onboarding](#steps-68--states-scenes-onboarding)
+- [Step 9 — Email templates](#step-9--email-templates)
+- [Step 10 — Reserve](#step-10--reserve)
+- [Step 11 — Save](#step-11--save)
 - [Other modes](#other-modes)
 
 ---
@@ -67,6 +68,16 @@ IL-005 are reserved for the decisions every set takes (the scheme, the mark, the
 of states, the list of letters); the rest are appended from IL-006 in the order taken (a tab
 simplified or skipped, the wishes for one, the language, the icons' manner, a reserve picture kept).
 
+**A trial before the number.** A tab of many pictures — States, Scenes, Onboarding, Email
+templates, Reserve — is drawn in two batches: first a **trial** of 3–4 pictures the plan marks
+(the ones that show the most of the manner: one with an object, one with a place, one with a
+feedback tone, one letter of each group), published and reviewed like a tab; only once the operator
+approves the trial — or revises it until they do — are the rest drawn, by the same builders, on the
+trial's files as reference beside the direction's sheet. `batches.<key>` in `STATE.json` is `trial`
+until then and `full` after; a tab in `awaiting-review` with `batches.<key>: "trial"` resumes at
+the trial's review. A revision of the manner at the trial is applied to the plan's wording for the
+rest, so it is not repeated picture by picture.
+
 **Plans before drawing.** Every tab is first a list the operator sees and edits (`AskUserQuestion`
 with the list in the question text and the options *Draw as listed (Recommended) / Change the list /
 Skip this tab*), and only then drawn. The approved list goes to `plans/<tab>.md` in the working
@@ -79,8 +90,10 @@ yes or no to each.
 **Subagents** (`Agent`, `general-purpose`) draw in parallel, on the session's model — the drawing
 is what the customer chooses between, so it is not sent to a smaller model. One builder per 4–6
 pictures (3 builders for the 15 marks; a builder per group of states; one per mark for its
-loaders; one per group of letters). A brief names: the files to read (`drawing.md`, the plan, the
-example of the kind in `templates/examples/`, `tokens.css`), the files to write (`review/<tab>/<id>.svg`
+loaders; one per group of letters). A brief names: the files to read (`drawing.md`, the plan,
+`plans/direction.md` and the chosen direction's sheet in `review/direction/` — the reference of the
+hand, over the example of the kind in `templates/examples/` — the trial's files when the tab has
+them, `tokens.css`), the files to write (`review/<tab>/<id>.svg`
 for its pictures, nothing else — never the manifest, never another builder's file), the rules
 (tokens only, the id prefix on every class and keyframe, no id, text, gradient or raw duration, one
 gesture of animation with a still last frame), the wishes of the tab intake word for word, and what
@@ -104,7 +117,7 @@ what the baseline already decides for it.
 
 ## Tab intake
 
-Before every step from 1 to 9 draws anything, the operator says whether they want the tab, how
+Before every step from 1 to 10 draws anything, the operator says whether they want the tab, how
 much of it, and what to take into account. Nothing of a step — no plan, no proposal, no builder —
 starts before this answer. Intake (0) and Save (10) have none.
 
@@ -112,9 +125,9 @@ starts before this answer. Intake (0) and Save (10) have none.
    question's text in three short lines: what the full tab shows, what the simplified one shows
    (from the table below, fitted to this product), and what later tabs take from it.
    - *Tab*: **Full** (Recommended, unless the reading or an earlier answer argues for less) ·
-     **Simplified** · **Skip**. Step 1 (Color scheme) and step 2 (Logo) cannot be skipped — every
-     picture stands on the scheme, the loaders and the letters on the mark — so for them the
-     options are Full and Simplified (and *Take the showcase's* when one exists).
+     **Simplified** · **Skip**. Steps 1 (Color scheme), 2 (Direction) and 3 (Logo) cannot be skipped — every
+     picture stands on the scheme and the manner, the loaders and the letters on the mark — so for
+     them the options are Full and Simplified (and *Take the showcase's* when one exists).
    - *Wishes*: **None — follow the documentation** (Recommended) · **From the design baseline**
      (only when there is one: name what it fixes for this tab) · the operator's own text. A wish
      narrows or redirects the tab (a manner of drawing, a thing to avoid, a reference they like);
@@ -133,14 +146,15 @@ starts before this answer. Intake (0) and Save (10) have none.
 | Step | Full | Simplified |
 |------|------|------------|
 | 1 Color scheme | three schemes on the page, each on mini-UI with a sample picture, one chosen | the showcase's, the baseline's or the documentation's, confirmed in one question |
-| 2 Logo | 15 marks, grouped by idea, on three grounds and five sizes; a primary and a shortlist of 2–3 | 5 marks; a primary, one shortlisted |
-| 3 Loaders | 3–5 loaders per mark of the primary and the shortlist, one determinate; in place | 2 loaders of the primary mark, one determinate |
-| 4 Icons | every subject of the domain the icon library has no fit for, with where it is used | the 6–8 the planned screens need |
-| 5 States | the catalog's states and the product's own, each with words, action and the in-place sample | the core eight (empty, nothing found, error, no access, offline, done, 404, loading companion), words only |
-| 6 Scenes | a sign-in panel, a hero, an announcement, the 404, a letter band, the domain's moments | a sign-in panel and the 404 |
-| 7 Onboarding | welcome, first thing to do, every setup step, empty workspace, tour | welcome and empty workspace |
-| 8 Email templates | the template, the common letters, the letters beyond them, the product's own; a picture each | the template, the product's own letters, one shared picture |
-| 9 Reserve | 6–10 pictures for later situations, from the catalog's reserve and the documentation | 3 |
+| 2 Direction | three sheets of four samples each, from the references and the reading; one chosen or mixed | one sheet from the references or the baseline, confirmed |
+| 3 Logo | 15 marks, grouped by idea, on three grounds and five sizes; a primary and a shortlist of 2–3 | 5 marks; a primary, one shortlisted |
+| 4 Loaders | 3–5 loaders per mark of the primary and the shortlist, one determinate; in place | 2 loaders of the primary mark, one determinate |
+| 5 Icons | every subject of the domain the icon library has no fit for, with where it is used | the 6–8 the planned screens need |
+| 6 States | the catalog's states and the product's own, each with words, action and the in-place sample; a trial of four first | the core eight (empty, nothing found, error, no access, offline, done, 404, loading companion), words only |
+| 7 Scenes | a sign-in panel, a hero, an announcement, the 404, a letter band, the domain's moments | a sign-in panel and the 404 |
+| 8 Onboarding | welcome, first thing to do, every setup step, empty workspace, tour | welcome and empty workspace |
+| 9 Email templates | the template, the common letters, the letters beyond them, the product's own; a picture each; a trial of three letters first | the template, the product's own letters, one shared picture |
+| 10 Reserve | 6–10 pictures for later situations, from the catalog's reserve and the documentation | 3 |
 
 ## A fresh context
 
@@ -202,9 +216,19 @@ the files instead. Nothing in the procedure is skipped for it.
    `SOURCES.md` in the set's folder.
 4. **Ask, in one round** (`AskUserQuestion`): the **name and wordmark** as the pictures should carry
    them; the **language** of the words (the documentation's, or English — one, the pictures carry
-   none); the **cast** the letters go to (a showcase's, or propose one sender and two people).
-   Say in one line that every tab will be asked for before it is made (tab intake).
-5. Write `STATE.json`, `DECISIONS.md`, `CHANGELOG.md`, `README.md` and `tokens.css` from the
+   none); the **cast** the letters go to (a showcase's, or propose one sender and two people); and
+   the **references** — pictures, sites, brands or a mood board the operator likes, as file paths
+   or addresses, or *none*. Say in one line that every tab will be asked for before it is made
+   (tab intake).
+5. **Read the references** when there are any: one reader (a subagent with `Read` and `WebFetch`)
+   per group looks at each — an image file is read as a picture, a page fetched — and returns, per
+   reference, its traits under fixed headings: **Line** (outline or flat, the weight), **Angle**
+   (front, three-quarter, isometric), **Detail** (how much, where), **Palette** (how many colors,
+   how the accent is used), **Mood** (calm, playful, technical), **Motion** (when a reference
+   moves), and **What to take** / **What not to take** in one line each. The traits go into
+   `SOURCES.md › References` with the reference's name or address; the paths go into
+   `STATE.json › references`. A reference is never copied: its traits inform the Direction step.
+6. Write `STATE.json`, `DECISIONS.md`, `CHANGELOG.md`, `README.md` and `tokens.css` from the
    templates, `review/manifest.json` from `templates/manifest.json` with the name, tagline, wordmark
    and language filled. Build and publish the empty page once — the operator sees the tabs, the
    theme switch and the address (`page.md › Publishing`), and keeps that address for the whole run.
@@ -234,7 +258,37 @@ accent-2, soft), light and dark.
    others as alternatives; `check` (the dark sets must agree), `build`, publish. Record IL-001 and
    `selected.scheme`; `steps.scheme` is `approved` on the operator's word.
 
-## Step 2 — Logo
+## Step 2 — Direction
+
+The manner of the whole set, settled on four pictures before fifteen marks and thirty states are
+drawn in it. Needs the scheme; takes the references of Intake and the reading's *The world*.
+
+1. **Plan three directions** (`plans/direction.md`), each one line of reasoning from the references,
+   the brand's tone and the domain, and each defined on the axes of `drawing.md › Direction`:
+   **line** (outlines in `--ill-line` or flat faces without outline; the weight), **angle** (front,
+   three-quarter, isometric), **detail** (how much a picture holds; the texture), **accent** (where
+   the one accent goes; one or two colors in the mark), **motion** (the kind of gesture: settle,
+   drift, draw). Make them differ on at least two axes each; one may be the references' manner as
+   it is, one its calmer cousin, one a counter-proposal. With a design baseline that fixes the
+   manner, one direction, confirmed. Approve the plan.
+2. **Draw the sheets** on the session's model, one builder per direction, each **four samples**
+   in that manner and nothing else: a mark (the product's object, 64-grid, `--lg-*`), an icon of
+   one domain subject (16-grid), a state picture (`empty`, 320 × 240, `--ill-*`, its gesture), a
+   letter band (560 × 240, the invitation's door or the domain's place). Files
+   `review/direction/<direction>-<kind>.svg`, the sample ids `<direction>-mark`, `<direction>-icon`,
+   `<direction>-state`, `<direction>-letter`, every class and keyframe starting with the sample's
+   id. Entries (`page.md › The manifest`): the direction's `id`, `title`, `idea`, `axes`, `samples`.
+3. `check`, `build`, publish, screenshots in both themes; the three sheets stand one under the
+   other, so the operator compares the same four pictures in three hands.
+4. **Review**: revisions by sample (`direction/linework-state — thinner line`) or by direction;
+   then ask (`AskUserQuestion`, header `Direction`): A (Recommended) / B / C — the operator may mix
+   ("the line of B, the angle of A"): then draw the mixed sheet as a fourth direction and show it
+   before the choice is final. Mark the chosen one `selected: true`, `STATE.json › selected.direction`,
+   IL-006 (or the next id), the chosen axes written into `plans/direction.md` as the **hand of the
+   set** — one paragraph every builder's brief carries word for word, with the sheet's four files
+   as reference. The tab stays in the set with the alternatives beside the chosen one. Approve.
+
+## Step 3 — Logo
 
 1. **Plan 15 ideas** for a mark, grouped by where they come from — the product's **object** (the
    thing it is about), its **action** (what it does to the thing), the **initial** (a letterform
@@ -242,7 +296,7 @@ accent-2, soft), light and dark.
    the **domain's own symbol** (what its trade draws) — three per group, one line each: the idea,
    what is in the mark, how many colors it needs (one, two, more). Approve (`plans/logo.md`).
 2. **Draw** on the session's model, three builders with five marks each
-   (`drawing.md › Marks`): 64-unit grid, `currentColor` as the body, the knockouts in
+   (`drawing.md › Marks`), in the hand of the chosen direction, its mark sample as the reference: 64-unit grid, `currentColor` as the body, the knockouts in
    `var(--lg-ground)`, the accents in `var(--lg-accent)` and `var(--lg-accent-2)`, the soft fill
    in `var(--lg-soft)`; detailed enough to be a logo, simple enough to read at 16 px; the parts a
    loader can set in motion in groups of their own. Each builder returns the manifest entries
@@ -257,7 +311,7 @@ accent-2, soft), light and dark.
    others, `STATE.json › selected.logo` and `selected.shortlist`, IL-002 and IL-003, `build`,
    publish. Approve.
 
-## Step 3 — Loaders
+## Step 4 — Loaders
 
 1. **Plan**: for the primary mark and each shortlisted one, 3–5 loaders, each a motion of the
    mark's own parts — they turn, light up in turn, draw themselves, beat, travel an arc — with
@@ -272,7 +326,7 @@ accent-2, soft), light and dark.
    shares, and the three in-place samples (a button at work, a panel loading, the application
    starting) — the words of the tab's `words` from the documentation. Review; approve.
 
-## Step 4 — Icons
+## Step 5 — Icons
 
 1. **Plan** the icons of the product's own subjects — what the icon library chosen by the project
    (or the standard set) has no fit for: for a carbon product a scope, an emission source by kind, a
@@ -285,30 +339,31 @@ accent-2, soft), light and dark.
 3. `check`, `build`, publish: the page shows them in a row on the page and on the inverted
    surface, then each at 16 / 20 / 24. Review; approve.
 
-## Steps 5–7 — States, Scenes, Onboarding
+## Steps 6–8 — States, Scenes, Onboarding
 
-The same shape for the three: **plan → approve → draw in parallel → check → build → publish →
-review → approve**. Every picture **moves**, minimally, once, and rests on a complete still frame
+The same shape for the three: **plan → approve → the trial drawn → published → reviewed → the rest
+drawn → check → build → publish → review → approve** (*A trial before the number* in Common
+mechanics; the plan marks the trial's pictures with *trial* at the end of their lines). Every picture **moves**, minimally, once, and rests on a complete still frame
 (`drawing.md › Animation`); the page shows it at its size and, for a state or an onboarding step,
 in place — the sample card with the picture small, the heading, the message and the one action.
 
-- **States (5).** Plan from `catalog.md › States`: the core states every product has, the ones the
+- **States (6).** Plan from `catalog.md › States`: the core states every product has, the ones the
   documentation names (an entity locked, a period closed, a role refused), and the ones you
   propose from the product's situations — each with its id, title, idea (what is in the picture
   and what moves), where it is used and its words. Group them on the page by kind (Empty ·
   Nothing found · Errors · Access · Connection · Done · Pages). Approve (`plans/states.md`). Draw,
   one builder per group. Entries: `id`, `title`, `group`, `idea`, `file`, `animated`, `motion`,
   `usedIn`, `words: { heading, message, action }`.
-- **Scenes (6).** Plan from `catalog.md › Scenes` and the reading's *The world*: a scene per place
+- **Scenes (7).** Plan from `catalog.md › Scenes` and the reading's *The world*: a scene per place
   it will sit — the sign-in panel, the hero of a landing or home page, an announcement, the 404,
   a letter's band, the domain's moments (a first setup, an import, an approval, a report ready, a
   target reached). Entries as for a state, with `usedIn` the place; `wide: true` for a band.
-- **Onboarding (7).** Plan from `catalog.md › Onboarding`: the welcome, the first thing to do, a
+- **Onboarding (8).** Plan from `catalog.md › Onboarding`: the welcome, the first thing to do, a
   picture per step of the product's setup (from the documentation's setup flow), the empty
   workspace, the tour, the first success. Each with its words — the heading, the one sentence, the
   action — as the operator will read them on the first screens.
 
-## Step 8 — Email templates
+## Step 9 — Email templates
 
 1. **Plan** (`catalog.md › Letters`): the common letters (invitation, verification code, password
    reset, welcome, digest, security alert), the letters beyond them that the product plausibly
@@ -325,7 +380,8 @@ in place — the sample card with the picture small, the heading, the message an
    client changes: the pictures go out as images (an animated GIF whose first frame is the still
    picture, or a still PNG — the developer's call later, the page shows the animation as a promise
    of what the GIF will do), a dark mail client may recolor the letter.
-3. **A picture per letter** (`drawing.md › Letter pictures`), about its moment — an invitation: a
+3. **A picture per letter** (`drawing.md › Letter pictures`), the trial first — one letter of each
+   group, reviewed — then the rest; about its moment — an invitation: a
    door opening onto the product's world; a reset: a key; a digest: the week's figures; an alert: a
    shield — 560 × 240, the subject in the middle third; a scene from Scenes reused where it fits
    (the same file named twice is one symbol). One builder per group. Entries: `id`, `title`,
@@ -334,16 +390,16 @@ in place — the sample card with the picture small, the heading, the message an
 4. `check`, `build`, publish: the Template first, then every letter at 600 px as a mail client
    shows it, light as the letter's own, dark as a dark client renders it. Review; approve.
 
-## Step 9 — Reserve
+## Step 10 — Reserve
 
 Plan 6–10 pictures for situations the product will meet later — from `catalog.md › Reserve` and
 the documentation's roadmap (a module planned for later, a surface not yet built) — each with one
 line of when. Approve (`plans/reserve.md`); draw; publish; review; approve. The operator may move a
 reserve picture into States or Scenes by saying so: change its tab in the manifest and its folder.
 
-## Step 10 — Save
+## Step 11 — Save
 
-1. Every tab `approved` or `skipped` in `STATE.json`, the scheme item `selected`: run
+1. Every tab `approved` or `skipped` in `STATE.json`, the scheme item and the direction `selected`: run
    `node "${CLAUDE_PLUGIN_ROOT}/bin/illustrations.mjs" check <dir>` once more, then `save <dir>`.
    The script moves the files, writes `manifest.json`, `index.html`, `artifact.html` and
    `illustrations.js`, removes `review/` and marks the state done.
@@ -366,8 +422,8 @@ draw → publish → review → approve. On a saved set: the tab's files are red
 again with a manifest holding that tab only; the save then replaces those files and keeps the rest
 (say so before starting; a saved file is never overwritten without this).
 
-**`revise`** — the review loop of Common mechanics for the tab in `awaiting-review`, when the
-operator wrote revisions outside the question.
+**`revise`** — the review loop of Common mechanics for the tab in `awaiting-review` (its trial,
+when `batches.<key>` is `trial`), when the operator wrote revisions outside the question.
 
 **`pick logo <id> [<id>…]`** — confirm the ids exist; the first is `selected`, the rest
 `shortlist`; `STATE.json › selected`; IL-002 and IL-003; `build`; publish.

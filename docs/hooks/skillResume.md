@@ -37,7 +37,7 @@ It is a notice, not a guard: it blocks nothing and writes nothing.
 | modules whose agent failed | `… · failed: DAT l2, ORG l3 · …` |
 | a showcase whose `step` is not `done` | `▸ /showcase · 7/21 Components · waits for the operator at its gate · docs/showcase — /showcase resumes it` |
 | a showcase with an unanswered question (`pending`) | `… · a question waits for the operator · …` |
-| an illustration set whose `step` is not `done` | `▸ /illustrations · 3/11 Logo · waits for the operator's review on the page · round 2 · illustration-samples — /illustrations resumes it` |
+| an illustration set whose `step` is not `done` | `▸ /illustrations · 4/12 Logo · waits for the operator's review on the page · round 2 · illustration-samples — /illustrations resumes it` |
 | a backlog whose `pending` names a mode | `▸ /backlog · detail stopped at gate · docs/backlog — /backlog continue resumes it` |
 | a research run past its brief (`research`, `curate`, `review`) | `▸ /research · 2/4 Research · round 2 cut off while running · docs/research/2026-10-14-fleet — /research resumes it` |
 | several | one line each: blueprints, then showcases, illustration sets, backlogs and research runs |
@@ -83,7 +83,7 @@ It is a notice, not a guard: it blocks nothing and writes nothing.
 [dev-assistant] skill-resume: unfinished work in this project —
 - /blueprint in docs/blueprint: phase "capabilities" (6/8 Capabilities (L3) · not started); see mechanics.md › A fresh context
 - /showcase in docs/showcase: step "components" (7/21 Components · in progress); see phases.md › A fresh context
-- /illustrations in illustration-samples: step "logo" (3/11 Logo · waits for the operator's review on the page · round 2); see phases.md › A fresh context
+- /illustrations in illustration-samples: step "logo" (4/12 Logo · waits for the operator's review on the page · round 2); see phases.md › A fresh context
 When the operator runs the command, resume from that STATE.json as the skill says: read only what the current phase, step or mode needs, not the documents of the ones already approved.
 ```
 

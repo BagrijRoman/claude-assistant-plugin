@@ -27,7 +27,8 @@ const USAGE = `Usage: node bin/illustrations.mjs <command> <dir> [options]
 
 const COMMANDS = ['build', 'check', 'save', 'sprite'];
 const TEMPLATES = fileURLToPath(new URL('../skills/illustrations/templates/', import.meta.url));
-const KINDS = ['scheme', 'marks', 'loaders', 'icons', 'pictures', 'letters'];
+const KINDS = ['scheme', 'directions', 'marks', 'loaders', 'icons', 'pictures', 'letters'];
+const SAMPLE_KINDS = ['marks', 'icons', 'pictures', 'letters'];
 const PREFIX = { marks: 'lg', loaders: 'ld', icons: 'ic', pictures: 'ill', letters: 'ill' };
 const SIZE_WARNING = 24 * 1024;
 const HEX = /(?<![&\w])#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})(?![\w-])/g;
@@ -97,9 +98,9 @@ const parseSvg = (text) => {
 
 // --- the page
 
-const renderSvg = (tab, item, { className = '', animated = false, style = '', label = '' } = {}) => {
+const renderSvg = (tab, item, { className = '', animated = false, style = '', label = '', symbol = '' } = {}) => {
   const aria = label ? ` role="img" aria-label="${escapeHtml(label)}"` : ' aria-hidden="true"';
-  return `<svg class="${className}" viewBox="${escapeHtml(item.viewBox ?? '0 0 320 240')}"${aria}${animated ? ' data-animated' : ''}${style ? ` style="${escapeHtml(style)}"` : ''}><use href="#${symbolId(tab, item)}"/></svg>`;
+  return `<svg class="${className}" viewBox="${escapeHtml(item.viewBox ?? '0 0 320 240')}"${aria}${animated ? ' data-animated' : ''}${style ? ` style="${escapeHtml(style)}"` : ''}><use href="#${symbol || symbolId(tab, item)}"/></svg>`;
 };
 
 const idChip = (tab, item) => `<button type="button" class="item__id" data-copy="${escapeHtml(`${tab.id}/${item.id}`)}" title="Copy the id for a revision">${escapeHtml(item.id)}</button>`;
@@ -118,6 +119,33 @@ const groupsOf = (items) => {
   return [...groups.entries()];
 };
 const groupHeading = (title, count) => (title ? `<div class="group"><h3>${escapeHtml(title)}</h3><span class="group__count">${count}</span></div>` : '');
+
+/** Three (or so) directions of the drawing's manner, each a sheet of samples — a mark, an icon, a state, a letter band — in one hand. */
+const renderDirections = (tab) => {
+  const AXES = [['line', 'Line'], ['angle', 'Angle'], ['detail', 'Detail'], ['accent', 'Accent'], ['motion', 'Motion']];
+  const cards = tab.items.map((item) => {
+    const samples = item.samples ?? [];
+    const of = (kind) => samples.find((sample) => sample.kind === kind);
+    const draw = (sample, opts) => (sample ? renderSvg(tab, sample, { ...opts, symbol: `dir-${sample.id}` }) : '');
+    const mark = of('marks');
+    const icon = of('icons');
+    const state = of('pictures');
+    const letter = of('letters');
+    return `<article class="direction${item.selected ? ' item--selected' : ''}" data-item id="${escapeHtml(`${tab.id}-${item.id}`)}">
+${itemHead(tab, item, item.selected ? '<span class="tag tag--selected">Selected</span>' : '')}
+${item.idea ? `<p class="item__idea">${escapeHtml(item.idea)}</p>` : ''}
+<div class="direction__sheet">
+<div class="direction__cell direction__cell--mark"><div class="grounds">${mark ? `<div class="ground">${draw(mark)}</div><div class="ground ground--inverted">${draw(mark)}</div><div class="ground ground--brand">${draw(mark)}</div>` : ''}</div><span class="direction__label">mark</span></div>
+<div class="direction__cell direction__cell--icon"><div class="icon-cell__row">${icon ? `${draw(icon, { className: 'ic ic--16' })}${draw(icon, { className: 'ic ic--20' })}${draw(icon, { className: 'ic ic--24' })}` : ''}</div><span class="direction__label">icon</span></div>
+<div class="direction__cell direction__cell--state"><div class="stage">${draw(state, { className: 'ill', animated: state?.animated })}</div><span class="direction__label">state</span></div>
+<div class="direction__cell direction__cell--letter"><div class="stage stage--letter"><div class="mail__picture">${draw(letter, { className: 'ill ill--wide', animated: letter?.animated })}</div></div><span class="direction__label">letter band</span></div>
+</div>
+${item.axes ? `<dl class="direction__axes">${AXES.filter(([key]) => item.axes[key]).map(([key, name]) => `<div><dt>${name}</dt><dd>${escapeHtml(item.axes[key])}</dd></div>`).join('')}</dl>` : ''}
+<div class="item__foot">${samples.some((sample) => sample.animated) ? replayButton() : ''}</div>
+</article>`;
+  });
+  return `<div class="directions">${cards.join('\n')}</div>`;
+};
 
 const renderMarks = (tab, manifest) => {
   const rows = [['', 'On the page'], ['lineup__row--inverted', 'On the inverted surface'], ['lineup__row--brand', 'On the brand color']]
@@ -275,7 +303,7 @@ const buildPage = (dir, state, stage, manifest) => {
       const svg = text ? parseSvg(text) : null;
       if (!svg) fail(`${join(stage.review ? 'review' : '.', file)}: not an SVG file, or missing (named in manifest.json)`);
       files.set(file, svg);
-      if (svg.style) styles.push(svg.style);
+      if (svg.style && !styles.includes(svg.style)) styles.push(svg.style); // the same styles once, whatever file they came in
     }
     const svg = files.get(file);
     if (!ids.has(id)) {
@@ -290,6 +318,13 @@ const buildPage = (dir, state, stage, manifest) => {
         if (item.sample) item.viewBox = takeFile(item.sample, `scheme-${item.id}`).viewBox;
         continue;
       }
+      if (tab.kind === 'directions') {
+        for (const sample of item.samples ?? []) {
+          if (!sample.file) fail(`manifest.json: direction "${item.id}" has a sample with no file`);
+          sample.viewBox = takeFile(sample.file, `dir-${sample.id}`).viewBox;
+        }
+        continue;
+      }
       if (!item.file) fail(`manifest.json: item "${item.id}" of tab "${tab.id}" names no file`);
       item.viewBox = takeFile(item.file, symbolId(tab, item)).viewBox;
     }
@@ -301,14 +336,15 @@ const buildPage = (dir, state, stage, manifest) => {
   panels.push(`<section class="panel" role="tabpanel" id="overview"><div class="panel__head"><div><h2>${escapeHtml(manifest.project ?? state.project ?? 'Illustrations')}</h2>${manifest.tagline ? `<p class="panel__lead">${escapeHtml(manifest.tagline)}</p>` : ''}</div></div>${renderOverview(manifest, state, stage)}</section>`);
   for (const tab of manifest.tabs) {
     let body = '';
-    if (tab.kind === 'marks') body = renderMarks(tab, manifest);
+    if (tab.kind === 'directions') body = renderDirections(tab);
+    else if (tab.kind === 'marks') body = renderMarks(tab, manifest);
     else if (tab.kind === 'loaders') body = renderLoaders(tab, manifest);
     else if (tab.kind === 'icons') body = renderIcons(tab);
     else if (tab.kind === 'pictures') body = renderPictures(tab);
     else if (tab.kind === 'letters') body = renderLetters(tab, manifest);
     else if (tab.kind === 'scheme') { const out = renderSchemes(tab, files); body = out.html; extraCss.push(out.css); }
     else fail(`manifest.json: tab "${tab.id}" has an unknown kind "${tab.kind}" (one of ${KINDS.join(', ')})`);
-    const animated = tab.kind === 'loaders' || tab.items.some((item) => item.animated);
+    const animated = tab.kind === 'loaders' || tab.items.some((item) => item.animated || (item.samples ?? []).some((sample) => sample.animated));
     tabButtons.push(`<button type="button" class="tab" role="tab" aria-controls="${escapeHtml(tab.id)}" aria-selected="false">${escapeHtml(tab.title)}<span class="tab__count">${tab.items.length}</span></button>`);
     panels.push(`<section class="panel" role="tabpanel" id="${escapeHtml(tab.id)}" hidden><div class="panel__head"><div><h2>${escapeHtml(tab.title)}</h2>${tab.lead ? `<p class="panel__lead">${escapeHtml(tab.lead)}</p>` : ''}</div>${animated ? `<div class="panel__tools"><button type="button" class="btn btn--secondary btn--sm" data-replay>Replay all</button></div>` : ''}</div>\n${body}\n</section>`);
   }
@@ -409,12 +445,24 @@ const checkManifest = (stage, manifest) => {
       else if (seen.has(item.id)) found.push(error(where, 0, `tab "${tab.id}": two items share the id "${item.id}"`));
       seen.add(item.id);
       if (tab.kind === 'scheme') continue;
+      if (tab.kind === 'directions') {
+        const samples = item.samples ?? [];
+        if (!samples.length) found.push(error(where, 0, `direction "${item.id}" has no samples — a sheet is a mark, an icon, a state and a letter band`));
+        for (const sample of samples) {
+          if (!sample.id || !/^[a-z][a-z0-9-]*$/.test(sample.id)) found.push(error(where, 0, `direction "${item.id}": a sample's id ${JSON.stringify(sample.id ?? null)} is not kebab-case`));
+          if (!SAMPLE_KINDS.includes(sample.kind)) found.push(error(where, 0, `direction "${item.id}": sample "${sample.id}" has the kind "${sample.kind}" (one of ${SAMPLE_KINDS.join(', ')})`));
+          if (!sample.file) found.push(error(where, 0, `direction "${item.id}": sample "${sample.id}" names no file`));
+          else if (!statOf(join(stage.base, sample.file))?.isFile()) found.push(error(where, 0, `direction "${item.id}": sample "${sample.id}" names ${sample.file}, and there is no such file`));
+        }
+        continue;
+      }
       if (!item.file) { found.push(error(where, 0, `tab "${tab.id}": item "${item.id}" names no file`)); continue; }
       if (!item.file.startsWith(`${tab.id}/`)) found.push(warning(where, 0, `tab "${tab.id}": "${item.file}" is not under ${tab.id}/ — the save keeps the path as it is`));
       if (!statOf(join(stage.base, item.file))?.isFile()) found.push(error(where, 0, `tab "${tab.id}": item "${item.id}" names ${item.file}, and there is no such file`));
       if (tab.kind === 'loaders' && item.mark && logo && !logo.items.some((mark) => mark.id === item.mark)) found.push(error(where, 0, `loader "${item.id}" is drawn from the mark "${item.mark}", which the logo tab does not have`));
     }
     if (tab.kind === 'marks' && tab.items.filter((item) => item.selected).length > 1) found.push(error(where, 0, `tab "${tab.id}": more than one mark is selected`));
+    if (tab.kind === 'directions' && !stage.review && !tab.items.some((item) => item.selected)) found.push(error(where, 0, `tab "${tab.id}" has no chosen direction; the saved set says which manner it is drawn in`));
   }
   return found;
 };
@@ -465,18 +513,22 @@ const check = (dir) => {
   if (!stage) fail('no manifest.json in review/ or in the folder — nothing to check');
   const manifest = loadManifest(stage.base);
   const found = [...checkManifest(stage, manifest), ...checkDarkSets(dir)];
+  const checkFile = (tab, item) => {
+    if (!item.file || !statOf(join(stage.base, item.file))?.isFile()) return;
+    const path = join(stage.base, item.file);
+    const file = { path, toString: () => `${stage.review ? 'review/' : ''}${item.file}` };
+    found.push(...checkSvg(file, read(path), tab, item));
+  };
   for (const tab of manifest.tabs) {
     if (tab.kind === 'scheme') continue;
     for (const item of tab.items) {
-      if (!item.file || !statOf(join(stage.base, item.file))?.isFile()) continue;
-      const path = join(stage.base, item.file);
-      const file = { path, toString: () => `${stage.review ? 'review/' : ''}${item.file}` };
-      found.push(...checkSvg(file, read(path), tab, item));
+      if (tab.kind === 'directions') { for (const sample of item.samples ?? []) checkFile({ id: tab.id, kind: sample.kind }, sample); continue; }
+      checkFile(tab, item);
     }
   }
   for (const { text } of found) print(text);
   const errors = found.filter(({ level }) => level === 'error').length;
-  const pictures = manifest.tabs.reduce((sum, tab) => sum + (tab.kind === 'scheme' ? 0 : tab.items.length), 0);
+  const pictures = manifest.tabs.reduce((sum, tab) => sum + (tab.kind === 'scheme' ? 0 : tab.kind === 'directions' ? tab.items.reduce((n, item) => n + (item.samples ?? []).length, 0) : tab.items.length), 0);
   print(found.length
     ? `${plural(errors, 'error')}, ${plural(found.length - errors, 'warning')}`
     : `${plural(pictures, 'picture')} checked: every file is there, drawn on tokens with no id, text or raw color, its classes and keyframes its own; the dark sets agree.`);
@@ -489,12 +541,12 @@ const spriteOf = (stage, manifest, name) => {
   const symbols = [];
   const styles = [];
   for (const tab of manifest.tabs) {
-    if (tab.kind === 'scheme') continue;
+    if (tab.kind === 'scheme' || tab.kind === 'directions') continue;
     for (const item of tab.items) {
       const svg = parseSvg(read(join(stage.base, item.file)));
       if (!svg) fail(`${item.file}: not an SVG file, or missing`);
       symbols.push(`<symbol id="${symbolId(tab, item)}" viewBox="${svg.viewBox ?? '0 0 320 240'}">${svg.body}</symbol>`);
-      if (svg.style) styles.push(svg.style);
+      if (svg.style && !styles.includes(svg.style)) styles.push(svg.style);
     }
   }
   const sheet = styles.join('\n');
@@ -531,7 +583,7 @@ const sprite = (dir, out) => {
   const target = resolve(out ?? join(dir, 'illustrations.js'));
   mkdirSync(dirname(target), { recursive: true });
   writeFileSync(target, spriteOf(stage, manifest, manifest.project ?? state.project ?? ''));
-  const count = manifest.tabs.reduce((sum, tab) => sum + (tab.kind === 'scheme' ? 0 : tab.items.length), 0);
+  const count = manifest.tabs.reduce((sum, tab) => sum + (tab.kind === 'scheme' || tab.kind === 'directions' ? 0 : tab.items.length), 0);
   print(`Wrote ${target} with ${plural(count, 'symbol')}${stage.review ? ' (from the drafts in review/)' : ''}`);
 };
 
@@ -546,10 +598,13 @@ const save = (dir) => {
   if (notApproved.length) fail(`not every tab is approved — ${notApproved.join(', ')}. The set is saved once the operator has approved every tab on the review page.`);
   const scheme = manifest.tabs.find((tab) => tab.kind === 'scheme');
   if (scheme && !scheme.items.some((item) => item.selected)) fail('the scheme tab has no selected scheme; mark the one tokens.css holds');
+  const directions = manifest.tabs.find((tab) => tab.kind === 'directions');
+  if (directions && !directions.items.some((item) => item.selected)) fail('the directions tab has no chosen direction; mark the one the set is drawn in');
   const problems = [];
   for (const tab of manifest.tabs) {
     for (const item of tab.items) {
       if (tab.kind === 'scheme') { if (item.sample && !statOf(join(stage.base, item.sample))?.isFile()) problems.push(`${tab.id}/${item.id}: review/${item.sample} is missing`); continue; }
+      if (tab.kind === 'directions') { for (const sample of item.samples ?? []) if (!sample.file || !statOf(join(stage.base, sample.file))?.isFile()) problems.push(`${tab.id}/${item.id}: review/${sample.file ?? '?'} is missing`); continue; }
       if (!item.file) problems.push(`${tab.id}/${item.id} names no file`);
       else if (!statOf(join(stage.base, item.file))?.isFile()) problems.push(`${tab.id}/${item.id}: review/${item.file} is missing`);
     }
@@ -568,6 +623,7 @@ const save = (dir) => {
   for (const tab of manifest.tabs) {
     for (const item of tab.items) {
       if (tab.kind === 'scheme') { if (item.sample) move(item.sample); continue; }
+      if (tab.kind === 'directions') { for (const sample of item.samples ?? []) move(sample.file); continue; }
       move(item.file);
     }
   }

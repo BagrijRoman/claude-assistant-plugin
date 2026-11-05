@@ -161,12 +161,12 @@ describe('skill-resume', () => {
     writeState(root, 'illustration-samples', illustrations('logo', 'awaiting-review', { rounds: { logo: 2 } }));
     const { systemMessage, hookSpecificOutput } = output(start(root));
     assert.equal(systemMessage,
-      "▸ /illustrations · 3/11 Logo · waits for the operator's review on the page · round 2 · illustration-samples — /illustrations resumes it");
+      "▸ /illustrations · 4/12 Logo · waits for the operator's review on the page · round 2 · illustration-samples — /illustrations resumes it");
     assert.match(hookSpecificOutput.additionalContext,
-      /\n- \/illustrations in illustration-samples: step "logo" \(3\/11 Logo · waits for the operator's review on the page · round 2\); see phases\.md › A fresh context\n/);
+      /\n- \/illustrations in illustration-samples: step "logo" \(4\/12 Logo · waits for the operator's review on the page · round 2\); see phases\.md › A fresh context\n/);
     writeState(root, 'illustration-samples', illustrations('states', 'in-progress', { pending: { question: 'Which states?' } }));
     assert.equal(output(start(root)).systemMessage,
-      '▸ /illustrations · 6/11 States · in progress · a question waits for the operator · illustration-samples — /illustrations resumes it');
+      '▸ /illustrations · 7/12 States · in progress · a question waits for the operator · illustration-samples — /illustrations resumes it');
   });
 
   it('tells which mode a backlog left half-way', () => {
@@ -239,7 +239,7 @@ describe('skill-resume', () => {
     ILLUSTRATION_STEPS.forEach((step, i) => {
       const root = makeTempDir();
       writeState(root, 'set', illustrations(step));
-      assert.match(output(start(root)).systemMessage, new RegExp(`· ${i + 1}/11 ${escape(stages[i])} ·`), step);
+      assert.match(output(start(root)).systemMessage, new RegExp(`· ${i + 1}/12 ${escape(stages[i])} ·`), step);
     });
   });
 
