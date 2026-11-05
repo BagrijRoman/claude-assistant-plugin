@@ -105,6 +105,17 @@ standard icons the components and screens use, and the icons of the product's do
 the customer's words — the consequence, not the mechanism — that says what is not promised yet) →
 Principles, Decisions, Changelog, Next steps → **Audit**.
 
+### An illustration set
+
+When the project has a set drawn with [`/illustrations`](illustrations.md) and saved
+(`illustration-samples/` by default), the showcase finds it at Intake and every drawing step
+proposes it first — the picked mark and the shortlist at Logo, its loaders, its icons, its
+states, scenes, onboarding and reserve pictures at Illustrations and the Layouts' scenes, its
+letters' pictures and words at Email templates — imported through the set's sprite
+(`bin/illustrations.mjs sprite`) into `assets/illustrations.js`, never redrawn; the step draws
+only what the set lacks, in the set's manner, and the operator may still ask for new drawings.
+The set's `tokens.css` is the scheme's proposal at step 1.
+
 ### How it decides with the operator
 
 Before every section is made (steps 1–19) the skill asks whether it is wanted: **full**,

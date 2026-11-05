@@ -1,0 +1,28 @@
+<!-- A picture for a state: 320 × 240, drawn only with --ill-* tokens; no text, no faces, no id
+     attributes. Its one gesture — the lid settles onto the empty tray and a last leaf drifts down —
+     runs once (fill-mode both), and its last frame is the complete still picture. Classes and
+     keyframes start with the picture's id ("empty"). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240" aria-hidden="true">
+  <style>
+    .empty__lid { transform-box: view-box; transform-origin: 160px 128px; animation: empty-settle var(--ill-duration) var(--ill-ease) 1 both; }
+    .empty__leaf { transform-box: view-box; transform-origin: 232px 70px; animation: empty-drift var(--ill-duration-long) var(--ill-ease-in-out) 1 both; }
+    .empty__glint { animation: empty-glint var(--ill-duration-short) var(--ill-ease) 1 both; animation-delay: var(--ill-duration); }
+    @keyframes empty-settle { 0% { transform: translateY(-18px) rotate(-6deg); } 100% { transform: translateY(0) rotate(0deg); } }
+    @keyframes empty-drift { 0% { transform: translate(-30px, -60px) rotate(-40deg); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(0, 0) rotate(0deg); opacity: 1; } }
+    @keyframes empty-glint { 0% { opacity: 0; } 100% { opacity: 1; } }
+  </style>
+  <ellipse cx="160" cy="196" rx="112" ry="16" fill="var(--ill-ground)"/>
+  <ellipse cx="160" cy="192" rx="84" ry="8" fill="var(--ill-muted)" opacity="0.5"/>
+  <path d="M76 120 L244 120 L232 184 L88 184 Z" fill="var(--ill-soft)" stroke="var(--ill-line)" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M88 184 L232 184 L244 120 L160 132 Z" fill="var(--ill-fill)" stroke="var(--ill-line)" stroke-width="2.5" stroke-linejoin="round"/>
+  <g class="empty__lid">
+    <path d="M70 120 L250 120 L236 104 L84 104 Z" fill="var(--ill-fill)" stroke="var(--ill-line)" stroke-width="2.5" stroke-linejoin="round"/>
+    <rect x="148" y="108" width="24" height="6" rx="3" fill="var(--ill-accent)"/>
+  </g>
+  <g class="empty__leaf">
+    <path d="M232 70 C248 56 262 60 262 60 C262 76 250 86 232 86 Z" fill="var(--ill-accent-soft)" stroke="var(--ill-accent)" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M234 84 C242 76 250 68 258 62" fill="none" stroke="var(--ill-accent)" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <circle class="empty__glint" cx="104" cy="150" r="3" fill="var(--ill-highlight)"/>
+  <circle class="empty__glint" cx="116" cy="162" r="2" fill="var(--ill-highlight)"/>
+</svg>

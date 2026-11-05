@@ -39,6 +39,21 @@ const showcase = (step, status = 'pending', extra = {}) => ({
   ...extra,
 });
 
+const ILLUSTRATIONS_TEMPLATE = JSON.parse(readFileSync(skillFile('illustrations', 'templates/STATE.json'), 'utf8'));
+const ILLUSTRATION_STEPS = Object.keys(ILLUSTRATIONS_TEMPLATE.steps);
+
+const illustrations = (step, status = 'pending', extra = {}) => ({
+  kind: 'illustrations',
+  step,
+  steps: Object.fromEntries(ILLUSTRATION_STEPS.map((key, i) => {
+    const at = ILLUSTRATION_STEPS.indexOf(step);
+    return [key, i < at ? 'approved' : i === at ? status : 'pending'];
+  })),
+  rounds: {},
+  pending: null,
+  ...extra,
+});
+
 const backlog = (pending) => ({ kind: 'backlog', batches: [], pending });
 
 const research = (phase, rounds = [{ n: 1, status: 'pending' }]) => ({ kind: 'research', topic: 'Fleet tracking', phase, rounds });
@@ -68,6 +83,7 @@ describe('skill-resume', () => {
     const root = makeTempDir();
     writeState(root, 'docs/blueprint', blueprint('done'));
     writeState(root, 'docs/showcase', showcase('done'));
+    writeState(root, 'illustration-samples', illustrations('done', 'done'));
     writeState(root, 'docs/backlog', backlog(null));
     writeState(root, 'docs/research/2026-10-01-done', research('done', [{ n: 1, status: 'done' }]));
     writeState(root, 'docs/research/2026-10-02-draft', research('frame'));
@@ -76,6 +92,7 @@ describe('skill-resume', () => {
       .replace('"phase": "frame"', '"phase": "research"'));
     writeState(root, 'skills/blueprint/templates', readFileSync(skillFile('blueprint', 'templates/STATE.json'), 'utf8'));
     writeState(root, 'skills/showcase/templates', readFileSync(skillFile('showcase', 'templates/STATE.json'), 'utf8'));
+    writeState(root, 'skills/illustrations/templates', readFileSync(skillFile('illustrations', 'templates/STATE.json'), 'utf8'));
     writeState(root, 'skills/backlog/templates', readFileSync(skillFile('backlog', 'templates/STATE.json'), 'utf8')
       .replace('"pending": null', '"pending": { "mode": "init", "step": "read" }'));
     writeState(root, 'docs/broken', '{ not json');
@@ -139,6 +156,19 @@ describe('skill-resume', () => {
       /\n- \/showcase in docs\/showcase: step "components" \(7\/21 Components · .*\); see phases\.md › A fresh context\n/);
   });
 
+  it('tells where an illustration set stands, with the round of review its tab is in', () => {
+    const root = makeTempDir();
+    writeState(root, 'illustration-samples', illustrations('logo', 'awaiting-review', { rounds: { logo: 2 } }));
+    const { systemMessage, hookSpecificOutput } = output(start(root));
+    assert.equal(systemMessage,
+      "▸ /illustrations · 3/11 Logo · waits for the operator's review on the page · round 2 · illustration-samples — /illustrations resumes it");
+    assert.match(hookSpecificOutput.additionalContext,
+      /\n- \/illustrations in illustration-samples: step "logo" \(3\/11 Logo · waits for the operator's review on the page · round 2\); see phases\.md › A fresh context\n/);
+    writeState(root, 'illustration-samples', illustrations('states', 'in-progress', { pending: { question: 'Which states?' } }));
+    assert.equal(output(start(root)).systemMessage,
+      '▸ /illustrations · 6/11 States · in progress · a question waits for the operator · illustration-samples — /illustrations resumes it');
+  });
+
   it('tells which mode a backlog left half-way', () => {
     const root = makeTempDir();
     writeState(root, 'docs/backlog', backlog({ mode: 'detail', step: 'gate', batches: ['03'], since: '2026-10-13T09:00' }));
@@ -160,10 +190,11 @@ describe('skill-resume', () => {
   it('lists every unfinished run, blueprints first, and finds one in the session\'s own folder', () => {
     const root = makeTempDir();
     writeState(root, 'docs/showcase', showcase('intake', 'in-progress'));
+    writeState(root, 'illustration-samples', illustrations('scheme'));
     writeState(root, '.', blueprint('intake', 'in-progress'));
     writeState(root, 'app/docs/blueprint', blueprint('reading'));
     const lines = output(start(root, 'compact')).systemMessage.split('\n');
-    assert.deepEqual(lines.map((line) => line.split(' · ')[0]), ['▸ /blueprint', '▸ /blueprint', '▸ /showcase']);
+    assert.deepEqual(lines.map((line) => line.split(' · ')[0]), ['▸ /blueprint', '▸ /blueprint', '▸ /showcase', '▸ /illustrations']);
     assert.ok(lines.includes('▸ /blueprint · 1/8 Intake · in progress · . — /blueprint resumes it'));
     assert.ok(lines.includes('▸ /blueprint · 2/8 Reading the input · not started · app/docs/blueprint — /blueprint resumes it'));
     assert.ok(lines.includes('▸ /showcase · 1/21 Intake · in progress · docs/showcase — /showcase resumes it'));
@@ -199,6 +230,16 @@ describe('skill-resume', () => {
       const root = makeTempDir();
       writeState(root, 'showcase', showcase(step));
       assert.match(output(start(root)).systemMessage, new RegExp(`· ${stageOfKey(i) + 1}/21 ${escape(stages[stageOfKey(i)])} ·`), step);
+    });
+  });
+
+  it('names the illustration set\'s steps as its SKILL.md\'s stage table does', () => {
+    const stages = stagesOf('illustrations', '`init [dir]`, `continue`');
+    assert.equal(stages.length, ILLUSTRATION_STEPS.length);
+    ILLUSTRATION_STEPS.forEach((step, i) => {
+      const root = makeTempDir();
+      writeState(root, 'set', illustrations(step));
+      assert.match(output(start(root)).systemMessage, new RegExp(`· ${i + 1}/11 ${escape(stages[i])} ·`), step);
     });
   });
 

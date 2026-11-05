@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// skill-resume — SessionStart (startup, clear, compact). /blueprint, /showcase, /backlog and /research work over
-// many sessions, and their gates recommend a fresh context before what comes next: the operator types /clear, then
+// skill-resume — SessionStart (startup, clear, compact). /blueprint, /showcase, /illustrations, /backlog and /research
+// work over many sessions, and their gates recommend a fresh context before what comes next: the operator types /clear, then
 // the command. A plugin cannot clear the context itself, so this hook makes the fresh start cheap instead: it finds
-// every unfinished blueprint and showcase, every backlog with a mode left half-way and every research run past its
-// brief, under the session's folder, and says where each one stands — one line to the operator, a short note to
+// every unfinished blueprint, showcase and illustration set, every backlog with a mode left half-way and every research
+// run past its brief, under the session's folder, and says where each one stands — one line to the operator, a short note to
 // the model — so that the new session resumes from STATE.json rather than from a re-read of what is already done.
 // It writes nothing. Fails open: any error means silence.
 
@@ -66,6 +66,30 @@ const SHOWCASE_STATUS = {
   'awaiting-approval': 'waits for the operator at its gate',
   done: 'approved',
   skipped: 'skipped',
+};
+
+// The steps of an illustration set's STATE.json, each the stage of the `init [dir]`, `continue` row in its
+// SKILL.md › Progress
+const ILLUSTRATIONS_STAGES = [
+  ['intake', 'Intake'],
+  ['scheme', 'Color scheme'],
+  ['logo', 'Logo'],
+  ['loaders', 'Loaders'],
+  ['icons', 'Icons'],
+  ['states', 'States'],
+  ['scenes', 'Scenes'],
+  ['onboarding', 'Onboarding'],
+  ['emails', 'Email templates'],
+  ['reserve', 'Reserve'],
+  ['save', 'Save'],
+];
+const ILLUSTRATIONS_STATUS = {
+  pending: 'not started',
+  'in-progress': 'in progress',
+  'awaiting-review': 'waits for the operator\'s review on the page',
+  approved: 'approved',
+  skipped: 'skipped',
+  done: 'done',
 };
 
 // The phases of a research run's STATE.json, named as the stages of the `<topic>`, `continue [run]` row in its
@@ -151,6 +175,22 @@ const showcase = (state) => {
   };
 };
 
+const illustrations = (state) => {
+  if (state.step === 'done') return null;
+  const index = ILLUSTRATIONS_STAGES.findIndex(([key]) => key === state.step);
+  if (index < 0) return null;
+  const [, name] = ILLUSTRATIONS_STAGES[index];
+  const round = state.rounds?.[state.step];
+  return {
+    where: `${index + 1}/${ILLUSTRATIONS_STAGES.length} ${name}`,
+    status: `${ILLUSTRATIONS_STATUS[state.steps?.[state.step]] ?? 'not started'}${round ? ` · round ${round}` : ''}`,
+    extra: state.pending ? 'a question waits for the operator' : '',
+    model: `step "${state.step}"`,
+    command: '/illustrations',
+    reference: 'phases.md › A fresh context',
+  };
+};
+
 const backlog = (state) => {
   const { pending } = state;
   if (!pending || typeof pending !== 'object' || !pending.mode) return null;
@@ -181,7 +221,7 @@ const research = (state) => {
   };
 };
 
-const KINDS = { blueprint, showcase, backlog, research };
+const KINDS = { blueprint, showcase, illustrations, backlog, research };
 
 /**
  * Where an unfinished run stands, or null for anything else: a finished one, a kind this hook does not know, a

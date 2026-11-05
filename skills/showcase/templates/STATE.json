@@ -6,6 +6,7 @@
   "updated": "{{YYYY-MM-DD}}",
   "docs": "{{relative path to the documentation folder that was read}}",
   "blueprint": null,
+  "illustrations": null,
   "languages": ["en"],
   "defaultLanguage": "en",
   "sample": { "company": "" },

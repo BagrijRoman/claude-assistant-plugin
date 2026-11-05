@@ -1198,6 +1198,60 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T51 — `/illustrations`: the project's illustration set, reviewed on a shared page, saved when every tab is approved · `done` (0.24.0)
+
+Asked for by the operator on 2026-11-05: a skill that draws the project's illustrations from what its
+documentation says, on the logic of `/showcase` but better — fifteen marks for a logo, reviewed and one
+picked; loaders from the primary mark and a few of the best; a picture for every state (no data, no
+access, nothing matched the filter, 404 and many more, with proposals beyond the showcase's list); a
+whole page of email templates, typical and the product's own; every picture animated where that tells
+its story; one page with tabs by topic, light and dark; the scheme discussed unless a design reference
+or the documentation fixes it; the result in `illustration-samples/`; the review on an artifact the
+operator can share, with the set saved to disk only once revisions to every tab are in and everything
+suits them. In the dialog that followed: drafts on disk are fine as long as the final set is on disk;
+marks may use several colors; revisions come only through the chat; the Color scheme tab stays
+permanently; Onboarding, Icons and Reserve tabs added; no exports (demo purposes: the developer takes
+what they need from the code); animated letters as a promise; nothing to Figma for now; a catalog of
+states and letters beyond the typical ones; and, last, a switch on the page that lets a viewer try the
+schemes considered on every picture.
+
+What was done (0.24.0):
+- `skills/illustrations/`: `SKILL.md` (modes `init | continue | status | tab | revise | pick logo | add |
+  publish | save | check`, the rules, the folder, the script, the page, the order of making, progress);
+  `references/phases.md` (common mechanics — the manifest, show before asking, the review loop with
+  revisions by id, decisions `IL-nnn`, plans, builders on the session's model, words; the tab intake with
+  its full / simplified table; a fresh context; the eleven steps; other modes), `references/catalog.md`
+  (states in seven groups, scenes, onboarding, common letters and the ones beyond, the product's own,
+  reserve), `references/drawing.md` (the file, the three token families, deriving picture tokens from a
+  brand, composition, animation, marks, loaders, icons, pictures, letter pictures, what looks generated),
+  `references/page.md` (files, the manifest, the page per kind, publishing with the `Artifact` tool and
+  after `/clear`, screenshots, revisions, the sprite); `templates/` (`STATE.json`, `manifest.json` with the
+  ten tabs, `tokens.css` with `--color-*`, `--ill-*`, `--lg-*` light and dark, `README.md`, `DECISIONS.md`,
+  `CHANGELOG.md`, `page/` — the frame's CSS, JS and HTML — and `examples/` — a mark, a loader, an icon, a
+  state picture, a letter's picture that pass every check).
+- `bin/illustrations.mjs`: `build` (the self-contained page from the manifest and the SVG files — every
+  file once as a `<symbol>`, its styles once in the head, a panel per tab of kind `scheme`, `marks`,
+  `loaders`, `icons`, `pictures`, `letters`; `index.html` for disk and `artifact.html` for the artifact);
+  `check` (the manifest, every SVG for tokens only, no id, text, gradient or raw duration, classes and
+  keyframes prefixed by the id, the dark sets); `save` (refuses while a tab is not approved; moves the
+  files, writes the page, manifest and sprite, removes `review/`); `sprite` (`illustrations.js`). Tests
+  in `tests/illustrations.test.mjs`.
+- `bin/skillResume.mjs` knows the kind (`3/11 Logo · waits for the operator's review on the page · round 2`);
+  `tests/skillResume.test.mjs`, `docs/hooks/skillResume.md` follow.
+- `/showcase` finds a saved set at Intake and every drawing step proposes it first — the mark and the
+  shortlist, the loaders, the icons, the pictures, the letters — imported through `sprite` into
+  `assets/illustrations.js`, never redrawn (`phases.md › An illustration set`; SKILL.md, the Logo, Icons,
+  Illustrations, Email templates and Color scheme steps; `templates/STATE.json › illustrations`;
+  `docs/skills/showcase.md`).
+- `docs/skills/illustrations.md`, the rows in `docs/skills/README.md` (with the working folder) and the
+  root `README.md`; `tests/structure.test.mjs` holds the skill to the invariant and the fresh context;
+  version 0.24.0.
+
+Done when:
+- `npm test` passes.
+- A set is drawn on a real project, reviewed on the artifact in both themes, revised by id, saved, and
+  its showcase takes it at the Logo and Illustrations steps.
+
 ## T50 — Release 0.23.0: the work committed under 0.22.0 reaches the sessions · `done` (0.23.0)
 
 The operator found that `/backlog render` broke the Luxury Resale Marketplace backlog: every task there is

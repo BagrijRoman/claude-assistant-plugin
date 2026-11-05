@@ -244,7 +244,7 @@ const relativeName = (file) => file.pathname.slice(ROOT.pathname.length);
 // Rule 7 of docs/skills/README.md: everything a skill creates stays in its working folder, temporary files too.
 describe('writes stay in the working folder', () => {
   const INVARIANT = 'Writes stay in the working folder: nothing is created outside it, not even for a moment.';
-  const WITH_WORKING_FOLDER = ['research', 'blueprint', 'backlog', 'showcase', 'standards'];
+  const WITH_WORKING_FOLDER = ['research', 'blueprint', 'backlog', 'showcase', 'illustrations', 'standards'];
 
   it('no script reaches for the system temporary folder', () => {
     const scripts = [...filesIn(new URL('bin/', ROOT), '.mjs'), ...filesIn(SKILLS, '.mjs')];
@@ -327,6 +327,7 @@ describe('a fresh context at the gates', () => {
   const GATED = {
     blueprint: { file: 'references/mechanics.md', command: '/blueprint' },
     showcase: { file: 'references/phases.md', command: '/showcase' },
+    illustrations: { file: 'references/phases.md', command: '/illustrations' },
     backlog: { file: 'references/mechanics.md', command: '/backlog' },
     research: { file: 'references/phases.md', command: '/research' },
   };

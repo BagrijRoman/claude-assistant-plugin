@@ -13,7 +13,7 @@ to skills and CLAUDE.md.
 | [secret-commit-guard](secretCommitGuard.md) | `PreToolUse` · `Bash` (`git commit`) | Blocks a commit whose diff adds a token, a key, a password in a connection string, or a secret file | 0.4.0 |
 | [lint-feedback](lintFeedback.md) | `PostToolUse` · `Edit\|Write\|MultiEdit` | Formats the file just written, applies the project's lint fixes, and relays the lint errors that remain to the model in the same turn | 0.7.0 |
 | [standards-check](standardsCheck.md) | `Stop` · `PreToolUse` `Bash` (`git commit`) | Runs the script checks of the project's standards packs (RCT-02's component layout) on what the turn wrote — holding the turn once — and on what a commit records — blocking it — unless the operator wrote `Standards-skipped:` | 0.12.0 |
-| [skill-resume](skillResume.md) | `SessionStart` · `startup\|clear\|compact` | Tells a new, cleared or compacted session where every unfinished blueprint and showcase, every backlog mode left half-way and every research run past its brief stands — one line to the operator, a note to the model — so the skill resumes from its state after a fresh start | 0.14.0 (as `blueprint-resume`) |
+| [skill-resume](skillResume.md) | `SessionStart` · `startup\|clear\|compact` | Tells a new, cleared or compacted session where every unfinished blueprint, showcase and illustration set, every backlog mode left half-way and every research run past its brief stands — one line to the operator, a note to the model — so the skill resumes from its state after a fresh start | 0.14.0 (as `blueprint-resume`) |
 
 Every registered hook has its own page here; `npm test` fails if one is missing (`tests/structure.test.mjs`).
 

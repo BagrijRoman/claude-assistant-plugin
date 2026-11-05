@@ -1,0 +1,7 @@
+<!-- An icon of the product's own subject: the 16-unit grid, a 1.5-unit stroke in currentColor, round
+     caps and joins, no fill but currentColor or var(--lg-*). It must read at 16 px, so nothing finer
+     than the stroke and no more than two ideas. Classes start with the icon's id ("site"). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" aria-hidden="true">
+  <path d="M2 13.5 L5 8.5 L8 11.5 L10 9 L14 13.5 Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+  <circle cx="11.5" cy="4.5" r="1.75" fill="var(--lg-accent)"/>
+</svg>

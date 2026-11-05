@@ -79,7 +79,12 @@ generator comments) are English.
 Read **the whole documentation folder** of the project — requirements, a blueprint if there is one,
 feature files, notes, earlier design work, whatever is there, all but the showcase folder itself —
 and the product's code when it
-exists (a token file, a component library). Use subagents for the reading, one per document group,
+exists (a token file, a component library). **An illustration set** made with `/illustrations`
+(`STATE.json` with `"kind": "illustrations"`, `illustration-samples/` by default) is read before any
+picture is drawn: its scheme, its picked mark, its loaders, icons, states, scenes and letters' pictures
+are what the Logo, Loaders, Icons, Illustrations, States, Layouts and Email templates steps propose to
+**reuse** — imported through its sprite — instead of drawing anew; a step draws only what the set
+lacks, and the operator may still ask for new drawings (`phases.md › An illustration set`). Use subagents for the reading, one per document group,
 returning what bears on design: what the product is and for whom; the actors and the surfaces they
 use; the categories of the domain that need telling apart (they become categorical colors); brand
 hints, an existing palette, a logo; the main flows and the screens they name; constraints; design

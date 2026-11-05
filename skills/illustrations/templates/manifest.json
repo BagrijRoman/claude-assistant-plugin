@@ -1,0 +1,76 @@
+{
+  "kind": "illustrations-manifest",
+  "project": "{{NAME}}",
+  "tagline": "{{one line: what the product is, in the customer's words}}",
+  "wordmark": "{{NAME}}",
+  "lang": "{{LANG}}",
+  "tabs": [
+    {
+      "id": "scheme",
+      "kind": "scheme",
+      "title": "Color scheme",
+      "lead": "The schemes considered, each on its own strip of the product's controls and a sample picture; the chosen one is what every picture here is drawn with.",
+      "items": []
+    },
+    {
+      "id": "logo",
+      "kind": "marks",
+      "title": "Logo",
+      "lead": "Marks drawn from ideas in the product, on a 64-unit grid. Side by side first on three grounds and at a browser tab's size, then each one with its idea, its wordmark and its sizes.",
+      "items": []
+    },
+    {
+      "id": "loaders",
+      "kind": "loaders",
+      "title": "Loaders",
+      "lead": "The picked mark and the shortlist in motion, so that waiting looks like the product. Each at 64, 32 and 16 px, the determinate one at four shares, then in place.",
+      "items": []
+    },
+    {
+      "id": "icons",
+      "kind": "icons",
+      "title": "Icons",
+      "lead": "The icons of the product's own subjects — what the icon library has no fit for — on the 16 px grid, at 16, 20 and 24, each with where it is used.",
+      "items": []
+    },
+    {
+      "id": "states",
+      "kind": "pictures",
+      "title": "States",
+      "lead": "A picture for every state a screen can be in, each with its words and its one action, drawn in place.",
+      "items": []
+    },
+    {
+      "id": "scenes",
+      "kind": "pictures",
+      "title": "Scenes",
+      "lead": "Scenes from the product's world — its places, objects and moments — for a sign-in panel, a hero, an announcement, the 404.",
+      "items": []
+    },
+    {
+      "id": "onboarding",
+      "kind": "pictures",
+      "title": "Onboarding",
+      "lead": "The first minutes with the product: the welcome, the first thing to do, the setup's steps, the empty workspace, the tour — each with its words.",
+      "items": []
+    },
+    {
+      "id": "emails",
+      "kind": "letters",
+      "title": "Email templates",
+      "lead": "The one template every letter is filled into, then the common letters and the product's own, each with a picture about its moment.",
+      "template": {
+        "sender": "{{NAME}} <hello@example.com>",
+        "footer": "You receive this letter because you have an account at {{NAME}}."
+      },
+      "items": []
+    },
+    {
+      "id": "reserve",
+      "kind": "pictures",
+      "title": "Reserve",
+      "lead": "Pictures ready for situations the product will meet later, each with one line of when.",
+      "items": []
+    }
+  ]
+}

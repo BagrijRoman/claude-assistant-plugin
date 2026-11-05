@@ -10,6 +10,7 @@ must have is in [sections.md](sections.md); how pages are written, in [site.md](
 - [Common mechanics](#common-mechanics)
 - [Section intake](#section-intake)
 - [A fresh context](#a-fresh-context)
+- [An illustration set](#an-illustration-set)
 - [Step 0 — Intake](#step-0--intake)
 - [Step 1 — Color scheme](#step-1--color-scheme)
 - [Step 2 — Technology](#step-2--technology)
@@ -193,6 +194,35 @@ site itself — so it can start from the files instead. Nothing in the procedure
   plans from the reading. Never the pages already built just to have them in mind: builders read the
   files they need, you read their replies and the result.
 
+## An illustration set
+
+A set drawn with `/illustrations` and saved — `STATE.json` with `"kind": "illustrations"` and
+`step: "done"`, `illustration-samples/` by default — is found in Intake (step 0) and recorded in
+`STATE.json › illustrations` (the folder). Every step that draws then **proposes the set first**:
+
+- **Reuse is the recommended option.** At the step's plan, list what the set holds for it (its
+  `manifest.json`: the selected mark and the shortlist for Logo; its loaders for Loaders; its icons
+  for Icons; its states, scenes, onboarding and reserve pictures for Illustrations, States and the
+  Layouts' scenes; its letters' pictures and words for Email templates) and ask (`AskUserQuestion`,
+  header `Reuse`): **Take the set's (Recommended)** · **Take the set's, and draw what is listed as
+  missing** · **Draw anew**. The answer is an `SC-nnn` row.
+- **Import, never redraw.** `node "${CLAUDE_PLUGIN_ROOT}/bin/illustrations.mjs" sprite <set> --out
+  <showcase>/assets/illustrations.js` writes the set's symbols into the showcase (`lg-<id>`,
+  `ld-<id>`, `ic-<id>`, `ill-<id>`); the `--ill-*` and `--lg-*` blocks of the set's `tokens.css` go
+  into the showcase's `tokens.css` (light and both dark sets) when the showcase lacks them — the
+  scheme itself was taken from the set at step 1 when the set came first. A page then uses
+  `<svg class="ill"><use href="#ill-empty"/></svg>` as `site.md › Illustrations and marks` says; the
+  picked mark's SVG file goes to `site.mjs › mark`; the words of a state or a letter come from the
+  set's manifest. Illustrations' *In place* and the Logo page list what came from the set, with a
+  line that says so and a link to the set's `index.html`.
+- **What the set lacks** is drawn as the step says, in the same manner as the set (its tokens, its
+  stroke, its motion), and the operator is told the set could take it too (`/illustrations add`).
+- **Color scheme (1)** with a set present: the set's `tokens.css` is the proposal, confirmed in one
+  question, unless the operator asks for another.
+
+A set still in review (its `step` not `done`) is named to the operator with a recommendation to
+finish it first; the showcase then draws its own if they prefer.
+
 ---
 
 ## Step 0 — Intake
@@ -209,6 +239,8 @@ site itself — so it can start from the files instead. Nothing in the procedure
    (`STATE.json` with `kind: blueprint`) is read directly: `01-brief.md`, `02-architecture.md`,
    `GLOSSARY.md`, `DECISIONS.md`, module files for capabilities. Product code: a token file
    (`globals.css`, a theme), a component folder — note names and values.
+   An illustration set (`STATE.json` with `"kind": "illustrations"`) is found the same way and
+   recorded as `STATE.json › illustrations` ([An illustration set](#an-illustration-set)).
 3. **Ask, in one or two rounds** (`AskUserQuestion`):
    - **Interface languages** (multiSelect): English (Recommended, default) · the languages the
      documentation mentions · other. The first chosen is the default unless they say otherwise.
@@ -228,8 +260,9 @@ Before anything is drawn. The scheme is: a **brand** color (with hover, foregrou
 **neutrals** (page, surface, muted surface, text at three strengths, borders), four **feedback**
 tones, and **categorical** colors if the domain has categories.
 
-1. If the documentation or the product's code gives a scheme → write it down as a proposal and
-   ask to confirm or change (one question).
+1. If an illustration set, the documentation or the product's code gives a scheme → write it
+   down as a proposal (the set's `tokens.css` first, when there is one) and ask to confirm or
+   change (one question).
 2. Otherwise **propose three schemes**, each in one line of reasoning from the domain and the
    brand hints (a finance product and a children's product do not share a hue), with hex values
    for brand and its companions, and the contrast of white on brand and of brand-strong on
@@ -302,7 +335,9 @@ Each follows the same shape: **plan → approve → build in parallel → build.
   expects (`site.md › Live values`); and the Design root page, `design/index.html`: the system in
   one screen — the brand color, the type, a button, a card — above the list of its pages. Font choice is a question when the documentation does not
   settle it (two proposals, with the reason).
-- **Logo (5).** Plan: 6–12 ideas for a mark, each from a concept in the product (a thing, an
+- **Logo (5).** With an illustration set: its selected mark and shortlist are the proposal
+  ([An illustration set](#an-illustration-set)) — the page shows them with the set's loaders, and
+  the pick is a confirmation unless the operator asks for new marks. Otherwise: plan 6–12 ideas for a mark, each from a concept in the product (a thing, an
   action, the initial, the domain) — one line each. Approve. `tools/genLogo.mjs`: each mark an
   SVG on a 64-unit grid in `currentColor` with `var(--lg-ground)` knockouts; the side-by-side
   section at one size on light and dark, then at menu size (28 px) and tab size (16 px); the
@@ -329,7 +364,8 @@ The shape of steps 4–5: **plan → approve → build in parallel → build.mjs
   component of its own with its keyboard and ARIA, never the native popup (`sections.md ›
   Components`); the inputs group's brief says so, and the gate checks an open list in both themes.
   Samples use the cast and data of `sample.mjs`.
-- **Icons (7).** Two kinds only, nothing else is drawn: **base** — the standard icons the components,
+- **Icons (7).** With an illustration set, its icons are the *from the domain* group, imported;
+  the plan lists what the screens need beyond them. Two kinds only, nothing else is drawn: **base** — the standard icons the components,
   the shell and the planned screens use (actions, navigation, status, files), named and drawn as the
   icon library chosen in step 2 has them; and **from the domain** — the product's own subjects the
   library has no fit for (for a carbon product: a scope, an emission source by kind, a factor, a
@@ -337,7 +373,10 @@ The shape of steps 4–5: **plan → approve → build in parallel → build.mjs
   "should have it": each names where it is used. Plan the two lists with that column; approve
   (`plans/icons.md`). The sprite in `assets/showcase.js` is the start — what it holds beyond the
   two lists is removed; `design/icons.html` shows the two groups with names, the grid and the rules.
-- **Illustrations (8).** A root section of its own. Plan, in two lists: **for states** — a picture
+- **Illustrations (8).** A root section of its own. With an illustration set, the plan starts
+  from its states, scenes, onboarding and reserve pictures — imported through the sprite, their
+  words from the manifest — and lists only what the screens need beyond them
+  ([An illustration set](#an-illustration-set)). Otherwise plan, in two lists: **for states** — a picture
   for every state a screen can be in (empty, nothing found, error, no access, locked or closed,
   offline when the product has it, done) — and **from the domain** — the scenes of the product's
   world the reading gives (its places, its objects, its moments: a first setup, an import, an
@@ -448,7 +487,8 @@ Two approvals, by design.
      the mark, the picture, the heading, the message, the one action button, a secondary detail
      (a code, a list, a figure), the footer with the sender and why they received it. Its parts
      and sizes are the *Template* section of the page, drawn once with each part named.
-  2. **A picture per letter**, about its moment (an invitation: a door opening onto the product's
+  2. **A picture per letter**, about its moment — the illustration set's letters' pictures and words
+     when there is a set, each letter it has taken as it is — (an invitation: a door opening onto the product's
      world; a reset: a key; a digest: the week's figures; an alert: a shield), in the product's
      colors and its domain — the scenes of Illustrations reused where they fit, the rest drawn now
      into `assets/illustrations.js` the same way (`--ill-*` tokens only, no text, no faces), and

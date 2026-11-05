@@ -1,0 +1,10 @@
+<!-- A mark: 64-unit grid, drawn in currentColor; knockouts cut in var(--lg-ground); one accent in
+     var(--lg-accent). No id attributes, no text, no literal color. Every class and keyframe starts
+     with the mark's id ("valley"). The sun is the part a loader will set in motion. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true">
+  <g class="valley__sun"><circle cx="40" cy="22" r="8" fill="var(--lg-accent)"/></g>
+  <path class="valley__far" d="M4 50 L22 24 L34 40 L40 33 L60 50 Z" fill="currentColor" opacity="0.55"/>
+  <path class="valley__near" d="M2 54 L18 32 L30 46 L38 38 L62 54 Z" fill="currentColor"/>
+  <path class="valley__river" d="M24 54 C28 48 26 44 30 40" fill="none" stroke="var(--lg-ground)" stroke-width="2.5" stroke-linecap="round"/>
+  <rect x="2" y="54" width="60" height="4" rx="2" fill="currentColor"/>
+</svg>

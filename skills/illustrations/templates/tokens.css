@@ -1,0 +1,199 @@
+/*
+ * Tokens of the {{NAME}} illustration set — the single source of every color, font, radius and
+ * duration the pictures and the review page use.
+ *
+ * Two themes are two value sets of the same names: the light values are the default, the dark
+ * ones apply when the device asks for dark and the reader has not chosen, or when the reader chose
+ * dark (data-theme on <html>). The dark values stand twice — under the media query and under
+ * [data-theme='dark'] — and must be the same; `check` compares them.
+ *
+ * Three families:
+ *   --color-*   the review page (and any page the set is shown on): surfaces, text, borders, brand.
+ *   --ill-*     what a picture is drawn with: a state, a scene, a letter's picture uses these and
+ *               nothing else, so every picture follows the theme and the scheme.
+ *   --lg-*      what a mark and a loader draw with beyond currentColor: the ground behind the mark
+ *               (its knockouts) and its one accent.
+ *
+ * STARTER VALUES: a quiet scheme with one accent. The Color scheme step replaces the brand and the
+ * --ill-* / --lg-* colors from the decision taken with the operator (or copies them from the
+ * project's showcase or design baseline) and re-checks the contrast; this comment goes with it.
+ */
+:root {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  /* The page */
+  --color-page: #f7f7f8;
+  --color-surface: #ffffff;
+  --color-surface-muted: #eeeef1;
+  --color-surface-inverted: #15161a;
+  --color-foreground: #15161a;
+  --color-muted: #5b5e68;
+  --color-subtle: #9a9da8;
+  --color-inverted: #ffffff;
+  --color-default: #e2e3e8;
+  --color-emphasis: #c9cbd3;
+  --color-ring: #3b5bdb;
+
+  /* Brand — replaced by the color scheme decision */
+  --color-primary: #3b5bdb;
+  --color-primary-hover: #3450c2;
+  --color-primary-foreground: #ffffff;
+  --color-primary-soft: #e8edfb;
+  --color-primary-strong: #2a43a8;
+
+  /* Feedback, for the in-place samples */
+  --color-danger: #d4473e;
+  --color-danger-soft: #fbeceb;
+  --color-danger-text: #a8352e;
+  --color-success: #1f9d61;
+  --color-success-soft: #e6f6ee;
+  --color-success-text: #167a4a;
+  --color-warning: #d08a16;
+  --color-warning-soft: #fcf3e3;
+  --color-warning-text: #9a6410;
+
+  /* Pictures: the ink, the fills, the accent, the ground they stand on, the feedback tones */
+  --ill-line: #2b2e3a;            /* outlines and the darkest detail */
+  --ill-fill: #ffffff;            /* the lit face of an object */
+  --ill-soft: #e4e6ee;            /* the shaded face, a secondary object */
+  --ill-muted: #c3c6d3;           /* the shadow under an object, a far object */
+  --ill-accent: #3b5bdb;          /* the one brand touch in a picture */
+  --ill-accent-soft: #c7d2f6;     /* the accent's tint: a glow, a cushion, a highlight */
+  --ill-highlight: #ffffff;       /* a glint, a reflection */
+  --ill-ground: #eef0f6;          /* the disc or floor a picture stands on */
+  --ill-positive: #1f9d61;        /* done, success */
+  --ill-caution: #d08a16;         /* a warning, something waiting */
+  --ill-negative: #d4473e;        /* an error, something refused */
+
+  /* Marks, loaders and icons: the color behind a mark (its knockouts are cut in it), its accents and
+     its soft fill. A mark may be one color (currentColor alone), two (one accent) or more — the
+     second accent and the soft fill are for marks that need them. Whatever puts a mark on another
+     color sets --lg-ground again, and the brand ground turns the accents into the foreground. */
+  --lg-ground: var(--color-surface);
+  --lg-accent: #3b5bdb;
+  --lg-accent-2: #e8a33d;
+  --lg-soft: #c7d2f6;
+
+  /* Motion: a picture's own animation runs on these, never on a literal duration */
+  --ill-duration-short: 600ms;    /* a glint, a small settle */
+  --ill-duration: 1200ms;         /* one gesture of a picture */
+  --ill-duration-long: 2400ms;    /* one loop of a waiting picture, one cycle of a loader */
+  --ill-ease: cubic-bezier(0.2, 0, 0, 1);
+  --ill-ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+
+  /* Shape */
+  --radius-control: 6px;
+  --radius-card: 10px;
+  --radius-full: 9999px;
+  --shadow-card: 0 1px 2px 0 rgb(21 22 26 / 0.06), 0 0 0 1px rgb(21 22 26 / 0.04);
+  --shadow-overlay: 0 16px 32px -8px rgb(21 22 26 / 0.18);
+
+  color-scheme: light;
+}
+
+/* ── Dark: the device asks for it and the reader has not chosen, or the reader chose it ── */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-page: #0f1013;
+    --color-surface: #17181d;
+    --color-surface-muted: #202229;
+    --color-surface-inverted: #f3f3f5;
+    --color-foreground: #f3f3f5;
+    --color-muted: #a3a6b1;
+    --color-subtle: #6d707c;
+    --color-inverted: #15161a;
+    --color-default: #2a2c34;
+    --color-emphasis: #3a3d47;
+    --color-ring: #8da2f2;
+
+    --color-primary: #8da2f2;
+    --color-primary-hover: #a4b5f5;
+    --color-primary-foreground: #0f1326;
+    --color-primary-soft: #1f2640;
+    --color-primary-strong: #b7c4f7;
+
+    --color-danger: #f08a83;
+    --color-danger-soft: #3a1b19;
+    --color-danger-text: #f5aba6;
+    --color-success: #5cc98f;
+    --color-success-soft: #14301f;
+    --color-success-text: #86d9ab;
+    --color-warning: #e8b35a;
+    --color-warning-soft: #3a2a0f;
+    --color-warning-text: #f0c98a;
+
+    --ill-line: #e6e7ee;
+    --ill-fill: #262830;
+    --ill-soft: #33363f;
+    --ill-muted: #43464f;
+    --ill-accent: #8da2f2;
+    --ill-accent-soft: #2b3657;
+    --ill-highlight: #f3f3f5;
+    --ill-ground: #1d1f26;
+    --ill-positive: #5cc98f;
+    --ill-caution: #e8b35a;
+    --ill-negative: #f08a83;
+
+    --lg-accent: #8da2f2;
+    --lg-accent-2: #f0bf6a;
+    --lg-soft: #2b3657;
+
+    --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.5), 0 0 0 1px rgb(255 255 255 / 0.05);
+    --shadow-overlay: 0 16px 32px -8px rgb(0 0 0 / 0.6);
+
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --color-page: #0f1013;
+  --color-surface: #17181d;
+  --color-surface-muted: #202229;
+  --color-surface-inverted: #f3f3f5;
+  --color-foreground: #f3f3f5;
+  --color-muted: #a3a6b1;
+  --color-subtle: #6d707c;
+  --color-inverted: #15161a;
+  --color-default: #2a2c34;
+  --color-emphasis: #3a3d47;
+  --color-ring: #8da2f2;
+
+  --color-primary: #8da2f2;
+  --color-primary-hover: #a4b5f5;
+  --color-primary-foreground: #0f1326;
+  --color-primary-soft: #1f2640;
+  --color-primary-strong: #b7c4f7;
+
+  --color-danger: #f08a83;
+  --color-danger-soft: #3a1b19;
+  --color-danger-text: #f5aba6;
+  --color-success: #5cc98f;
+  --color-success-soft: #14301f;
+  --color-success-text: #86d9ab;
+  --color-warning: #e8b35a;
+  --color-warning-soft: #3a2a0f;
+  --color-warning-text: #f0c98a;
+
+  --ill-line: #e6e7ee;
+  --ill-fill: #262830;
+  --ill-soft: #33363f;
+  --ill-muted: #43464f;
+  --ill-accent: #8da2f2;
+  --ill-accent-soft: #2b3657;
+  --ill-highlight: #f3f3f5;
+  --ill-ground: #1d1f26;
+  --ill-positive: #5cc98f;
+  --ill-caution: #e8b35a;
+  --ill-negative: #f08a83;
+
+  --lg-accent: #8da2f2;
+  --lg-accent-2: #f0bf6a;
+  --lg-soft: #2b3657;
+
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.5), 0 0 0 1px rgb(255 255 255 / 0.05);
+  --shadow-overlay: 0 16px 32px -8px rgb(0 0 0 / 0.6);
+
+  color-scheme: dark;
+}

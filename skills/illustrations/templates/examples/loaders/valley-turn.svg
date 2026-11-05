@@ -1,0 +1,17 @@
+<!-- A loader: the mark's own parts in motion, never a new drawing. The sun travels its arc and the
+     ridges breathe; the last keyframe is the mark at rest, so under reduced motion (one iteration,
+     no duration) the loader is the still mark. Durations come from the --ill-duration-* tokens.
+     Classes and keyframes start with the loader's id ("valley-turn"). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true">
+  <style>
+    .valley-turn__sun { transform-box: view-box; transform-origin: 32px 48px; animation: valley-turn-orbit var(--ill-duration-long) var(--ill-ease-in-out) infinite; }
+    .valley-turn__far { animation: valley-turn-breathe var(--ill-duration-long) var(--ill-ease-in-out) infinite; }
+    @keyframes valley-turn-orbit { 0% { transform: rotate(0deg); } 50% { transform: rotate(-70deg); } 100% { transform: rotate(0deg); } }
+    @keyframes valley-turn-breathe { 0%, 100% { opacity: 0.55; } 50% { opacity: 0.25; } }
+  </style>
+  <g class="valley-turn__sun"><circle cx="40" cy="22" r="8" fill="var(--lg-accent)"/></g>
+  <path class="valley-turn__far" d="M4 50 L22 24 L34 40 L40 33 L60 50 Z" fill="currentColor" opacity="0.55"/>
+  <path d="M2 54 L18 32 L30 46 L38 38 L62 54 Z" fill="currentColor"/>
+  <path d="M24 54 C28 48 26 44 30 40" fill="none" stroke="var(--lg-ground)" stroke-width="2.5" stroke-linecap="round"/>
+  <rect x="2" y="54" width="60" height="4" rx="2" fill="currentColor"/>
+</svg>
