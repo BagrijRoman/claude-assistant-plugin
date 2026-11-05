@@ -1,6 +1,6 @@
 ---
 name: illustrations
-description: Draws the illustration set of a project from what its documentation says — fifteen marks for a logo and the loaders made from the one picked, a picture for every state a screen can be in (empty, nothing found, no access, 404, offline, done and the product's own), scenes from its world, and a full page of email templates with a picture per letter — every picture themable, animated where that tells its story, and reviewed by the operator on one shared page with tabs and two themes before a single file is saved into illustration-samples/. Reuses a showcase's scheme and reading; a showcase reuses the set. Human-invoked only.
+description: Draws the illustration set of a project from what its documentation says — fifteen marks for a logo and the loaders made from the one picked, a picture for every state a screen can be in (empty, nothing found, no access, 404, offline, done and the product's own), scenes from its world, and a full page of email templates with a picture per letter — every picture themable, animated where that tells its story, and reviewed by the operator on one shared page with tabs and two themes before a single file is saved into the documentation's illustrations folder (the docs repository or docs/, chosen in a dialog). Reuses a showcase's scheme and reading; a showcase reuses the set. Human-invoked only.
 argument-hint: "[init [dir] | continue | status | tab <id> | revise | pick logo <id> [<id>…] | add | publish | save | check]"
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(node:*), Bash(ls:*), Bash(mkdir:*), Bash(cp:*), Bash(find:*), AskUserQuestion, Agent, Artifact, SendUserFile
@@ -119,21 +119,35 @@ the customer sees what was considered.
 
 ## The output folder
 
-Default `illustration-samples/` at the project root; the operator always gets to change it. Look at
-what exists, then ask (`AskUserQuestion`, header `Folder`): **`illustration-samples/`
-(Recommended)** — with a note if something is already there — plus one or two alternatives
-(`docs/illustrations/`, next to a showcase); any path may be typed. A directory given in the
-argument becomes the recommended option. Never lay a set into a non-empty folder without the
-operator confirming that folder; an existing set there is resumed, not replaced.
+The set belongs with the documentation, so the folder is chosen **in a dialog, with the
+documentation first**. Before asking, look at what the project has, in this order; the first that
+exists is the recommended option, the others follow it:
+
+1. **The documentation repository**, when the project keeps its documentation in a repository of
+   its own and it is reachable from the session — a sibling folder that is a git repository and
+   holds the documentation (a blueprint's or a showcase's `STATE.json`, a `docs/` of its own, a
+   name ending in `-docs`), or one the operator names: `<docs repository>/illustrations/`.
+2. **The documentation folder** of the project (`docs/` by default; where the blueprint and the
+   showcase live): `docs/illustrations/`.
+3. **`illustration-samples/`** at the project root, when the project has no documentation folder
+   yet.
+
+Ask (`AskUserQuestion`, header `Folder`): the recommended option first, marked *(Recommended)* and
+saying why (the documentation repository is at …; the showcase lives in `docs/`), with a note if
+something is already there, then the other candidates, then any path may be typed. A directory
+given in the argument becomes the recommended option. Never lay a set into a non-empty folder
+without the operator confirming that folder; an existing set there is resumed, not replaced. Record
+the choice as IL-006 with the reason.
 
 Writes stay in the working folder: nothing is created outside it, not even for a moment.
-The working folder is the set's folder chosen at Intake, wherever it is. `STATE.json`, `tokens.css`,
+The working folder is the set's folder chosen at Intake, wherever it is — in the documentation
+repository, under `docs/`, or at the project root. `STATE.json`, `tokens.css`,
 the decisions, the drafts under `review/`, the page the artifact is published from, screenshots —
 everything is created inside it; never the project root, `docs/` above the folder or any temporary
 place, by you or by an agent; a subagent's brief names files inside the folder.
 
 ```
-illustration-samples/
+<docs>/illustrations/            (or illustration-samples/ — the folder chosen at Intake)
 ├── STATE.json · DECISIONS.md · CHANGELOG.md · README.md
 ├── tokens.css                      every value, light and dark — the scheme
 ├── review/                         while a review is on; removed by the save

@@ -1198,6 +1198,16 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T53 — `/illustrations` saves with the documentation: the docs repository or `docs/` first, in a dialog · `done` (0.26.0)
+
+The operator (2026-11-05): the folder must be the documentation folder, or the documentation repository
+when one is reachable, and chosen in a dialog. Done: `SKILL.md › The output folder` looks, in order, for a
+documentation repository (a sibling git repository holding the documentation, or one the operator
+names), the project's documentation folder, and only then `illustration-samples/`; the first found is the
+recommended option of the Folder question, the others follow, any path may be typed; the choice is
+IL-006. Intake looks for an existing set in the documentation repository too. The pages and the showcase's
+references follow. Version 0.26.0.
+
 ## T52 — `/illustrations` Direction first: the manner on three sheets before anything is drawn in number · `done` (0.25.0)
 
 After the first build (T51) the operator asked how the skill could be better, and proposed showing the

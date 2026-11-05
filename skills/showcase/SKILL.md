@@ -80,7 +80,7 @@ Read **the whole documentation folder** of the project — requirements, a bluep
 feature files, notes, earlier design work, whatever is there, all but the showcase folder itself —
 and the product's code when it
 exists (a token file, a component library). **An illustration set** made with `/illustrations`
-(`STATE.json` with `"kind": "illustrations"`, `illustration-samples/` by default) is read before any
+(`STATE.json` with `"kind": "illustrations"`, usually `illustrations/` beside the showcase in the documentation, or in the documentation repository) is read before any
 picture is drawn: its scheme, its picked mark, its loaders, icons, states, scenes and letters' pictures
 are what the Logo, Loaders, Icons, Illustrations, States, Layouts and Email templates steps propose to
 **reuse** — imported through its sprite — instead of drawing anew; a step draws only what the set

@@ -108,7 +108,7 @@ Principles, Decisions, Changelog, Next steps → **Audit**.
 ### An illustration set
 
 When the project has a set drawn with [`/illustrations`](illustrations.md) and saved
-(`illustration-samples/` by default), the showcase finds it at Intake and every drawing step
+(usually `illustrations/` beside the showcase in the documentation), the showcase finds it at Intake and every drawing step
 proposes it first — the picked mark and the shortlist at Logo, its loaders, its icons, its
 states, scenes, onboarding and reserve pictures at Illustrations and the Layouts' scenes, its
 letters' pictures and words at Email templates — imported through the set's sprite

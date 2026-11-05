@@ -53,13 +53,14 @@ own; the set takes a showcase's scheme and reading instead of asking again.
 The skill reads the documentation through subagents the way `/showcase` does, or takes a showcase's
 `SOURCES.md`, `tokens.css`, cast, mark and plans when one exists; a design baseline in the
 documentation fixes the scheme and the mark. References the operator gives at Intake — pictures,
-sites, brands — are read for their traits (line, angle, detail, palette, mood, motion), never copied. It writes into `illustration-samples/` at the project
-root by default, proposed in a dialog with alternatives; whatever folder is chosen is its working
-folder, and writes stay in it: nothing is created outside it, not even for a moment. While a review
+sites, brands — are read for their traits (line, angle, detail, palette, mood, motion), never copied. It writes into the documentation's `illustrations/`
+folder — the documentation repository when the project has one and it is reachable, else the
+project's `docs/`, else `illustration-samples/` at the root — proposed in a dialog with the
+documentation first and alternatives after; whatever folder is chosen is its working folder, and writes stay in it: nothing is created outside it, not even for a moment. While a review
 is on, the drafts live under `review/`; the set itself is written by the save.
 
 ```
-illustration-samples/
+<docs>/illustrations/          (the folder chosen at Intake)
 ├── STATE.json · DECISIONS.md · CHANGELOG.md · README.md · SOURCES.md
 ├── tokens.css                     every value, light and dark
 ├── plans/<tab>.md                 the approved plan of each tab

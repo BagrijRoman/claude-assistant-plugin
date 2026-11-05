@@ -195,8 +195,11 @@ the files instead. Nothing in the procedure is skipped for it.
 
 ## Step 0 — Intake
 
-1. **Find or start.** Glob `**/STATE.json` with `"kind": "illustrations"`. Found → `continue`.
-   None → choose the folder (`SKILL.md › The output folder`).
+1. **Find or start.** Glob `**/STATE.json` with `"kind": "illustrations"` — in the project and in
+   a documentation repository beside it, when there is one. Found → `continue`. None → choose the
+   folder in a dialog, the documentation repository or the documentation folder first
+   (`SKILL.md › The output folder`); the showcase of step 2, when it exists, is the strongest hint
+   of where the documentation lives.
 2. **A showcase?** Glob `**/STATE.json` with `"kind": "showcase"`. Found: tell the operator, and
    take from it — `SOURCES.md` as the reading, `tokens.css` as the scheme (copied into this set's
    `tokens.css`: the `--color-*` values as they are, the `--ill-*` and `--lg-*` from its own when it

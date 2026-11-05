@@ -197,7 +197,7 @@ site itself — so it can start from the files instead. Nothing in the procedure
 ## An illustration set
 
 A set drawn with `/illustrations` and saved — `STATE.json` with `"kind": "illustrations"` and
-`step: "done"`, `illustration-samples/` by default — is found in Intake (step 0) and recorded in
+`step: "done"`, usually `illustrations/` beside the showcase or in the documentation repository — is found in Intake (step 0) and recorded in
 `STATE.json › illustrations` (the folder). Every step that draws then **proposes the set first**:
 
 - **Reuse is the recommended option.** At the step's plan, list what the set holds for it (its

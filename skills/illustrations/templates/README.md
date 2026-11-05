@@ -3,7 +3,7 @@
 The pictures {{NAME}} is recognised by: its mark, the loaders drawn from it, a picture for every
 state a screen can be in, the scenes of its world and the pictures of its letters. Made with the
 `illustrations` skill of the dev-assistant plugin; reviewed by the operator on a shared page before
-anything here was saved.
+anything here was saved. It lives with the documentation, so the showcase and the product find it here.
 
 ## What is where
 
