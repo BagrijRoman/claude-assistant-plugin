@@ -1,7 +1,7 @@
 ---
 name: illustrations
 description: Draws the illustration set of a project from what its documentation says — fifteen marks for a logo and the loaders made from the one picked, a picture for every state a screen can be in (empty, nothing found, no access, 404, offline, done and the product's own), scenes from its world, and a full page of email templates with a picture per letter — every picture themable, animated where that tells its story, and reviewed by the operator on one shared page with tabs and two themes before a single file is saved into the documentation's illustrations folder (the docs repository or docs/, chosen in a dialog). Reuses a showcase's scheme and reading; a showcase reuses the set. Human-invoked only.
-argument-hint: "[init [dir] | continue | status | tab <id> | revise | pick logo <id> [<id>…] | add | publish | save | check]"
+argument-hint: "[init [dir] | continue | status | tab <id> | revise | pick logo <id> [<id>…] | pick scene <place> <id> | add | publish | save | check]"
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(node:*), Bash(ls:*), Bash(mkdir:*), Bash(cp:*), Bash(find:*), AskUserQuestion, Agent, Artifact, SendUserFile
 ---
@@ -37,6 +37,7 @@ the project.
 | `tab <id>` | make or remake one tab — `scheme`, `direction`, `logo`, `loaders`, `icons`, `states`, `scenes`, `onboarding`, `emails`, `reserve` — through its intake, plan, drawing and review |
 | `revise` | take the operator's revisions from the chat for the tab in review, redraw those pictures only, rebuild, republish, ask again |
 | `pick logo <id> [<id>…]` | the first id is the primary mark, the rest the shortlist the loaders are made from |
+| `pick scene <place> <id>` | the variant picked for a place drawn in several — `sign-in` (the authorization layout) or `not-found` (the 404 page); the others stay in the set as alternatives |
 | `add` | a picture the catalog lacks, into one tab, through that tab's review |
 | `publish` | build the review page and publish it as an artifact (or republish to the same address); tell the operator the address |
 | `save` | the script's save: every tab approved → the files moved out of `review/`, the page, manifest and sprite written |
@@ -50,6 +51,16 @@ page, the manifest and the artifact work, in [references/page.md](references/pag
 part you need before acting.
 
 ## Rules that never bend
+
+**Beautiful and presentable, always.** The set sells the product twice: to the potential customer
+who is shown it, and through the product to that customer's own clients. Every picture is drawn to
+be shown — something the customer would put on their own site and their client would smile at — not
+merely to pass the checks. A clear focal point, balanced weight, room to breathe, one warm accent
+that rewards the eye, a second object or a few texture lines that give it life; errors and empty
+states gentle and inviting, never gloomy; words warm and plain. Every plan and every builder's brief
+carries this bar word for word (`drawing.md › Presentable`), and you look at every round's
+screenshots for it before the operator does: a picture that passes `check` but is not lovely is
+redrawn before publishing.
 
 **Every value is a token.** A picture is drawn only with the `--ill-*` tokens; a mark, a loader and
 an icon with `currentColor` and the `--lg-*` tokens (the ground, two accents, a soft fill — a mark
@@ -179,8 +190,10 @@ same way every time, so that you draw and decide, and never assemble a page by h
 | `check <dir>` | the manifest (every file there, ids unique and kebab-case, one mark and one scheme selected, a loader's mark known), every SVG (tokens only, no id, text, gradient or raw duration, its classes and keyframes its own, a size warning), the two dark sets of `tokens.css` |
 | `save <dir>` | refuses while a tab is not `approved` in `STATE.json` or no scheme is marked chosen; otherwise moves every file out of `review/`, writes `manifest.json`, the page, `illustrations.js`, removes `review/`, marks the state done |
 | `sprite <dir> [--out <file>]` | the set as `<symbol>`s in one script — `lg-<id>` a mark, `ld-<id>` a loader, `ic-<id>` an icon, `ill-<id>` a picture — for a showcase or the product |
+| `loop <dir>` | every picture's, scene's and letter's animation made cyclic: the picture rests, rewinds its gesture, plays it again and rests, on one period of tokens per picture; idempotent, a loader and a picture that already loops are left as they are |
 
-Run `check` before every publish and fix what it lists; run `build` after every change to the
+Run `loop` after every drawing round (every picture's and letter's animation made cyclic), `check`
+before every publish and fix what it lists; run `build` after every change to the
 manifest or a file; never edit `index.html` or `artifact.html` by hand.
 
 ## The page
@@ -210,7 +223,7 @@ the page. The key is the step's name in `STATE.json › steps`.
 | 4 Loaders | `loaders` | for the primary mark and each shortlisted one, 3–5 loaders from the mark's own parts, at 64 / 32 / 16 px, one determinate; in place | 2 |
 | 5 Icons | `icons` | the icons of the product's own subjects, on the 16 px grid in the mark's manner, at 16 / 20 / 24, each with where it is used | 2 |
 | 6 States | `states` | a picture for every state a screen can be in — the catalog's and the product's own — each with its words and its action, drawn in place; **a trial of 3–4 first**, reviewed, then the rest | 2 |
-| 7 Scenes | `scenes` | scenes from the product's world — a sign-in panel, a hero, an announcement, the 404, a letter's band | 1 |
+| 7 Scenes | `scenes` | scenes from the product's world — **the sign-in panel (the authorization layout) and the 404 page in several variants each, 3–4 different ideas, one picked per place**; a hero, an announcement, a letter's band | 1 |
 | 8 Onboarding | `onboarding` | the first minutes with the product — the welcome, the first thing to do, the setup's steps, the empty workspace, the tour — each with its words | 1, 5 |
 | 9 Email templates | `emails` | the template with its parts named, then every letter — the common ones and the product's own — filled in, a picture each; a trial of 3 letters first | 3, 2 |
 | 10 Reserve | `reserve` | pictures for situations the product will meet later, each with when; proposed from the catalog and the documentation | 5 |
@@ -224,16 +237,35 @@ first `Selected` and the others `Shortlist`, writes `STATE.json › selected`, f
 in `DECISIONS.md`, rebuilds and republishes; the loaders are then made from the selected mark and
 the shortlist, so the operator sees two or three marks in motion before settling.
 
+**The sign-in panel and the 404 page are drawn in several variants** — 3–4 each, different ideas
+from the product's world rather than one idea redrawn — because they are the two pictures a
+customer meets first and most often, and they choose them like the mark: from pictures. The
+variants of a place stand side by side on the Scenes tab under the place's heading, each with
+`place: "sign-in"` or `place: "not-found"` in the manifest; `pick scene <place> <id>` marks the
+picked one `Selected`, writes `STATE.json › selected.scenes.<place>` and an `IL-nnn` row, rebuilds
+and republishes. The alternatives stay in the set and in the sprite — the product may show them
+in rotation — and `check` refuses two selected variants of one place, and a saved set where a
+place with variants has none picked.
+
 ## Progress
 
 The operator always sees which stage the run is in, what is done and what comes next.
 
-- **The checklist.** When a mode starts, show its stages from the table below, one per line: `✓`
-  done, `▸` the current one, `·` still to come, `–` skipped, `✗` failed. Show it again at every
-  approval and at the end, with the marks brought up to date and where the result is. When the
-  session has a task-list tool (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), mirror the stages
-  there, one item per stage, and keep the items current; without one, the checklist in the chat is
-  enough.
+- **The checklist — at every step, not only at the start.** Show the stages from the table below,
+  one per line, `✓` done, `▸` the current one, `·` still to come, `–` skipped, `✗` failed, **every
+  time the run stops for the operator** (a tab intake, a plan, a review, a pick) **and every time a
+  stage changes** (a tab approved, builders started, a publish). Three things on it, so the operator
+  always knows what is done and what remains:
+  - a `✓` line carries its result in a few words (`✓ Color scheme — Ink & copper (IL-001)`,
+    `✓ Logo — chair-turn, shortlist 3, 2 rounds`);
+  - the `▸` line carries the sub-step it is in and its count
+    (`▸ Icons — plan awaiting approval`, `▸ States — trial drawing 2/4`, `▸ Scenes — review, round 2`);
+  - every `·` line says what it will take (`· Email templates — plan, a trial of 3, then the rest`),
+    and the list ends with one line of what remains:
+    `Remaining: 5 tabs · about 5 plans and 8–10 reviews to answer · then Save`.
+  The checklist is in the operator's language. When the session has a task-list tool (`TaskCreate`
+  and `TaskUpdate`, or `TodoWrite`), mirror the stages there, one item per stage, and keep the
+  items current; the checklist in the chat is shown regardless.
 - **The line.** At every change of stage or step, one line:
   `▸ /illustrations · <n>/<N> <stage> · <step>`, plus `· <k>/<m>` while units are counted —
   `▸ /illustrations · 4/12 Logo · drawing · 9/15`. The marks, the numbers and the command are
@@ -255,6 +287,7 @@ The operator always sees which stage the run is in, what is done and what comes 
 | `tab <id>` | Tab intake → Plan → Approval → Draw → Publish → Review → Approve |
 | `revise` | Read the revisions → Redraw → Publish → Review |
 | `pick logo <id>` | Check the marks → Mark them → Decisions → Publish |
+| `pick scene <place> <id>` | Check the variants → Mark it → Decision → Publish |
 | `add` | What and where → Draw → Publish → Review |
 | `publish` | Build → Check → Publish → The address |
 | `save` | Check the approvals → Save → Sprite → Report |

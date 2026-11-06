@@ -21,6 +21,7 @@ you need before drawing.
 - [Pictures](#pictures)
 - [Letter pictures](#letter-pictures)
 - [What makes a picture look generated, and how to avoid it](#what-makes-a-picture-look-generated-and-how-to-avoid-it)
+- [Presentable](#presentable)
 
 ## The file
 
@@ -131,14 +132,16 @@ Every picture moves — minimally, to tell its story — except a mark and an ic
   second motion only as its echo (the leaf after the lid; the glint after the check). Small
   amplitudes (a few units), slow (`--ill-duration` to `--ill-duration-long`), the tokens' easings;
   no bounce, no overshoot, no spin for its own sake.
-- **Once, then still.** `animation: <id>-<name> var(--ill-duration) var(--ill-ease) 1 both` — it
-  runs once on coming into the page and again on *Replay*; `both` keeps the first and last
-  frames. The **last keyframe is the complete picture**: under reduced motion the page runs every
-  animation to its end in no time, so what remains must be the still, whole picture (a lid closed,
-  a leaf landed). Never end on `opacity: 0` or off-canvas.
-- **Loops only where waiting is the meaning**: a signal searching, sand running, parts arriving,
-  a loader. A loop's keyframes start and end on the same pose, so the cut is invisible and the
-  reduced-motion frame is the rest pose.
+- **Cyclic, always.** Every picture, scene and letter picture loops: it rests, rewinds its gesture,
+  plays it again and rests — a slow breath, never a flicker. A builder draws the gesture **once**
+  (`animation: <id>-<name> var(--ill-duration) var(--ill-ease) 1 both`, echoes on `animation-delay`
+  tokens) with the **last keyframe the complete picture**, and `node bin/illustrations.mjs loop
+  <dir>` turns it into the cycle: each animation gets a loop keyframe set on one period per picture
+  (`calc(var(--ill-duration-short) * n)`: a rest, the rewind, the play, a rest), the delays baked in so
+  the echo keeps its place in every cycle, and `infinite`. The loop starts and ends on the rest
+  pose, so the cut is invisible, and under reduced motion the page stops every animation on that
+  rest pose: the still, whole picture (a lid closed, a leaf landed). Never rest on `opacity: 0` or
+  off-canvas. A loader loops by itself and is left as drawn.
 - **Transforms, not geometry**: `transform` on a `<g>` with `transform-box: view-box` and an
   explicit `transform-origin` in units of the viewBox; `opacity` for appearing. Never animate `d`.
 - **Staggers** with `animation-delay` on a token (`var(--ill-duration)`), never a literal.
@@ -209,3 +212,26 @@ the picture's `--ill-ground`. The same rules of motion; the developer exports th
 - Pastel everything: one strong accent, the rest quiet.
 - A set that does not share a hand: the same stroke, the same angle, the same light, the same
   accent in every picture — look at the tab's grid as one thing before publishing.
+
+## Presentable
+
+The set is shown to win a customer and, through the product, that customer's clients. Passing
+`check` is the floor; the bar is a picture someone would want to show. Hold every picture to it and
+put this section in every builder's brief:
+
+- **A focal point.** The eye lands on one thing first — the subject, lit, a little off centre, with
+  the one accent on it or beside it. Nothing competes with it.
+- **Balance and room.** The weight sits low and steady on its ground; the margins are generous; the
+  second object overlaps or frames the first rather than floating beside it. Nothing cramped.
+- **Life in the detail.** A few texture lines (stitching, a floor line, a reflection), a soft
+  shadow, a glint — enough to feel crafted, never so much that it reads as noise at half size.
+- **Warmth.** The product's world at its best: a tidy station, warm light, a moment the client
+  looks forward to. Errors, empty and access states are gentle and inviting — the chair waiting,
+  not a red cross; never alarming, never sad.
+- **Refined lines.** Smooth curves with few points, consistent corner radii, consistent stroke ends;
+  shapes that look drawn with care, not assembled from rectangles.
+- **A family.** Looked at as a grid, the tab reads as one hand: the same scale of subject, the same
+  light, the same accent dose. A picture heavier, busier or plainer than its neighbours is redrawn.
+- **The test.** Before returning, a builder renders its pictures in both themes at full and half
+  size and asks: would the customer put this on their own site? If not, it is not done.
+

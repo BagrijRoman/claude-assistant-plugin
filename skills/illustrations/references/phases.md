@@ -40,6 +40,12 @@ page is built from: every tab with its kind and lead, every picture with its `id
 `file`, its tags and words (`page.md › The manifest`). A picture exists for the page only once it
 is in the manifest. You keep it; a builder returns entries for it and never edits it.
 
+**Presentable before published.** The set is drawn to attract a customer and their clients
+(`SKILL.md › Rules that never bend`, `drawing.md › Presentable`). Every plan's ideas are chosen for
+it — charming, warm, aspirational moments of the product's world — and every round's screenshots
+are looked at for it before the operator sees them: a picture that is correct but not lovely goes
+back to its builder with what to improve, and only then is the tab published.
+
 **Show, do not describe.** Whatever the operator chooses or approves, they see first. After every
 drawing round: `check` (fix what it lists), `build`, then **publish** the page as an artifact
 (`page.md › Publishing`) — the same address every time — and tell the operator the address and the
@@ -49,6 +55,12 @@ yourself before the operator does — a mark that reads badly at 16 px, a pictur
 lost its line, a letter whose words overflow — fix what you see, and send them (`SendUserFile`
 when the session has it) so the choice can be made from the chat. A question about something
 visual never goes out with only words in it.
+
+**Progress, every time.** Every message that stops for the operator — a tab intake, a plan, a
+review, a pick — and every change of stage starts with the checklist of `SKILL.md › Progress`:
+what is done (with its result), what is in progress (with its sub-step and count), what remains
+(with what each will take) and one line of what is left in all. The operator never has to ask
+"how much is left".
 
 **The review.** When a tab is published: `steps.<key>` becomes `awaiting-review`, `rounds.<key>`
 goes up by one, and you ask (`AskUserQuestion`, header `Review`): **Approve** (Recommended when
@@ -90,15 +102,17 @@ yes or no to each.
 **Subagents** (`Agent`, `general-purpose`) draw in parallel, on the session's model — the drawing
 is what the customer chooses between, so it is not sent to a smaller model. One builder per 4–6
 pictures (3 builders for the 15 marks; a builder per group of states; one per mark for its
-loaders; one per group of letters). A brief names: the files to read (`drawing.md`, the plan,
+loaders; one per group of letters). A brief names the quality bar of `drawing.md › Presentable`
+word for word, and: the files to read (`drawing.md`, the plan,
 `plans/direction.md` and the chosen direction's sheet in `review/direction/` — the reference of the
 hand, over the example of the kind in `templates/examples/` — the trial's files when the tab has
 them, `tokens.css`), the files to write (`review/<tab>/<id>.svg`
 for its pictures, nothing else — never the manifest, never another builder's file), the rules
 (tokens only, the id prefix on every class and keyframe, no id, text, gradient or raw duration, one
-gesture of animation with a still last frame), the wishes of the tab intake word for word, and what
+gesture of animation drawn once with the complete picture as its last frame — the `loop` command makes it cyclic), the wishes of the tab intake word for word, and what
 to return: the manifest entries for its pictures as JSON (id, title, idea, file, animated, motion,
-usedIn, words), and what was unclear. You put the entries into `review/manifest.json`, run `check`
+usedIn, words), and what was unclear. You put the entries into `review/manifest.json`, run `loop`
+(every picture's and letter's animation made cyclic, `drawing.md › Animation`), run `check`
 — a finding in a builder's file goes back to that builder, or you fix it when it is one line —
 `build`, look, publish.
 
@@ -121,7 +135,8 @@ Before every step from 1 to 10 draws anything, the operator says whether they wa
 much of it, and what to take into account. Nothing of a step — no plan, no proposal, no builder —
 starts before this answer. Intake (0) and Save (10) have none.
 
-1. **Ask** (`AskUserQuestion`, two questions in one call, headers `Tab` and `Wishes`), the first
+1. **Ask** (`AskUserQuestion`, two questions in one call, headers `Tab` and `Wishes`), with the
+   checklist of `SKILL.md › Progress` in the message before it; the first
    question's text in three short lines: what the full tab shows, what the simplified one shows
    (from the table below, fitted to this product), and what later tabs take from it.
    - *Tab*: **Full** (Recommended, unless the reading or an earlier answer argues for less) ·
@@ -151,7 +166,7 @@ starts before this answer. Intake (0) and Save (10) have none.
 | 4 Loaders | 3–5 loaders per mark of the primary and the shortlist, one determinate; in place | 2 loaders of the primary mark, one determinate |
 | 5 Icons | every subject of the domain the icon library has no fit for, with where it is used | the 6–8 the planned screens need |
 | 6 States | the catalog's states and the product's own, each with words, action and the in-place sample; a trial of four first | the core eight (empty, nothing found, error, no access, offline, done, 404, loading companion), words only |
-| 7 Scenes | a sign-in panel, a hero, an announcement, the 404, a letter band, the domain's moments | a sign-in panel and the 404 |
+| 7 Scenes | the sign-in panel and the 404 in 3–4 variants each, a hero, an announcement, a letter band, the domain's moments | the sign-in panel and the 404, 3 variants each |
 | 8 Onboarding | welcome, first thing to do, every setup step, empty workspace, tour | welcome and empty workspace |
 | 9 Email templates | the template, the common letters, the letters beyond them, the product's own; a picture each; a trial of three letters first | the template, the product's own letters, one shared picture |
 | 10 Reserve | 6–10 pictures for later situations, from the catalog's reserve and the documentation | 3 |
@@ -233,7 +248,8 @@ the files instead. Nothing in the procedure is skipped for it.
    `STATE.json › references`. A reference is never copied: its traits inform the Direction step.
 6. Write `STATE.json`, `DECISIONS.md`, `CHANGELOG.md`, `README.md` and `tokens.css` from the
    templates, `review/manifest.json` from `templates/manifest.json` with the name, tagline, wordmark
-   and language filled. Build and publish the empty page once — the operator sees the tabs, the
+   and language filled. Fill the manifest's `about` from `SOURCES.md` (`page.md › The manifest`): two
+   short paragraphs on the product and 4–6 points — the customer opens the page knowing nothing. Build and publish the empty page once — the operator sees the tabs, the
    theme switch and the address (`page.md › Publishing`), and keeps that address for the whole run.
    Gate — light: "this is what I know; anything missing?"
 
@@ -346,8 +362,8 @@ drawn in it. Needs the scheme; takes the references of Intake and the reading's 
 
 The same shape for the three: **plan → approve → the trial drawn → published → reviewed → the rest
 drawn → check → build → publish → review → approve** (*A trial before the number* in Common
-mechanics; the plan marks the trial's pictures with *trial* at the end of their lines). Every picture **moves**, minimally, once, and rests on a complete still frame
-(`drawing.md › Animation`); the page shows it at its size and, for a state or an onboarding step,
+mechanics; the plan marks the trial's pictures with *trial* at the end of their lines). Every picture **moves**, minimally and in a cycle — it rests, rewinds its gesture, plays it again —
+and its rest pose is the complete still picture (`drawing.md › Animation`); the page shows it at its size and, for a state or an onboarding step,
 in place — the sample card with the picture small, the heading, the message and the one action.
 
 - **States (6).** Plan from `catalog.md › States`: the core states every product has, the ones the
@@ -361,6 +377,17 @@ in place — the sample card with the picture small, the heading, the message an
   it will sit — the sign-in panel, the hero of a landing or home page, an announcement, the 404,
   a letter's band, the domain's moments (a first setup, an import, an approval, a report ready, a
   target reached). Entries as for a state, with `usedIn` the place; `wide: true` for a band.
+  **Two places are drawn in several variants**: the **sign-in panel** (the authorization layout) and
+  the **404 page**, 3–4 each — different ideas from the product's world (one its place at rest, one
+  its object, one its moment, one its instrument), never one idea redrawn — so the operator chooses
+  between pictures, as for the mark. The plan lists each variant on its own line with its `place`
+  (`sign-in` or `not-found`) and ids `sign-in-<idea>` / `not-found-<idea>`; the trial takes one
+  variant of each place; on the page the variants of a place stand side by side under the place's
+  group heading, `group: "Sign-in panel"` / `group: "404 page"`. After the review, ask the pick
+  (`AskUserQuestion`, header `Sign-in`, then `404`, the ids in the question text, your
+  recommendation first): `pick scene <place> <id>` marks it `selected: true`, the rest stay as
+  alternatives in the set and the sprite; `STATE.json › selected.scenes.<place>`, an `IL-nnn` row
+  each. Approve only after both picks.
 - **Onboarding (8).** Plan from `catalog.md › Onboarding`: the welcome, the first thing to do, a
   picture per step of the product's setup (from the documentation's setup flow), the empty
   workspace, the tour, the first success. Each with its words — the heading, the one sentence, the
@@ -430,6 +457,10 @@ when `batches.<key>` is `trial`), when the operator wrote revisions outside the 
 
 **`pick logo <id> [<id>…]`** — confirm the ids exist; the first is `selected`, the rest
 `shortlist`; `STATE.json › selected`; IL-002 and IL-003; `build`; publish.
+
+**`pick scene <place> <id>`** — `place` is `sign-in` or `not-found`; confirm the id is a Scenes
+item with that `place`; it alone is `selected` among the place's variants;
+`STATE.json › selected.scenes.<place>`; an `IL-nnn` row; `build`; publish.
 
 **`add`** — a picture the catalog lacks: ask what and which tab; its plan line; draw; publish; the
 tab's review again.

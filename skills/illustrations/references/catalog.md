@@ -57,10 +57,10 @@ moments and instruments.
 
 | Id | Where | What it shows |
 |----|-------|---------------|
-| `sign-in` | the panel beside the sign-in form | the product's world at rest, one slow motion (smoke thinning over a plant, a meter turning, figures rising into a report) |
+| `sign-in-<idea>` | the panel beside the sign-in form (the authorization layout) — **3–4 variants**, one picked | the product's world at rest, one slow motion (smoke thinning over a plant, a meter turning, figures rising into a report); each variant a different idea: the place, the object, the moment, the instrument |
 | `hero` | the home or landing page's first screen | the product's promise in one picture: the thing, the result, the people around it as shapes, never faces |
 | `announcement` | a release note, a banner | something new arriving into the world of the product |
-| `not-found-scene` | the 404 page | a place in the product's world with the 404 worked in as an object (a sign, a gate, a tag) |
+| `not-found-<idea>` | the 404 page — **3–4 variants**, one picked | a place in the product's world with the 404 worked in as an object (a sign, a gate, a tag); each variant a different place or object, never one idea redrawn |
 | `letter-band` | the band of a letter with no picture of its own | the world of the product, wide, calm |
 | `first-setup` · `import` · `approval` · `report-ready` · `target-reached` | the moments of the product's loop | each moment as an object and a result: a box opening, files pouring into a ledger, a stamp, a bound report, a flag on a bar |
 

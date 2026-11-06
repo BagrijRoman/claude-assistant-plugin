@@ -69,12 +69,17 @@ set after; `save` needs every tab approved; `sprite` takes `--out <file>`.
 }
 ```
 
+- `about` (optional, top level): `{ "title", "lead": ["paragraph", …], "points": [{ "title", "text" }], "note" }` — the product described for whoever opens the page: what it is, for whom, what it does, what sets it apart, from the reading (`SOURCES.md`). The Overview shows it first, then *How to use this page* (the tabs, the color schemes to try, the two themes, motion, the in-place cards — written by the script from the manifest), then the tabs' status and the colors.
 - The tabs' order is the page's; `scenes`, `onboarding` and `reserve` are `pictures` like `states`.
   A tab the intake skipped is taken out.
 - `file` is relative to `review/` (then to the set's folder) and under the tab's folder; the same
   file named by two items (a scene reused as a letter's picture) is one symbol per id.
 - Items are grouped on the page by `group`, in the order groups first appear; a loader's group is
   its mark.
+- A `pictures` item drawn as one of several variants of a place carries `place` (`sign-in` or
+  `not-found`) and, once picked, `selected: true`; the variants share a `group` so they stand side
+  by side. `check` refuses two selected variants of one place, and a saved set where a place with
+  variants has none.
 - `scheme` items carry their own `light` and `dark` sets — the one place raw values are allowed,
   since they serve the choice — and the chosen one is `selected`; the tab stays in the saved set.
 - `animated` shows the *Moving* tag and the *Replay*; `motion` is one line of what moves.
