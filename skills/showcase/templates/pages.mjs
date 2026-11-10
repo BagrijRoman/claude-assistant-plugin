@@ -167,15 +167,6 @@ export const BANDS = [
         ],
       },
       {
-        id: 'illustrations', path: 'illustrations/index.html', title: 'Illustrations', desc: 'Pictures in the product’s own style and colors: for every state a screen can be in, and for the cases of the product’s domain — some of them moving, with a reserve for later.',
-        sections: [
-          { id: 'states', title: 'For states', desc: 'Empty, error, no access, locked, offline, done — a picture for each.' },
-          { id: 'domain', title: 'From the domain', desc: 'Scenes from the product’s world, for onboarding, panels, letters and announcements.' },
-          { id: 'inPlace', title: 'In place', desc: 'Each picture where it sits in the product.' },
-          { id: 'reserve', title: 'Reserve', desc: 'Pictures ready for situations the product will meet later.' },
-        ],
-      },
-      {
         id: 'layouts', path: 'layouts/index.html', title: 'Layouts', desc: 'The frames every screen sits in — the sign-in, the application’s shell, the page a wrong address lands on — each in several variants with the product’s pictures in motion. One of each is selected.',
         children: [
           { id: 'signIn', path: 'layouts/signIn.html', title: 'Auth layout', desc: 'The screens before the product — sign-in, invitation, forgotten password: the form beside an animated scene from the product’s world. Several variants; one is selected.', sections: [] },
@@ -196,6 +187,15 @@ export const BANDS = [
           { id: 'welcome', title: 'Welcome', desc: 'The first letter after joining: what to do first.' },
           { id: 'digest', title: 'Digest', desc: 'What happened in a period, in a few lines, with the one thing that needs a look.' },
           { id: 'securityAlert', title: 'Security alert', desc: 'A sign-in from a new device or a changed password, and the way to secure the account.' },
+        ],
+      },
+      {
+        id: 'illustrations', path: 'illustrations/index.html', title: 'Illustrations', desc: 'Pictures in the product’s own style and colors: for every state a screen can be in, and for the cases of the product’s domain — some of them moving, with a reserve for later.',
+        sections: [
+          { id: 'states', title: 'For states', desc: 'Empty, error, no access, locked, offline, done — a picture for each.' },
+          { id: 'domain', title: 'From the domain', desc: 'Scenes from the product’s world, for onboarding, panels, letters and announcements.' },
+          { id: 'inPlace', title: 'In place', desc: 'Each picture where it sits in the product.' },
+          { id: 'reserve', title: 'Reserve', desc: 'Pictures ready for situations the product will meet later.' },
         ],
       },
       {

@@ -171,7 +171,7 @@ describe('showcase frame, Email templates as a root section after Layouts', () =
       .find((block) => block.match(/<summary[^]*?href="([^"]+)"/)?.[1] === href);
 
   it('puts Email templates among the roots of Design, right after Layouts, and not under Screens', () => {
-    assert.deepEqual(group.pages.map((page) => page.id), ['design', 'illustrations', 'layouts', 'emails', 'components', 'charts']);
+    assert.deepEqual(group.pages.map((page) => page.id), ['design', 'layouts', 'emails', 'illustrations', 'components', 'charts']);
     assert.equal(entry('emails').title, 'Email templates');
     assert.deepEqual((entry('screens').children ?? []).map((child) => child.id), ['key']);
     for (const page of BANDS.flatMap((band) => band.pages)) {
