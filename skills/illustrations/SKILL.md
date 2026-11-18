@@ -64,8 +64,9 @@ redrawn before publishing.
 
 **Every value is a token.** A picture is drawn only with the `--ill-*` tokens; a mark, a loader and
 an icon with `currentColor` and the `--lg-*` tokens (the ground, two accents, a soft fill — a mark
-may be one color or several, but every color is one of these); durations are the
-`--ill-duration-*` tokens. No hex, no named color, no literal millisecond anywhere but `tokens.css`.
+may be one color or several, but every color is one of these); durations, delays and easings are
+the motion tokens (`--ill-duration-*`, `--ill-stagger`, `--ill-ease*`, `--ill-spring-*`). No hex, no
+named color, no literal millisecond, no raw `cubic-bezier()` anywhere but `tokens.css`.
 This is what makes two themes, a scheme change and the reuse in a showcase or the product a matter
 of one file. The script's `check` refuses anything else.
 
@@ -187,10 +188,11 @@ same way every time, so that you draw and decide, and never assemble a page by h
 | Command | Does |
 |---------|------|
 | `build <dir>` | the review page from `review/manifest.json` and the SVG files: `review/index.html` (opens from disk) and `review/artifact.html` (the fragment the `Artifact` tool publishes); after the save, the set's own `index.html` and `artifact.html` |
-| `check <dir>` | the manifest (every file there, ids unique and kebab-case, one mark and one scheme selected, a loader's mark known), every SVG (tokens only, no id, text, gradient or raw duration, its classes and keyframes its own, a size warning), the two dark sets of `tokens.css` |
+| `check <dir>` | the manifest (every file there, ids unique and kebab-case, one mark and one scheme selected, a loader's mark known), every SVG (tokens only, no id, text, gradient, raw duration, delay or easing, its classes and keyframes its own, a size warning), the two dark sets of `tokens.css` |
 | `save <dir>` | refuses while a tab is not `approved` in `STATE.json` or no scheme is marked chosen; otherwise moves every file out of `review/`, writes `manifest.json`, the page, `illustrations.js`, removes `review/`, marks the state done |
 | `sprite <dir> [--out <file>]` | the set as `<symbol>`s in one script — `lg-<id>` a mark, `ld-<id>` a loader, `ic-<id>` an icon, `ill-<id>` a picture — for a showcase or the product |
 | `loop <dir>` | every picture's, scene's and letter's animation made cyclic: the picture rests, rewinds its gesture, plays it again and rests, on one period of tokens per picture; idempotent, a loader and a picture that already loops are left as they are |
+| `spring <dir> [--bounce <b>] [--name <n>]` | a spring's response as a `linear()` easing — printed; with `--name`, written into `tokens.css` as `--ill-spring-<n>` under `@supports`, the fallback on `:root`. The template ships `smooth` (bounce 0) and `snappy` (0.15); run it only when the direction wants another spring |
 
 Run `loop` after every drawing round (every picture's and letter's animation made cyclic), `check`
 before every publish and fix what it lists; run `build` after every change to the

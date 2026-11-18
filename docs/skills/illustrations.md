@@ -2,7 +2,7 @@
 
 | Command | Invoked by | Script | Since |
 |---------|------------|--------|-------|
-| `/illustrations [init [dir] \| continue \| status \| tab <id> \| revise \| pick logo <id> [<id>…] \| pick scene <place> <id> \| add \| publish \| save \| check]` | a human only (`disable-model-invocation`) | [bin/illustrations.mjs](../../bin/illustrations.mjs) `build`, `check`, `save`, `sprite`, `loop` — see [The script](#the-script) | 0.24.0 |
+| `/illustrations [init [dir] \| continue \| status \| tab <id> \| revise \| pick logo <id> [<id>…] \| pick scene <place> <id> \| add \| publish \| save \| check]` | a human only (`disable-model-invocation`) | [bin/illustrations.mjs](../../bin/illustrations.mjs) `build`, `check`, `save`, `sprite`, `loop`, `spring` — see [The script](#the-script) | 0.24.0 |
 
 Files: [skills/illustrations/SKILL.md](../../skills/illustrations/SKILL.md) (the entry point),
 [references/phases.md](../../skills/illustrations/references/phases.md) (the procedure per step),
@@ -157,9 +157,10 @@ and how many; and, on `continue` or `status`, the checklist rebuilt from its sta
 | Command | Does | Reports |
 |---------|------|---------|
 | `build <dir>` | the page from `review/manifest.json` and the SVG files (or from the saved set's `manifest.json`): every file parsed once, its styles into the head once, a `<symbol>` per id, the tabs in the manifest's order, a direction's samples as a sheet — `index.html` (a whole document) and `artifact.html` (the fragment to publish) | `Wrote review/index.html and review/artifact.html with 42 pictures`; a file that is not an SVG stops it |
-| `check <dir>` | the manifest: every file there, ids kebab-case and unique per tab, at most one mark selected, at most one selected variant per place, a loader's mark known, a saved scheme tab with a chosen scheme and a saved directions tab with a chosen direction, a direction's samples of a known kind with files, a file outside its tab's folder (warning); every SVG: a viewBox, no raw color (hex, a color function, a named value, a token of another family), no `<text>`, `<image>`, gradient, pattern, filter, mask, clip or marker, no `id`, every class and keyframe starting with the picture's id (a shared picture's prefix is its file's owner), every animation on a `--ill-duration` token, a size over 24 KB (warning); `tokens.css`: the two dark sets declare the same tokens with the same values, every dark token has a light one | `error: review/states/empty.svg:12 — the color #abcdef is a raw value; draw with --ill-* tokens`, one per line; exit 1 on an error |
+| `check <dir>` | the manifest: every file there, ids kebab-case and unique per tab, at most one mark selected, at most one selected variant per place, a loader's mark known, a saved scheme tab with a chosen scheme and a saved directions tab with a chosen direction, a direction's samples of a known kind with files, a file outside its tab's folder (warning); every SVG: a viewBox, no raw color (hex, a color function, a named value, a token of another family), no `<text>`, `<image>`, gradient, pattern, filter, mask, clip or marker, no `id`, every class and keyframe starting with the picture's id (a shared picture's prefix is its file's owner), every animation on a `--ill-duration` token with no literal time in its duration or delay and no raw `cubic-bezier()`, `linear()` or `steps()` easing, a size over 24 KB (warning); `tokens.css`: the two dark sets declare the same tokens with the same values, every dark token has a light one | `error: review/states/empty.svg:12 — the color #abcdef is a raw value; draw with --ill-* tokens`, one per line; exit 1 on an error |
 | `save <dir>` | refuses while a tab is not `approved` in `STATE.json` (names them), while the scheme tab has no chosen scheme or the directions tab no chosen direction, while a place drawn in variants has none picked, or while a named file is missing; otherwise moves every file out of `review/` into the set's folder (a scheme's sample too), writes `manifest.json`, `index.html`, `artifact.html` and `illustrations.js`, removes `review/`, marks `save` done and `step` `done` with the date | `Saved 42 pictures into …` |
 | `loop <dir>` | every picture's, scene's and letter's one-time animation made cyclic — the picture rests, rewinds its gesture, plays it again and rests, on one period of tokens per picture (`calc(var(--ill-duration-short) * n)`), the delays baked in; a loader and a picture that already loops are left as they are; idempotent | `looped states/empty.svg`, one per file; `12 pictures made cyclic; the others already loop or have no animation.` |
+| `spring <dir> [--bounce <b>] [--name <n>]` | the step response of a spring as a `linear()` easing over one duration — bounce 0 critically damped, `b` in (0, 1) a damping ratio of 1 − b — printed; with `--name`, written into the set's `tokens.css` as `--ill-spring-<n>` under `@supports (animation-timing-function: linear(0, 1))`, with `var(--ill-ease)` as the fallback on `:root` | `linear(0, 0.037, …, 1)`; `Wrote --ill-spring-snappy (bounce 0.15) into …/tokens.css` |
 | `sprite <dir> [--out <file>]` | `illustrations.js`: one script that puts every picture into a page as `<symbol>`s (`lg-`, `ld-`, `ic-`, `ill-`) with a `<style>` of their keyframes; from the drafts while a review is on | `Wrote …/illustrations.js with 42 symbols` |
 
 Usage errors exit 2.
@@ -190,8 +191,10 @@ Usage errors exit 2.
   duration, a text, an id, a class, a selector and a keyframe not the picture's own, a family
   crossed, a gradient, a missing file, two items on one id, a loader from an unknown mark, two marks
   selected, an id not in kebab-case, a direction's sample without a file or of a wrong kind, a sample
-  checked as a picture of its kind, dark sets that disagree in either direction and a dark token
-  with no light one; the save refuses a draft tab, a scheme not chosen and a direction not chosen, then moves the files,
+  checked as a picture of its kind, a literal delay, a raw easing, dark sets that disagree in either direction and a dark token
+  with no light one; the spring prints a curve that starts at 0 and ends at 1, overshoots only with a bounce, and writes
+  the token under `@supports` with its fallback; the loop makes a one-time gesture cyclic on a period of `--ill-duration-short`
+  and keeps a spring easing; the save refuses a draft tab, a scheme not chosen and a direction not chosen, then moves the files,
   writes the page, manifest and sprite and marks the state done; the sprite goes where it is told;
   a foreign state and a bad command line stop it.
 - [tests/structure.test.mjs](../../tests/structure.test.mjs) — the skill directory, `SKILL.md`

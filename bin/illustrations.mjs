@@ -11,6 +11,9 @@
 //   node bin/illustrations.mjs sprite <dir> [--out <f>]  illustrations.js: every picture as a <symbol>, with its styles
 //   node bin/illustrations.mjs loop   <dir>              every picture's and letter's one-time animation made cyclic: the
 //                                                        picture rests, rewinds its gesture, plays it again and rests
+//   node bin/illustrations.mjs spring <dir> [--bounce <b>] [--name <smooth|snappy>]
+//                                                        a spring easing as linear(): printed, or written into the set's
+//                                                        tokens.css as --ill-spring-<name> (under @supports)
 //
 // <dir> is the set's folder, whose STATE.json has kind "illustrations"; a command stops (exit 1) when that file is
 // missing, does not parse or belongs to something else. Findings are printed one per line —
@@ -26,9 +29,10 @@ const USAGE = `Usage: node bin/illustrations.mjs <command> <dir> [options]
   save   <dir>               move the approved drafts out of review/, write the set's page, manifest and sprite
   sprite <dir> [--out <f>]   write the set as symbols into illustrations.js (or <f>)
   loop   <dir>               make every picture's and letter's animation cyclic (rest, rewind, play, rest)
+  spring <dir> [--bounce <b>] [--name <n>]   a spring easing as linear(); --name writes it into tokens.css as --ill-spring-<n>
 `;
 
-const COMMANDS = ['build', 'check', 'save', 'sprite', 'loop'];
+const COMMANDS = ['build', 'check', 'save', 'sprite', 'loop', 'spring'];
 const TEMPLATES = fileURLToPath(new URL('../skills/illustrations/templates/', import.meta.url));
 const KINDS = ['scheme', 'directions', 'marks', 'loaders', 'icons', 'pictures', 'letters'];
 const SAMPLE_KINDS = ['marks', 'icons', 'pictures', 'letters'];
@@ -36,6 +40,7 @@ const PREFIX = { marks: 'lg', loaders: 'ld', icons: 'ic', pictures: 'ill', lette
 const SIZE_WARNING = 24 * 1024;
 const HEX = /(?<![&\w])#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})(?![\w-])/g;
 const COLOR_FUNCTION = /\b(?:rgba?|hsla?|oklch|oklab|lab|lch|color|color-mix)\(/;
+const LITERAL_TIME = /(?<![\w-])\d+(?:\.\d+)?m?s\b/;
 
 const print = (text) => process.stdout.write(`${text}\n`);
 const fail = (message) => {
@@ -429,7 +434,7 @@ const checkSvg = (file, text, tab, item) => {
     const v = value.trim();
     if (/^(none|currentColor|transparent|inherit)$/.test(v)) return true;
     const token = /^var\((--[\w-]+)(?:,[^)]*)?\)$/.exec(v);
-    return Boolean(token && token[1].startsWith(family) && !/--ill-(duration|ease)/.test(token[1]));
+    return Boolean(token && token[1].startsWith(family) && !/--ill-(duration|ease|spring|stagger)/.test(token[1]));
   };
   lines.forEach((line, i) => {
     const n = i + 1;
@@ -447,7 +452,12 @@ const checkSvg = (file, text, tab, item) => {
       if (!colorOk(value)) found.push(error(file, n, `${property}: ${value.trim()} is not a token; use ${family}* tokens`));
     }
     const duration = /animation(?:-duration)?\s*:\s*([^;}]+)/.exec(line);
-    if (duration && !/var\(--ill-duration/.test(duration[1])) found.push(error(file, n, `animation: ${duration[1].trim()} — the duration must be a token (var(--ill-duration), -short, -long)`));
+    if (duration && !/var\(--ill-duration/.test(duration[1])) found.push(error(file, n, `animation: ${duration[1].trim()} — the duration must be a token (var(--ill-duration), -instant, -short, -long)`));
+    for (const [, property, value] of line.matchAll(/(animation(?:-duration|-delay)?)\s*:\s*([^;}]+)/g)) {
+      if (LITERAL_TIME.test(value)) found.push(error(file, n, `${property}: ${value.trim()} — a literal time; a delay is var(--ill-stagger) times a count or a --ill-duration token, a duration a --ill-duration token`));
+    }
+    const easing = /animation(?:-timing-function)?\s*:\s*([^;}]+)/.exec(line);
+    if (easing && /cubic-bezier\(|\blinear\(|\bsteps\(/.test(easing[1])) found.push(error(file, n, `animation: ${easing[1].trim()} — a raw easing; use var(--ill-ease), var(--ill-ease-in-out), var(--ill-spring-smooth) or var(--ill-spring-snappy)`));
     for (const [, classes] of line.matchAll(/\sclass="([^"]*)"/g)) {
       for (const name of classes.split(/\s+/).filter(Boolean)) {
         if (!(name === owner || name.startsWith(`${owner}-`) || name.startsWith(`${owner}__`))) found.push(error(file, n, `class "${name}" does not start with the picture's id "${owner}": classes clash when every picture stands on one page`));
@@ -683,7 +693,7 @@ const save = (dir) => {
 
 /** The milliseconds of the duration tokens, from tokens.css (light block), with the template's values as fallback. */
 const durationTokens = (dir) => {
-  const values = { '--ill-duration-short': 600, '--ill-duration': 1200, '--ill-duration-long': 2400 };
+  const values = { '--ill-duration-instant': 150, '--ill-duration-short': 300, '--ill-duration': 600, '--ill-duration-long': 1400, '--ill-stagger': 60 };
   const text = read(join(dir, 'tokens.css'));
   for (const name of Object.keys(values)) {
     const found = new RegExp(`${name}:\\s*([\\d.]+)(ms|s)\\s*;`).exec(text);
@@ -694,7 +704,7 @@ const durationTokens = (dir) => {
 
 /** A time expression of tokens (var(), calc() with + - * /) in milliseconds. */
 const timeOf = (expr, tokens) => {
-  const js = expr.replace(/var\((--ill-duration(?:-short|-long)?)\)/g, (_, name) => String(tokens[name])).replace(/calc/g, '');
+  const js = expr.replace(/var\((--ill-duration(?:-instant|-short|-long)?|--ill-stagger)\)/g, (_, name) => String(tokens[name])).replace(/calc/g, '');
   if (!/^[\d\s.+\-*/()]+$/.test(js)) return null;
   try { return Function(`"use strict"; return (${js});`)(); } catch { return null; }
 };
@@ -752,10 +762,10 @@ const loopSvg = (text, tokens) => {
       if (/\binfinite\b/.test(one)) return;
       const name = one.split(/\s+/).find((word) => keyframes.has(word));
       if (!name) return;
-      const times = [...one.matchAll(/(calc\([^;]*?\)\)|calc\([^;]*?\)|var\(--ill-duration(?:-short|-long)?\))/g)].map((m) => m[1]);
+      const times = [...one.matchAll(/(calc\([^;]*?\)\)|calc\([^;]*?\)|var\(--ill-duration(?:-instant|-short|-long)?\)|var\(--ill-stagger\))/g)].map((m) => m[1]);
       const duration = timeOf(times[0] ?? '', tokens);
       const delay = times[1] ? timeOf(times[1], tokens) : delays[index] ? timeOf(delays[index], tokens) : 0;
-      const easing = /var\(--ill-ease(?:-in-out)?\)|ease-in-out|ease-in|ease-out|ease|linear/.exec(one)?.[0] ?? 'var(--ill-ease)';
+      const easing = /var\(--ill-(?:ease(?:-in-out)?|spring-[\w-]+)\)|ease-in-out|ease-in|ease-out|ease|linear/.exec(one)?.[0] ?? 'var(--ill-ease)';
       if (duration == null || delay == null) return;
       runs.push({ block, index, name, duration, delay: delay || 0, easing });
     });
@@ -807,6 +817,56 @@ const loopSvg = (text, tokens) => {
   return text.replace(styleMatch[0], `<style>${out}</style>`);
 };
 
+// --- spring: a spring's response as a linear() easing
+
+/**
+ * The step response of a spring as linear() stops over one duration: bounce 0 is critically damped (no overshoot),
+ * a bounce b in (0, 1) a damping ratio of 1 - b (b = 0.15 overshoots by less than a hundredth; 0.3 by about 4 %).
+ * The natural frequency is set so that the spring has settled by the end of the duration, so the animation's own
+ * --ill-duration token is the whole of its time.
+ */
+const springCurve = (bounce, points = 24) => {
+  if (!(bounce >= 0 && bounce < 1)) fail('--bounce must be 0 or more and below 1');
+  const zeta = 1 - bounce;
+  const omega = 2 * Math.PI * 1.15;
+  const at = (t) => {
+    if (zeta >= 1) return 1 - Math.exp(-omega * t) * (1 + omega * t);
+    const damped = omega * Math.sqrt(1 - zeta * zeta);
+    return 1 - Math.exp(-zeta * omega * t) * (Math.cos(damped * t) + (zeta * omega / damped) * Math.sin(damped * t));
+  };
+  const values = Array.from({ length: points + 1 }, (_, i) => (i === points ? 1 : Math.round(at(i / points) * 1000) / 1000));
+  return `linear(${values.join(', ')})`;
+};
+
+const SPRING_BLOCK = /(@supports \(animation-timing-function: linear\(0, 1\)\) \{\s*:root \{)([\s\S]*?)(\n\s*\}\s*\})/;
+
+const spring = (dir, options) => {
+  loadState(dir);
+  const bounce = Number(options.bounce ?? 0);
+  const curve = springCurve(bounce);
+  if (!options.name) { print(curve); return; }
+  if (!/^[a-z][\w-]*$/.test(options.name)) fail(`--name must be a word in kebab-case, got "${options.name}"`);
+  const path = join(dir, 'tokens.css');
+  const text = read(path);
+  if (!text) fail(`${path} not found`);
+  const token = `--ill-spring-${options.name}`;
+  const line = `    ${token}: ${curve};`;
+  let out;
+  if (SPRING_BLOCK.test(text)) {
+    out = text.replace(SPRING_BLOCK, (_, head, body, tail) => {
+      const rows = body.split('\n').filter((row) => row.trim() && !row.includes(`${token}:`));
+      return `${head}${rows.join('\n')}\n${line}${tail}`;
+    });
+  } else {
+    out = `${text.replace(/\s+$/, '')}\n\n/* ── Springs: linear() where the browser has it; the fallback on :root elsewhere ── */\n@supports (animation-timing-function: linear(0, 1)) {\n  :root {\n${line}\n  }\n}\n`;
+  }
+  if (!new RegExp(`${token}:\\s*var\\(--ill-ease\\)`).test(out)) {
+    out = out.replace(/(\n\s*--ill-ease-in-out:[^\n]*\n)/, `$1  ${token}: var(--ill-ease);\n`);
+  }
+  writeFileSync(path, out);
+  print(`Wrote ${token} (bounce ${bounce}) into ${path}`);
+};
+
 const loop = (dir) => {
   loadState(dir);
   const stage = stageOf(dir);
@@ -843,6 +903,14 @@ const main = () => {
       if (rest[i] === '--out' && rest[i + 1]) { out = rest[i + 1]; i += 1; } else usage(`unknown option for sprite: ${rest[i]}`);
     }
     sprite(dir, out);
+    return;
+  }
+  if (command === 'spring') {
+    const options = {};
+    for (let i = 0; i < rest.length; i += 1) {
+      if ((rest[i] === '--bounce' || rest[i] === '--name') && rest[i + 1]) { options[rest[i].slice(2)] = rest[i + 1]; i += 1; } else usage(`unknown option for spring: ${rest[i]}`);
+    }
+    spring(dir, options);
     return;
   }
   if (rest.length) usage(`too many arguments for ${command}: ${rest.join(' ')}`);

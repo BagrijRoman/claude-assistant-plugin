@@ -339,3 +339,56 @@ describe('illustrations.mjs save and sprite', () => {
     rmSync(out);
   });
 });
+
+describe('illustrations.mjs motion tokens', () => {
+  after(removeTempDirs);
+
+  it('accepts a stagger delay and a spring easing, and reports a literal time and a raw easing', () => {
+    const dir = set();
+    const file = 'review/states/empty.svg';
+    edit(dir, file, 'animation-delay: var(--ill-duration);', 'animation-delay: calc(var(--ill-stagger) * 2);');
+    edit(dir, file, 'animation: empty-settle var(--ill-duration) var(--ill-ease) 1 both;', 'animation: empty-settle var(--ill-duration) var(--ill-spring-snappy) 1 both;');
+    assert.equal(run('check', dir).status, 0);
+    edit(dir, file, 'animation-delay: calc(var(--ill-stagger) * 2);', 'animation-delay: 120ms;');
+    edit(dir, file, 'animation: empty-settle var(--ill-duration) var(--ill-spring-snappy) 1 both;', 'animation: empty-settle var(--ill-duration) cubic-bezier(0.2, 0, 0, 1) 1 both;');
+    const result = run('check', dir);
+    assert.equal(result.status, 1);
+    assert.match(result.stdout, /^error: review\/states\/empty\.svg:\d+ — animation-delay: 120ms — a literal time/m);
+    assert.match(result.stdout, /^error: review\/states\/empty\.svg:\d+ — animation: empty-settle var\(--ill-duration\) cubic-bezier\(0\.2, 0, 0, 1\) 1 both — a raw easing/m);
+  });
+
+  it('loops a one-time gesture on a period of --ill-duration-short and keeps a spring easing', () => {
+    const dir = set();
+    const file = 'review/states/empty.svg';
+    edit(dir, file, 'animation: empty-settle var(--ill-duration) var(--ill-ease) 1 both;', 'animation: empty-settle var(--ill-duration) var(--ill-spring-smooth) 1 both;');
+    const result = run('loop', dir);
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /looped states\/empty\.svg/);
+    const text = readFileSync(join(dir, file), 'utf8');
+    assert.match(text, /animation: empty-settle-loop calc\(var\(--ill-duration-short\) \* \d+\) var\(--ill-spring-smooth\) infinite both/);
+    assert.match(text, /@keyframes empty-settle-loop \{ 0% \{ transform: translateY\(0\) rotate\(0deg\); \}/);
+    assert.equal(run('check', dir).status, 0);
+    assert.match(run('loop', dir).stdout, /^0 pictures made cyclic/m);
+  });
+
+  it('prints a spring curve and writes it into tokens.css under @supports, with the fallback on :root', () => {
+    const dir = set();
+    const printed = run('spring', dir, '--bounce', '0.3');
+    assert.equal(printed.status, 0, printed.stderr);
+    const values = printed.stdout.match(/[\d.]+/g).map(Number);
+    assert.equal(values[0], 0);
+    assert.equal(values[values.length - 1], 1);
+    assert.ok(Math.max(...values) > 1.02, 'a bounce of 0.3 overshoots');
+    const smooth = run('spring', dir, '--bounce', '0').stdout.match(/[\d.]+/g).map(Number);
+    assert.ok(Math.max(...smooth) <= 1, 'no bounce, no overshoot');
+    const written = run('spring', dir, '--bounce', '0.3', '--name', 'lively');
+    assert.match(written.stdout, /Wrote --ill-spring-lively \(bounce 0\.3\)/);
+    const css = readFileSync(join(dir, 'tokens.css'), 'utf8');
+    assert.match(css, /@supports \(animation-timing-function: linear\(0, 1\)\) \{\s*:root \{[^}]*--ill-spring-smooth: linear\([^}]*--ill-spring-lively: linear\(/);
+    assert.match(css, /--ill-spring-lively: var\(--ill-ease\);/);
+    assert.equal(run('check', dir).status, 0, 'the dark sets still agree');
+    run('spring', dir, '--bounce', '0.1', '--name', 'lively');
+    assert.equal((readFileSync(join(dir, 'tokens.css'), 'utf8').match(/--ill-spring-lively:/g) ?? []).length, 2, 'rewritten in place, not added again');
+    assert.equal(run('spring', dir, '--bounce', '1').status, 1);
+  });
+});

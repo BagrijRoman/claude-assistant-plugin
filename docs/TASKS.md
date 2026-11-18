@@ -1198,6 +1198,38 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T55 — `/illustrations` motion: quick, with springs, in order · `done` (0.28.0)
+
+From a colleague's review of 0.26.0 (Lili, 2026-11-11; 25 points in five groups, taken as T55–T60): the
+animation was slow and without springs, so it lacked the feel of a system animation; delays were set on a
+whole duration; the shadow and the performance were unruled.
+
+What was done:
+- **Durations** in `templates/tokens.css`: `--ill-duration-instant` 150 ms (a press, a toggle), `-short` 300 ms
+  (a glint, an echo), `--ill-duration` 600 ms (one gesture), `-long` 1400 ms (a loader's cycle, the rest between
+  loops); `--ill-stagger` 60 ms. `loop` reads them all (its period is still a count of `-short`); a set made
+  earlier keeps its own `tokens.css`.
+- **Springs**: `--ill-spring-smooth` (bounce 0) and `--ill-spring-snappy` (0.15) as `linear()` under
+  `@supports (animation-timing-function: linear(0, 1))`, `var(--ill-ease)` on `:root` as the fallback.
+  `node bin/illustrations.mjs spring <dir> [--bounce <b>] [--name <n>]` prints a curve (the step response of a
+  spring with damping ratio 1 − b, settled within one duration) or writes it as `--ill-spring-<n>` in place.
+  The Direction axis *Motion* has a fourth choice, *spring*; `--ill-spring-snappy` is for that direction only.
+- **Rules** (`drawing.md › Animation`): parts appear in order — ground, subject, details, accent — on
+  `calc(var(--ill-stagger) * n)`, an echo after the gesture on `--ill-duration`; an appearance never eases
+  in; the shadow under a moving thing is its own ellipse on `scale` and `opacity`, never a filter; a
+  budget of 30 animated nodes per picture and 3 moving pictures per screen, every tab looked at with the
+  CPU slowed 4× before publishing; a loader shown only after about 250 ms (`drawing.md › Loaders`).
+- **`check`**: a literal time in `animation`, `animation-duration` or `animation-delay` is an error, as is a
+  raw `cubic-bezier()`, `linear()` or `steps()` easing; the motion tokens are not colors.
+- SKILL.md (tokens rule, the script table), `docs/skills/illustrations.md`, tests (`motion tokens`: the stagger
+  and spring accepted, the literal and the raw easing reported; `loop` on a spring easing, idempotent; `spring`
+  printed, written under `@supports` with its fallback, rewritten in place, refused at bounce 1). Version 0.28.0.
+
+Done when:
+- `npm test` passes.
+- A set drawn on 0.28.0 moves in under a second per gesture, and its sign-in picture reads as a system animation
+  to the operator.
+
 ## T54 — `/illustrations` progress at every step, variants for sign-in and 404, the quality bar, cyclic animation · `done` (0.27.0)
 
 The operator, on the ETC.V2 set (2026-11-06): the checklist went missing between stops, the sign-in and

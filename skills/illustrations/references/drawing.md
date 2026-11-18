@@ -59,9 +59,10 @@ Three families, in `tokens.css`, light and dark; a picture uses one family and n
 |--------|-------------------|--------|
 | `--ill-*` | states, scenes, onboarding, reserve, letter pictures | `line` the outlines and the darkest detail · `fill` the lit face of an object · `soft` the shaded face, a second object · `muted` the shadow under a thing, a far thing · `accent` the one brand touch · `accent-soft` its tint: a glow, a cushion · `highlight` a glint · `ground` the disc a picture stands on · `positive` · `caution` · `negative` the feedback tones |
 | `currentColor` + `--lg-*` | marks, loaders, icons | `currentColor` the body (the page gives it the color) · `--lg-ground` the color behind the mark, for knockouts · `--lg-accent` the first accent · `--lg-accent-2` a second · `--lg-soft` a soft fill |
-| `--ill-duration-short` · `--ill-duration` · `--ill-duration-long` · `--ill-ease` · `--ill-ease-in-out` | every animation | a glint or a small settle · one gesture · a loop of waiting, a loader's cycle |
+| `--ill-duration-instant` · `--ill-duration-short` · `--ill-duration` · `--ill-duration-long` · `--ill-stagger` · `--ill-ease` · `--ill-ease-in-out` · `--ill-spring-smooth` · `--ill-spring-snappy` | every animation | a press or a toggle (150 ms) · a glint, a small settle, an echo (300 ms) · one gesture (600 ms) · a loader's cycle, the rest between loops (1400 ms) · the step between parts appearing (60 ms) · the two easings · the two springs (no bounce; a little bounce), `linear()` where supported and `--ill-ease` elsewhere |
 
-Anything else — a hex, `rgb()`, a named color, a literal `600ms` — fails `check`. On the brand
+Anything else — a hex, `rgb()`, a named color, a literal `600ms` in a duration or a delay, a raw
+`cubic-bezier()` — fails `check`. On the brand
 ground the page turns `--lg-accent` and `--lg-accent-2` into the foreground and `--lg-soft` into
 nothing, so a mark drawn with accents still reads on its own color; draw it so that it does.
 
@@ -93,7 +94,7 @@ sheet shows them, and every builder's brief repeats them:
 | **Angle** | front-on · three-quarter with one visible side · isometric | how much depth a picture carries, how a shelf or a box reads |
 | **Detail** | spare (the subject and its ground) · furnished (a second object, a texture of dots or lines) · rich (a scene) | the time a picture takes to read; richer pictures need larger sizes |
 | **Accent** | one touch of `--ill-accent` per picture · the accent and its tint as a field · a mark in one color, two, or more | where the eye lands; how the mark sits in the product's chrome |
-| **Motion** | settle (things come to rest) · drift (things pass through) · draw (things appear stroke by stroke) | the character of every animation in the set |
+| **Motion** | settle (things come to rest) · drift (things pass through) · draw (things appear stroke by stroke) · spring (things arrive with a little life, on `--ill-spring-snappy`) | the character of every animation in the set |
 
 The references the operator gave at Intake set the starting position; a direction may take them
 as they are, calm them, or answer them. The sheet is not a style guide in words: it is four
@@ -108,7 +109,8 @@ pictures a builder keeps open while drawing, and a reviewer compares a new pictu
   over a generic document. A loupe is fine when the state is *nothing found*; it looks over the
   product's rows.
 - **A ground to stand on**: an ellipse in `--ill-ground` under the subject, a shadow in
-  `--ill-muted` under it. Nothing floats unless floating is the point.
+  `--ill-muted` under it — its own `<ellipse>`, so it can move with the thing. Nothing floats
+  unless floating is the point.
 - **Lines**: one stroke width per size — 2.5 for a 320 × 240 picture, 2 for a 160 × 120 spot
   (the same file; keep detail that survives halving), 1.5 for an icon; round caps and joins
   (`stroke-linecap="round" stroke-linejoin="round"`); outlines in `--ill-line` only where an edge
@@ -130,8 +132,23 @@ Every picture moves — minimally, to tell its story — except a mark and an ic
 - **One gesture.** A picture has one thing that moves, with one small reason: the lid settles, the
   loupe drifts and pauses, the lock rattles once, the parcel lands, the check draws itself. A
   second motion only as its echo (the leaf after the lid; the glint after the check). Small
-  amplitudes (a few units), slow (`--ill-duration` to `--ill-duration-long`), the tokens' easings;
-  no bounce, no overshoot, no spin for its own sake.
+  amplitudes (a few units); **quick**, like a system animation: the gesture on `--ill-duration`
+  (600 ms), an echo or a glint on `--ill-duration-short`, a loader's cycle on
+  `--ill-duration-long`, a press on `--ill-duration-instant`; the tokens' easings — `--ill-ease`
+  for a settle, `--ill-ease-in-out` for a drift, `--ill-spring-smooth` for a spring with no bounce,
+  `--ill-spring-snappy` only in a set whose direction's motion is *spring*. Nothing else overshoots;
+  no spin for its own sake; an appearance never eases in (slow start, abrupt end).
+- **Parts appear in order** — the ground, the subject, the details, the accent — each
+  `animation-delay: calc(var(--ill-stagger) * n)` on the token, `n` its place in the order (the
+  ground 0, the subject 1, details 2–3, the accent last); an echo after the whole gesture waits
+  `var(--ill-duration)`. Never a literal delay, never a delay longer than the gesture itself.
+- **The shadow moves as a shadow.** When a thing lifts or lands, its shadow is its own
+  `<ellipse>` in `--ill-muted` animated with `transform: scale()` and `opacity` (smaller and
+  lighter as the thing rises), never a `filter` or a blur.
+- **A budget**: at most 30 animated nodes in a picture, at most 3 pictures moving on one screen of
+  the product (the rest still or paused off screen), and every tab looked at once with the CPU
+  slowed 4× in the browser's devtools before it is published — a stutter there is a stutter on a
+  phone.
 - **Cyclic, always.** Every picture, scene and letter picture loops: it rests, rewinds its gesture,
   plays it again and rests — a slow breath, never a flicker. A builder draws the gesture **once**
   (`animation: <id>-<name> var(--ill-duration) var(--ill-ease) 1 both`, echoes on `animation-delay`
@@ -144,7 +161,8 @@ Every picture moves — minimally, to tell its story — except a mark and an ic
   off-canvas. A loader loops by itself and is left as drawn.
 - **Transforms, not geometry**: `transform` on a `<g>` with `transform-box: view-box` and an
   explicit `transform-origin` in units of the viewBox; `opacity` for appearing. Never animate `d`.
-- **Staggers** with `animation-delay` on a token (`var(--ill-duration)`), never a literal.
+- **Staggers** on `--ill-stagger` (`calc(var(--ill-stagger) * n)`), an echo on `--ill-duration`;
+  never a literal.
 - A letter's picture moves on the page as a promise of its GIF; the developer exports it later.
 
 ## Marks
@@ -171,6 +189,8 @@ Every picture moves — minimally, to tell its story — except a mark and an ic
 - The id is `<mark>-<motion>`; every class and keyframe starts with it.
 - `animation: … var(--ill-duration-long) var(--ill-ease-in-out) infinite`; the loop's first and
   last keyframe are the mark at rest.
+- **Shown late, never blinking**: the product shows a loader only after about 250 ms of waiting
+  (`--ill-duration-instant` and a little), so a fast answer never flashes one; say so in `use`.
 - Three sizes from one file: at 16 px only the biggest motion reads — if the loader is unreadable
   at 16, make one of the mark's loaders a simple one for buttons and rows and say so in `use`.
 - **Determinate**: `--progress` from the parent, 0 to 1 — `stroke-dashoffset: calc(200 * (1 -
