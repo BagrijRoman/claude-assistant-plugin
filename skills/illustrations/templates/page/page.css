@@ -300,3 +300,6 @@ code, .mono { font-family: var(--font-mono); font-size: 12px; }
     scroll-behavior: auto !important;
   }
 }
+
+/* ── A background tab: every animation paused until the tab is back ── */
+html.is-hidden svg * { animation-play-state: paused !important; }

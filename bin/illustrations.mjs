@@ -41,6 +41,9 @@ const SIZE_WARNING = 24 * 1024;
 const HEX = /(?<![&\w])#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})(?![\w-])/g;
 const COLOR_FUNCTION = /\b(?:rgba?|hsla?|oklch|oklab|lab|lch|color|color-mix)\(/;
 const LITERAL_TIME = /(?<![\w-])\d+(?:\.\d+)?m?s\b/;
+const ANIMATABLE = ['transform', 'opacity', 'stroke-dashoffset'];
+const NODE_BUDGET = 30;
+const REDUCED_MOTION = 'animation-duration: 0.01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important;';
 
 const print = (text) => process.stdout.write(`${text}\n`);
 const fail = (message) => {
@@ -308,7 +311,7 @@ ${about.note ? `<p class="about__note">${escapeHtml(about.note)}</p>` : ''}</div
 <p><strong>Tabs</strong> along the top hold the set by topic: ${manifest.tabs.map((tab) => escapeHtml(tab.title)).join(' · ')}. The number beside a tab is how many pictures it holds; the list below says which tabs are approved and which are in review.</p>
 ${schemeHelp}
 <p><strong>Two themes.</strong> Light and Dark at the top right show every picture on a light and on a dark interface; System follows your device. Every picture is drawn for both, so look at each tab in both.</p>
-<p><strong>Motion.</strong> Pictures marked <em>Moving</em> play one short animation when they appear; <strong>Replay</strong> on a picture runs it again, <strong>Replay all</strong> runs every picture of the tab. With reduced motion switched on in your system, every picture shows its still last frame.</p>
+<p><strong>Motion.</strong> Pictures marked <em>Moving</em> play one short animation when they appear; <strong>Replay</strong> on a picture runs it again, <strong>Replay all</strong> runs every picture of the tab. <strong>¼×</strong> at the top right slows every animation four times, to see a jump or a cut that is too fast to catch at full speed; <strong>1×</strong> brings it back. The page pauses every animation while its tab is in the background. With reduced motion switched on in your system, every picture shows its still last frame.</p>
 <p><strong>In place.</strong> Under a picture, a small card shows it the way the product will: at its real size, with its heading, its message and its button.</p>
 </div>`;
   return `<div class="overview">
@@ -393,7 +396,7 @@ const buildPage = (dir, state, stage, manifest) => {
 <div class="wrap"${(() => { const tab = manifest.tabs.find((entry) => entry.kind === 'scheme'); const chosen = tab?.items.find((item) => item.selected) ?? tab?.items[0]; return chosen ? ` data-scheme-chosen="${escapeHtml(chosen.id)}"` : ''; })()}>
 <header class="top">
 <div class="top__brand"><span class="top__mark">${mark && logo ? renderSvg(logo, mark) : escapeHtml((name[0] ?? 'I').toUpperCase())}</span><div><div class="top__name">${escapeHtml(title)}</div><div class="top__tagline">${stage.review ? 'For review' : 'The saved set'}${state.updated ? ` · ${escapeHtml(state.updated)}` : ''}</div></div></div>
-<div class="top__right">${schemeSwitch(manifest)}<div class="segmented" role="group" aria-label="Theme"><button type="button" class="segmented__item" data-theme-set="light" aria-pressed="false">Light</button><button type="button" class="segmented__item" data-theme-set="dark" aria-pressed="false">Dark</button><button type="button" class="segmented__item" data-theme-set="system" aria-pressed="false">System</button></div></div>
+<div class="top__right">${schemeSwitch(manifest)}<div class="segmented" role="group" aria-label="Speed"><button type="button" class="segmented__item" data-speed-set="1" aria-pressed="true">1×</button><button type="button" class="segmented__item" data-speed-set="0.25" aria-pressed="false">¼×</button></div><div class="segmented" role="group" aria-label="Theme"><button type="button" class="segmented__item" data-theme-set="light" aria-pressed="false">Light</button><button type="button" class="segmented__item" data-theme-set="dark" aria-pressed="false">Dark</button><button type="button" class="segmented__item" data-theme-set="system" aria-pressed="false">System</button></div></div>
 </header>
 <nav class="tabs" role="tablist" aria-label="Topics">${tabButtons.join('')}</nav>
 ${panels.join('\n')}
@@ -417,7 +420,7 @@ const build = (dir) => {
 
 // --- the checks
 
-const checkSvg = (file, text, tab, item) => {
+const checkSvg = (file, text, tab, item, tokens = durationTokens()) => {
   // The prefix belongs to the file's owner: a picture named by two items (a scene reused as a letter's picture) keeps its first owner's classes
   const owner = String(item.file ?? '').split('/').pop().replace(/\.svg$/, '') || item.id;
   const found = [];
@@ -439,6 +442,7 @@ const checkSvg = (file, text, tab, item) => {
   lines.forEach((line, i) => {
     const n = i + 1;
     if (/<!--/.test(line) && !/<\/?[a-z]/.test(line.replace(/<!--[\s\S]*?(-->|$)/, ''))) return;
+    if (line.includes('prefers-reduced-motion')) return; // the block the save writes: literal times by design, stopping every animation on its last frame
     for (const [hex] of line.replace(/<!--[\s\S]*?-->/g, '').matchAll(HEX)) found.push(error(file, n, `the color ${hex} is a raw value; draw with ${family}* tokens`));
     if (COLOR_FUNCTION.test(line)) found.push(error(file, n, `a raw color function; draw with ${family}* tokens`));
     if (/<text\b/.test(line)) found.push(error(file, n, 'a <text> element: pictures carry no words, so they need no translation'));
@@ -470,7 +474,58 @@ const checkSvg = (file, text, tab, item) => {
   for (const match of svg.style.matchAll(/(?:^|[}\s,])\.([\w-]+)/g)) {
     if (!(match[1] === owner || match[1].startsWith(`${owner}-`) || match[1].startsWith(`${owner}__`))) found.push(error(file, lineOf(text.indexOf(match[0])), `selector .${match[1]} does not start with the picture's id "${owner}"`));
   }
+  found.push(...checkMotion(file, text, svg.style, tokens));
   return found;
+};
+
+/** The motion rules: what a keyframe may animate, how it ends, how long a part waits, how many parts move. */
+const checkMotion = (file, text, style, tokens) => {
+  const found = [];
+  const lineOf = (snippet) => { const at = text.indexOf(snippet); return at < 0 ? 0 : text.slice(0, at).split('\n').length; };
+  let moving = 0;
+  for (const block of blocksOf(style)) {
+    const name = /^@keyframes\s+([\w-]+)/.exec(block.prelude)?.[1];
+    if (name) {
+      const stops = blocksOf(block.body).map((stop) => ({ at: splitTop(stop.prelude).map(percentOf), body: stop.body }));
+      for (const stop of stops) {
+        for (const property of stop.body.split(';').map((d) => d.split(':')[0].trim()).filter(Boolean)) {
+          if (!ANIMATABLE.includes(property)) found.push(error(file, lineOf(block.prelude), `@keyframes ${name} animates ${property}; a picture animates only ${ANIMATABLE.join(', ')} — cheap to paint and themable`));
+        }
+      }
+      const last = stops.find((stop) => stop.at.includes(100)) ?? stops[stops.length - 1];
+      if (last && /opacity\s*:\s*0(?![.\d])/.test(last.body)) found.push(error(file, lineOf(block.prelude), `@keyframes ${name} ends on opacity: 0; the last frame is the whole picture, where reduced motion and the loop rest`));
+      continue;
+    }
+    if (block.prelude.startsWith('@')) continue;
+    const decls = block.body.split(';').map((d) => d.trim()).filter(Boolean);
+    const anim = decls.find((d) => /^animation\s*:/.test(d));
+    if (!anim) continue;
+    if (/\bease-in\b(?!-out)/.test(anim)) found.push(error(file, lineOf(block.prelude), `${block.prelude}: ease-in — nothing appears with a slow start and an abrupt end; use var(--ill-ease) or a spring`));
+    const delayDecl = decls.find((d) => /^animation-delay\s*:/.test(d));
+    const delays = delayDecl ? splitTop(delayDecl.replace(/^animation-delay\s*:/, '')) : [];
+    splitTop(anim.replace(/^animation\s*:/, '')).forEach((one, index) => {
+      const times = [...one.matchAll(/(calc\([^;]*?\)\)|calc\([^;]*?\)|var\(--ill-duration(?:-instant|-short|-long)?\)|var\(--ill-stagger\))/g)].map((m) => m[1]);
+      const delay = times[1] ? timeOf(times[1], tokens) : delays[index] ? timeOf(delays[index], tokens) : 0;
+      if (delay != null && delay > tokens['--ill-duration']) found.push(error(file, lineOf(block.prelude), `${block.prelude}: a delay of ${delay} ms is longer than a gesture (--ill-duration, ${tokens['--ill-duration']} ms); parts wait a stagger, an echo waits one gesture`));
+    });
+    for (const selector of splitTop(block.prelude)) {
+      for (const [, cls] of selector.matchAll(/\.([\w-]+)/g)) moving += (text.match(new RegExp(`class="[^"]*\\b${cls}\\b[^"]*"`, 'g')) ?? []).length;
+    }
+  }
+  if (moving > NODE_BUDGET) found.push(warning(file, 0, `${moving} animated nodes — more than ${NODE_BUDGET}; a picture moves a few parts, not every line (a phone paints every one)`));
+  return found;
+};
+
+/** The picture's <style> with a reduced-motion block for its animated rules, so the picture protects itself wherever it is inlined. */
+const withReducedMotion = (text) => {
+  if (text.includes('prefers-reduced-motion')) return text;
+  const styleMatch = /<style>([\s\S]*?)<\/style>/.exec(text);
+  if (!styleMatch) return text;
+  const selectors = blocksOf(styleMatch[1]).filter((block) => !block.prelude.startsWith('@') && /(?:^|;)\s*animation\s*:/.test(block.body)).map((block) => block.prelude);
+  if (!selectors.length) return text;
+  const block = `@media (prefers-reduced-motion: reduce) { ${selectors.join(', ')} { ${REDUCED_MOTION} } }`;
+  const css = `${styleMatch[1].replace(/\s+$/, '')}\n    ${block}\n  `;
+  return text.replace(styleMatch[0], `<style>${css}</style>`);
 };
 
 const checkManifest = (stage, manifest) => {
@@ -560,12 +615,13 @@ const check = (dir) => {
   const stage = stageOf(dir);
   if (!stage) fail('no manifest.json in review/ or in the folder — nothing to check');
   const manifest = loadManifest(stage.base);
+  const tokens = durationTokens(dir);
   const found = [...checkManifest(stage, manifest), ...checkDarkSets(dir)];
   const checkFile = (tab, item) => {
     if (!item.file || !statOf(join(stage.base, item.file))?.isFile()) return;
     const path = join(stage.base, item.file);
     const file = { path, toString: () => `${stage.review ? 'review/' : ''}${item.file}` };
-    found.push(...checkSvg(file, read(path), tab, item));
+    found.push(...checkSvg(file, read(path), tab, item, tokens));
   };
   for (const tab of manifest.tabs) {
     if (tab.kind === 'scheme') continue;
@@ -597,13 +653,21 @@ const spriteOf = (stage, manifest, name) => {
       if (svg.style && !styles.includes(svg.style)) styles.push(svg.style);
     }
   }
-  const sheet = styles.join('\n');
-  const sprite = `<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">${symbols.join('')}</svg>`;
+  const sheet = `${styles.join('\n')}
+@media (prefers-reduced-motion: reduce) { #dev-assistant-illustrations-sprite * { ${REDUCED_MOTION} } }
+html.ill-paused #dev-assistant-illustrations-sprite * { animation-play-state: paused !important; }`;
+  const sprite = `<svg xmlns="http://www.w3.org/2000/svg" id="dev-assistant-illustrations-sprite" width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">${symbols.join('')}</svg>`;
   return `/* illustrations.js — the ${name} illustration set as <symbol>s: lg-<id> a mark, ld-<id> a loader, ill-<id> a state,
  * scene or letter picture. Generated by dev-assistant's illustrations.mjs from manifest.json; a hand edit is lost on
  * the next run. The pictures draw with the --ill-* and --lg-* tokens of the set's tokens.css: include it, or copy
  * those blocks into your own tokens. Use: <svg class="ill" viewBox="0 0 320 240"><use href="#ill-empty"/></svg>.
- * Every animation ends on its still frame; reduced motion needs no extra rule beyond stopping animations. */
+ * Every animation ends on its still frame, and the sheet below stops every animation there under reduced motion.
+ * The symbols share one animation each, so the script pauses them all while the tab is in the background
+ * (html.ill-paused); a picture that must start when it scrolls into view, or pause off screen, is inlined from its
+ * SVG file instead and driven by an IntersectionObserver:
+ *   new IntersectionObserver(function (entries) { entries.forEach(function (e) {
+ *     e.target.style.animationPlayState = e.isIntersecting ? 'running' : 'paused'; }); }).observe(svg);
+ * Show at most three moving pictures on one screen. */
 (function () {
   'use strict';
   var css = ${JSON.stringify(sheet)};
@@ -619,6 +683,9 @@ const spriteOf = (stage, manifest, name) => {
     document.body.insertBefore(holder.firstElementChild, document.body.firstChild);
   }
   if (document.body) inject(); else document.addEventListener('DOMContentLoaded', inject);
+  function pause() { document.documentElement.classList.toggle('ill-paused', document.hidden); }
+  document.addEventListener('visibilitychange', pause);
+  pause();
 })();
 `;
 };
@@ -667,6 +734,7 @@ const save = (dir) => {
     mkdirSync(dirname(target), { recursive: true });
     if (statOf(target)?.isFile()) rmSync(target);
     renameSync(join(stage.base, file), target);
+    if (file.endsWith('.svg')) { const text = read(target); const guarded = withReducedMotion(text); if (guarded !== text) writeFileSync(target, guarded); }
     moved += 1;
   };
   for (const tab of manifest.tabs) {
@@ -694,7 +762,7 @@ const save = (dir) => {
 /** The milliseconds of the duration tokens, from tokens.css (light block), with the template's values as fallback. */
 const durationTokens = (dir) => {
   const values = { '--ill-duration-instant': 150, '--ill-duration-short': 300, '--ill-duration': 600, '--ill-duration-long': 1400, '--ill-stagger': 60 };
-  const text = read(join(dir, 'tokens.css'));
+  const text = dir ? read(join(dir, 'tokens.css')) : '';
   for (const name of Object.keys(values)) {
     const found = new RegExp(`${name}:\\s*([\\d.]+)(ms|s)\\s*;`).exec(text);
     if (found) values[name] = Number(found[1]) * (found[2] === 's' ? 1000 : 1);

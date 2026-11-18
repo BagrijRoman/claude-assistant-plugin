@@ -93,7 +93,8 @@ set after; `save` needs every tab approved; `sprite` takes `--out <file>`.
 One page, no dependency, no network: `tokens.css`, the frame's CSS and JS (`templates/page/`) and
 every picture's styles inline in the head; every picture once as a `<symbol>` at the top of the
 body, used by `<use>` wherever it appears (a mark at six sizes is six `<use>`s). Tabs along the top
-(`role="tab"`, the id in the address as `#states`), the theme switch, *Replay all* per tab, *Replay*
+(`role="tab"`, the id in the address as `#states`), the theme switch, the speed switch (1× / ¼×:
+every motion token multiplied by four on `<html>`, to see a jump or a cut), *Replay all* per tab, *Replay*
 per moving picture, the id chip that copies `tab/id`. The Overview lists the tabs with their status
 from `STATE.json`, the live values of the picture tokens, and how to review.
 
@@ -115,7 +116,7 @@ and comes back to the chosen one with its button. The chosen scheme is the page'
 customer can compare the schemes on the real pictures, not on a strip, before or after the choice.
 
 `?theme=light` or `?theme=dark` in the address forces a theme and `?scheme=<id>` a scheme (for a
-screenshot, or a link that opens on one); otherwise the viewer's choice, kept per viewer. Reduced motion stops every animation on its last frame.
+screenshot, or a link that opens on one); otherwise the viewer's choice, kept per viewer. Reduced motion stops every animation on its last frame; a background tab pauses them all.
 
 ## Publishing
 

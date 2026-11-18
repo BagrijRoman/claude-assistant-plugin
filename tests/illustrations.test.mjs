@@ -392,3 +392,49 @@ describe('illustrations.mjs motion tokens', () => {
     assert.equal(run('spring', dir, '--bounce', '1').status, 1);
   });
 });
+
+describe('illustrations.mjs motion rules and where motion runs', () => {
+  after(removeTempDirs);
+
+  it('reports a keyframe on fill, a last frame on opacity 0, ease-in, a delay past one gesture, and warns past 30 animated nodes', () => {
+    const dir = set();
+    const file = 'review/states/empty.svg';
+    edit(dir, file, '@keyframes empty-glint { 0% { opacity: 0; } 100% { opacity: 1; } }', '@keyframes empty-glint { 0% { opacity: 0; fill: var(--ill-accent); } 100% { opacity: 0; } }');
+    edit(dir, file, 'animation: empty-settle var(--ill-duration) var(--ill-ease) 1 both;', 'animation: empty-settle var(--ill-duration) ease-in 1 both;');
+    edit(dir, file, 'animation-delay: var(--ill-duration);', 'animation-delay: calc(var(--ill-duration) * 2);');
+    edit(dir, file, '<circle class="empty__glint" cx="116"', '<circle class="empty__lid" cx="1" cy="1" r="1" fill="var(--ill-soft)"/>'.repeat(31) + '<circle class="empty__glint" cx="116"');
+    const result = run('check', dir);
+    assert.equal(result.status, 1);
+    assert.match(result.stdout, /^error: review\/states\/empty\.svg:\d+ — @keyframes empty-glint animates fill; a picture animates only transform, opacity, stroke-dashoffset/m);
+    assert.match(result.stdout, /^error: review\/states\/empty\.svg:\d+ — @keyframes empty-glint ends on opacity: 0/m);
+    assert.match(result.stdout, /^error: review\/states\/empty\.svg:\d+ — \.empty__lid: ease-in/m);
+    assert.match(result.stdout, /^error: review\/states\/empty\.svg:\d+ — \.empty__glint: a delay of 1200 ms is longer than a gesture \(--ill-duration, 600 ms\)/m);
+    assert.match(result.stdout, /^warning: review\/states\/empty\.svg — \d+ animated nodes — more than 30/m);
+  });
+
+  it('writes a reduced-motion block into every animated picture at the save, and the sprite protects and pauses its symbols', () => {
+    const dir = set();
+    assert.equal(run('save', dir).status, 0);
+    const picture = readFileSync(join(dir, 'states', 'empty.svg'), 'utf8');
+    assert.match(picture, /@media \(prefers-reduced-motion: reduce\) \{ \.empty__lid, \.empty__leaf, \.empty__glint \{ animation-duration: 0\.01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; \} \}/);
+    assert.equal((picture.match(/prefers-reduced-motion/g) ?? []).length, 1);
+    assert.doesNotMatch(readFileSync(join(dir, 'icons', 'site.svg'), 'utf8'), /prefers-reduced-motion/, 'a still picture gets no block');
+    assert.equal(run('check', dir).status, 0, 'the block passes the checks');
+    const sprite = readFileSync(join(dir, 'illustrations.js'), 'utf8');
+    assert.match(sprite, /id=\\"dev-assistant-illustrations-sprite\\"/);
+    assert.match(sprite, /@media \(prefers-reduced-motion: reduce\) \{ #dev-assistant-illustrations-sprite \* \{ animation-duration: 0\.01ms !important/);
+    assert.match(sprite, /html\.ill-paused #dev-assistant-illustrations-sprite \* \{ animation-play-state: paused !important; \}/);
+    assert.match(sprite, /visibilitychange/);
+    assert.match(sprite, /IntersectionObserver/);
+  });
+
+  it('gives the page a speed switch and a pause in a background tab', () => {
+    const dir = set();
+    assert.equal(run('build', dir).status, 0);
+    const page = readFileSync(join(dir, 'review', 'index.html'), 'utf8');
+    assert.match(page, /<div class="segmented" role="group" aria-label="Speed"><button type="button" class="segmented__item" data-speed-set="1" aria-pressed="true">1×<\/button><button type="button" class="segmented__item" data-speed-set="0.25" aria-pressed="false">¼×<\/button><\/div>/);
+    assert.match(page, /html\.is-hidden svg \* \{ animation-play-state: paused !important; \}/);
+    assert.match(page, /data-speed-set/);
+    assert.match(page, /visibilitychange/);
+  });
+});

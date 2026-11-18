@@ -137,7 +137,10 @@ Every picture moves — minimally, to tell its story — except a mark and an ic
   `--ill-duration-long`, a press on `--ill-duration-instant`; the tokens' easings — `--ill-ease`
   for a settle, `--ill-ease-in-out` for a drift, `--ill-spring-smooth` for a spring with no bounce,
   `--ill-spring-snappy` only in a set whose direction's motion is *spring*. Nothing else overshoots;
-  no spin for its own sake; an appearance never eases in (slow start, abrupt end).
+  no spin for its own sake; an appearance never eases in (slow start, abrupt end). A keyframe
+  animates `transform`, `opacity` or `stroke-dashoffset` and nothing else — a color change is a
+  part in the new color appearing over the old; its last frame is never `opacity: 0`. `check`
+  refuses each of these.
 - **Parts appear in order** — the ground, the subject, the details, the accent — each
   `animation-delay: calc(var(--ill-stagger) * n)` on the token, `n` its place in the order (the
   ground 0, the subject 1, details 2–3, the accent last); an echo after the whole gesture waits
@@ -145,7 +148,13 @@ Every picture moves — minimally, to tell its story — except a mark and an ic
 - **The shadow moves as a shadow.** When a thing lifts or lands, its shadow is its own
   `<ellipse>` in `--ill-muted` animated with `transform: scale()` and `opacity` (smaller and
   lighter as the thing rises), never a `filter` or a blur.
-- **A budget**: at most 30 animated nodes in a picture, at most 3 pictures moving on one screen of
+- **Where it runs.** A picture protects itself: the save writes a `prefers-reduced-motion` block
+  into its `<style>` (every animated rule stopped on its last frame), and the sprite carries one for
+  all its symbols, so an SVG dropped into the product keeps the rule without the review page. The
+  sprite pauses every symbol while the product's tab is in the background; a picture that must play
+  only when it scrolls into view is inlined from its file and started by an `IntersectionObserver`
+  (the sprite's symbols share one animation each, so they cannot pause one instance at a time).
+- **A budget**: at most 30 animated nodes in a picture (`check` warns past it), at most 3 pictures moving on one screen of
   the product (the rest still or paused off screen), and every tab looked at once with the CPU
   slowed 4× in the browser's devtools before it is published — a stutter there is a stutter on a
   phone.

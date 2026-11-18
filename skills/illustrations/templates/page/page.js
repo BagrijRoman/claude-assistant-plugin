@@ -133,4 +133,28 @@
   }
   document.addEventListener('themechange', paintSwatches);
   paintSwatches();
+
+  /* Speed: ¼× multiplies every motion token by four on <html>, so a jump or a cut shows; 1× clears it. Not kept. */
+  var MOTION = ['--ill-duration-instant', '--ill-duration-short', '--ill-duration', '--ill-duration-long', '--ill-stagger'];
+  var base = null;
+  function setSpeed(speed) {
+    if (!base) { var computed = getComputedStyle(root); base = {}; MOTION.forEach(function (token) { base[token] = parseFloat(computed.getPropertyValue(token)) || 0; }); }
+    MOTION.forEach(function (token) {
+      if (speed === 1 || !base[token]) root.style.removeProperty(token);
+      else root.style.setProperty(token, Math.round(base[token] / speed) + 'ms');
+    });
+    document.querySelectorAll('[data-speed-set]').forEach(function (button) {
+      button.setAttribute('aria-pressed', String(Number(button.getAttribute('data-speed-set')) === speed));
+    });
+    replayAll(document.querySelector('[role="tabpanel"]:not([hidden])'));
+  }
+  document.addEventListener('click', function (event) {
+    var button = event.target.closest('[data-speed-set]');
+    if (button) setSpeed(Number(button.getAttribute('data-speed-set')) || 1);
+  });
+
+  /* A background tab paints nothing: every animation pauses until the tab is back. */
+  function pause() { root.classList.toggle('is-hidden', document.hidden); }
+  document.addEventListener('visibilitychange', pause);
+  pause();
 })();

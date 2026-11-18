@@ -1198,6 +1198,34 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T56 — `/illustrations` motion that protects itself: reduced motion with the picture, the motion checks, the page's speed switch · `done` (0.29.0)
+
+From the same review (Lili, 2026-11-11): reduced motion was honoured only by the review page, so an SVG
+dropped into the product lost it; `check` said nothing about what a keyframe animates or how it ends; a
+jump or a cut was too fast to see on the page; nothing paused off screen.
+
+What was done:
+- **Reduced motion travels with the picture**: the save writes a `@media (prefers-reduced-motion: reduce)`
+  block into each animated picture's `<style>` (its animated selectors stopped on their last frame; once,
+  idempotent; `check` lets that line through); the sprite carries one rule for all its symbols.
+- **A background tab paints nothing**: the sprite (`html.ill-paused`) and the page (`html.is-hidden`) pause
+  every animation on `visibilitychange`. The symbols share one animation each, so a per-instance pause off
+  screen is for an inlined picture, with an `IntersectionObserver` — the sprite's header shows it and
+  `drawing.md › Where it runs` says when to inline.
+- **`check`**: a keyframe animates only `transform`, `opacity` or `stroke-dashoffset`; its last frame is
+  never `opacity: 0`; no `ease-in`; no delay longer than `--ill-duration`; more than 30 animated nodes is a
+  warning (the budget of T55).
+- **The page**: a speed switch 1× / ¼× at the top right (every motion token multiplied by four on `<html>`,
+  the current tab replayed), so a jump or a cut shows; the Overview says so.
+- SKILL.md (the script table), `page.md`, `drawing.md`, `docs/skills/illustrations.md`, tests (the five
+  motion findings; the block at the save, once, not on a still picture, passing `check`; the sprite's id, sheet,
+  pause and header; the page's switch and pause). Version 0.29.0.
+
+Done when:
+- `npm test` passes.
+- A saved picture pasted into a page with reduced motion on stands still on its whole frame, without the page's
+  own rule.
+
 ## T55 — `/illustrations` motion: quick, with springs, in order · `done` (0.28.0)
 
 From a colleague's review of 0.26.0 (Lili, 2026-11-11; 25 points in five groups, taken as T55–T60): the
