@@ -2,7 +2,7 @@
 
 | Command | Invoked by | Script | Since |
 |---------|------------|--------|-------|
-| `/illustrations [init [dir] \| continue \| status \| tab <id> \| revise \| pick logo <id> [<id>…] \| add \| publish \| save \| check]` | a human only (`disable-model-invocation`) | [bin/illustrations.mjs](../../bin/illustrations.mjs) `build`, `check`, `save`, `sprite` — see [The script](#the-script) | 0.24.0 |
+| `/illustrations [init [dir] \| continue \| status \| tab <id> \| revise \| pick logo <id> [<id>…] \| pick scene <place> <id> \| add \| publish \| save \| check]` | a human only (`disable-model-invocation`) | [bin/illustrations.mjs](../../bin/illustrations.mjs) `build`, `check`, `save`, `sprite`, `loop` — see [The script](#the-script) | 0.24.0 |
 
 Files: [skills/illustrations/SKILL.md](../../skills/illustrations/SKILL.md) (the entry point),
 [references/phases.md](../../skills/illustrations/references/phases.md) (the procedure per step),
@@ -43,6 +43,7 @@ own; the set takes a showcase's scheme and reading instead of asking again.
 | `tab <id>` | make or remake one tab through its intake, plan, drawing (a trial first on a big tab) and review |
 | `revise` | apply the operator's revisions from the chat to the tab in review, republish |
 | `pick logo <id> [<id>…]` | the primary mark and the shortlist the loaders are made from |
+| `pick scene <place> <id>` | the variant picked for a place drawn in several — `sign-in` or `not-found`; the others stay in the set as alternatives |
 | `add` | a picture the catalog lacks, into one tab |
 | `publish` | build and publish the page as an artifact, or republish to the same address |
 | `save` | the script's save, once every tab is approved |
@@ -102,8 +103,8 @@ reading, told apart by line, angle, detail, accent and motion; one chosen or mix
 is drawn in number) → **Logo** (fifteen marks from five ideas tried three ways; the lineup looked at; a primary picked and two or
 three shortlisted) → **Loaders** (3–5 per mark of the primary and the shortlist, one determinate;
 in place) → **Icons** (the domain's own subjects in the mark's manner) → **States** (the catalog's
-and the product's own, each with words and action; a trial of four reviewed before the rest) → **Scenes** (a sign-in panel, a hero, an
-announcement, the 404, a letter band, the domain's moments) → **Onboarding** (welcome, first step,
+and the product's own, each with words and action; a trial of four reviewed before the rest) → **Scenes** (the sign-in panel and the 404 page in 3–4 variants each, one picked per place with
+`pick scene`, the alternatives kept; a hero, an announcement, a letter band, the domain's moments) → **Onboarding** (welcome, first step,
 setup steps, empty workspace, tour) → **Email templates** (the common letters, the ones beyond
 them, the product's own; a picture each; a trial of three letters first) → **Reserve** → **Save**.
 
@@ -118,8 +119,9 @@ new session where the set stands.
 
 ## Progress
 
-The skill shows where it is at every step: a checklist of the mode's stages when it starts, at every
-gate and at the end; a line `▸ /<command> · <n>/<N> <stage> · <step>` at every change; what it waits for
+The skill shows where it is at every step: a checklist of the mode's stages every time the run stops
+for the operator and every time a stage changes — a done line with its result, the current one with
+its sub-step and count, what each remaining stage takes, and one line of what is left in all; a line `▸ /<command> · <n>/<N> <stage> · <step>` at every change; what it waits for
 and how many; and, on `continue` or `status`, the checklist rebuilt from its state first
 ([rule 8](README.md#rules-every-skill-follows)). The stages per mode, as its `SKILL.md` lists them:
 
@@ -130,6 +132,7 @@ and how many; and, on `continue` or `status`, the checklist rebuilt from its sta
 | `tab <id>` | Tab intake → Plan → Approval → Draw → Publish → Review → Approve |
 | `revise` | Read the revisions → Redraw → Publish → Review |
 | `pick logo <id>` | Check the marks → Mark them → Decisions → Publish |
+| `pick scene <place> <id>` | Check the variants → Mark it → Decision → Publish |
 | `add` | What and where → Draw → Publish → Review |
 | `publish` | Build → Check → Publish → The address |
 | `save` | Check the approvals → Save → Sprite → Report |
@@ -154,8 +157,9 @@ and how many; and, on `continue` or `status`, the checklist rebuilt from its sta
 | Command | Does | Reports |
 |---------|------|---------|
 | `build <dir>` | the page from `review/manifest.json` and the SVG files (or from the saved set's `manifest.json`): every file parsed once, its styles into the head once, a `<symbol>` per id, the tabs in the manifest's order, a direction's samples as a sheet — `index.html` (a whole document) and `artifact.html` (the fragment to publish) | `Wrote review/index.html and review/artifact.html with 42 pictures`; a file that is not an SVG stops it |
-| `check <dir>` | the manifest: every file there, ids kebab-case and unique per tab, at most one mark selected, a loader's mark known, a saved scheme tab with a chosen scheme and a saved directions tab with a chosen direction, a direction's samples of a known kind with files, a file outside its tab's folder (warning); every SVG: a viewBox, no raw color (hex, a color function, a named value, a token of another family), no `<text>`, `<image>`, gradient, pattern, filter, mask, clip or marker, no `id`, every class and keyframe starting with the picture's id, every animation on a `--ill-duration` token, a size over 24 KB (warning); `tokens.css`: the two dark sets declare the same tokens with the same values, every dark token has a light one | `error: review/states/empty.svg:12 — the color #abcdef is a raw value; draw with --ill-* tokens`, one per line; exit 1 on an error |
-| `save <dir>` | refuses while a tab is not `approved` in `STATE.json` (names them), while the scheme tab has no chosen scheme or the directions tab no chosen direction, or while a named file is missing; otherwise moves every file out of `review/` into the set's folder (a scheme's sample too), writes `manifest.json`, `index.html`, `artifact.html` and `illustrations.js`, removes `review/`, marks `save` done and `step` `done` with the date | `Saved 42 pictures into …` |
+| `check <dir>` | the manifest: every file there, ids kebab-case and unique per tab, at most one mark selected, at most one selected variant per place, a loader's mark known, a saved scheme tab with a chosen scheme and a saved directions tab with a chosen direction, a direction's samples of a known kind with files, a file outside its tab's folder (warning); every SVG: a viewBox, no raw color (hex, a color function, a named value, a token of another family), no `<text>`, `<image>`, gradient, pattern, filter, mask, clip or marker, no `id`, every class and keyframe starting with the picture's id (a shared picture's prefix is its file's owner), every animation on a `--ill-duration` token, a size over 24 KB (warning); `tokens.css`: the two dark sets declare the same tokens with the same values, every dark token has a light one | `error: review/states/empty.svg:12 — the color #abcdef is a raw value; draw with --ill-* tokens`, one per line; exit 1 on an error |
+| `save <dir>` | refuses while a tab is not `approved` in `STATE.json` (names them), while the scheme tab has no chosen scheme or the directions tab no chosen direction, while a place drawn in variants has none picked, or while a named file is missing; otherwise moves every file out of `review/` into the set's folder (a scheme's sample too), writes `manifest.json`, `index.html`, `artifact.html` and `illustrations.js`, removes `review/`, marks `save` done and `step` `done` with the date | `Saved 42 pictures into …` |
+| `loop <dir>` | every picture's, scene's and letter's one-time animation made cyclic — the picture rests, rewinds its gesture, plays it again and rests, on one period of tokens per picture (`calc(var(--ill-duration-short) * n)`), the delays baked in; a loader and a picture that already loops are left as they are; idempotent | `looped states/empty.svg`, one per file; `12 pictures made cyclic; the others already loop or have no animation.` |
 | `sprite <dir> [--out <file>]` | `illustrations.js`: one script that puts every picture into a page as `<symbol>`s (`lg-`, `ld-`, `ic-`, `ill-`) with a `<style>` of their keyframes; from the drafts while a review is on | `Wrote …/illustrations.js with 42 symbols` |
 
 Usage errors exit 2.

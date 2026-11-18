@@ -1198,6 +1198,37 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T54 — `/illustrations` progress at every step, variants for sign-in and 404, the quality bar, cyclic animation · `done` (0.27.0)
+
+The operator, on the ETC.V2 set (2026-11-06): the checklist went missing between stops, the sign-in and
+404 pictures were one idea each, some pictures passed `check` without being lovely, and every animation
+played once and froze. Committed 2026-11-06 under 0.26.0 without its page, its index rows or this entry;
+the release is 0.27.0.
+
+What was done:
+- **Progress at every stop** (`SKILL.md › Progress`): the checklist is shown every time the run stops for
+  the operator and every time a stage changes — a `✓` line with its result, the `▸` line with its
+  sub-step and count, every `·` line with what it takes, and one line of what remains in all.
+- **Variants for the two pictures a customer meets first**: the sign-in panel and the 404 page are drawn in
+  3–4 different ideas each; `place` and `selected` in the manifest, `pick scene <place> <id>` marks the
+  pick (`STATE.json › selected.scenes.<place>`, an `IL-nnn` row), the alternatives stay in the set and in
+  the sprite; `check` refuses two picks for one place, `save` a place with variants and none picked.
+- **The quality bar** (`SKILL.md › Beautiful and presentable`, `drawing.md › Presentable`): every plan and
+  brief carries it; the screenshots of every round are looked at for it before the operator is.
+- **Cyclic animation**: a builder draws a gesture once; `node bin/illustrations.mjs loop <dir>` turns it
+  into a cycle (rest, rewind, play, rest) on one period of tokens per picture, delays baked in, idempotent;
+  every picture, scene and letter picture loops, a loader is left as drawn.
+- **Overview and page**: an `about` section from the reading and how to use the page; picture groups on a
+  four-column subgrid, wide pictures on two columns; the icon rows set the knockout ground.
+- `check`: a shared picture's class prefix comes from its file's owner.
+- 0.27.0: `docs/skills/illustrations.md` (the command, the modes, the script's `loop`, the stage table),
+  the index rows, this entry; `npm test` green again (the stage table had drifted from `SKILL.md`).
+
+Done when:
+- `npm test` passes.
+- Still open: `tests/illustrations.test.mjs` covers neither `loop` nor the `place` checks of `check` and
+  `save` — to be added with T55/T56, which change both.
+
 ## T53 — `/illustrations` saves with the documentation: the docs repository or `docs/` first, in a dialog · `done` (0.26.0)
 
 The operator (2026-11-05): the folder must be the documentation folder, or the documentation repository
