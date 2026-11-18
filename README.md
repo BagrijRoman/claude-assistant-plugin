@@ -162,3 +162,8 @@ force pushes, merges and publishing.
 The weaker layers are cheaper and more flexible; the stronger layers are stricter and need code or
 config. Start with the weakest layer that does the job and move up only when the model keeps ignoring
 the guidance.
+
+## License
+
+MIT — see [LICENSE](LICENSE). The skills, hooks and scripts may be copied into another plugin or
+shared with a colleague; keep the notice.

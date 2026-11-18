@@ -1198,6 +1198,41 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T60 — `/illustrations` lighter to run and easier to take out: the procedure in five files, the quick path, tokens for the product, a licence · `done` (0.33.0)
+
+From the same review (Lili, 2026-11-11): SKILL.md (22 KB) and phases.md (33 KB) went into every run whole; a
+single picture took the ten-step road; the tokens stayed in CSS; the sprite had no example for a React or Vue
+app; `UNLICENSED` stopped the skill being shared.
+
+What was done:
+- **Progressive disclosure.** `phases.md` is four files read one at a time — `mechanics.md` (what every step
+  shares, the tab intake, the fresh context, and from SKILL.md *The order of making* and *Variants and picks*),
+  `steps.md` (steps 0–5), `pictures.md` (steps 6–11), `modes.md` (the other modes) — and the script's full
+  table is `script.md`; SKILL.md keeps the arguments, the rules, what goes in, the folder, a one-paragraph
+  script section (the heading `SKILL.md › The script` stays, since `page.md` and `import.md` point at it) and
+  the progress table: 28.9 → 22.7 KB, and the procedure a run loads 37 → 3–20 KB by step. Every
+  `phases.md › …` reference in the skill, the hook (`mechanics.md › A fresh context`), its page, the structure
+  test's gate list and the skill page follows.
+- **The quick path**: `add [what]` draws one picture with no intake and no plan beyond its line, and with no
+  set yet lays a minimal one (the folder, the scheme confirmed from a showcase, a baseline or the template, one
+  tab) and leaves the rest of the run for `continue`; `tab <id>` is the same for one tab (`modes.md`).
+- **`tokens <dir> [--format json|tailwind] [--out <f>]`**: `tokens.json` in the Style Dictionary shape (every
+  token `{ value, dark }`, a `var()` as a `{group.key}` reference, the springs' `linear()` curves) and
+  `tokens.tailwind.cjs` (a theme extension on `var(--…)`, so both themes keep working); the set's README names
+  them and shows a React and a Vue component around the sprite's `<use>`, and the observer for an inlined
+  picture.
+- **MIT**: `LICENSE`, `"license": "MIT"` in `plugin.json` and `package.json`, a line in the README.
+- Tests: the tokens' JSON and Tailwind, one format to a path, a bad format refused. Version 0.33.0.
+
+Not done, by design: a profile without Node and the Artifact tool for use in a chat. The plugin's mechanics live
+in scripts on purpose; a chat version would hand `build`, `check` and `save` back to the model. Reconsidered
+only if the skill is to leave Claude Code.
+
+Done when:
+- `npm test` passes.
+- `/illustrations add "a locked period"` on a project with no set draws that one picture in under ten minutes
+  of the operator's time.
+
 ## T59 — `/illustrations` words and letters: the rules of microcopy, the strings exported, the letter's picture as an image, the hero in variants · `done` (0.32.0)
 
 From the same review (Lili, 2026-11-11): the catalog's words had no rules of tone or length; the words

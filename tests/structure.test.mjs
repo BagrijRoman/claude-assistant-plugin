@@ -327,7 +327,7 @@ describe('a fresh context at the gates', () => {
   const GATED = {
     blueprint: { file: 'references/mechanics.md', command: '/blueprint' },
     showcase: { file: 'references/phases.md', command: '/showcase' },
-    illustrations: { file: 'references/phases.md', command: '/illustrations' },
+    illustrations: { file: 'references/mechanics.md', command: '/illustrations' },
     backlog: { file: 'references/mechanics.md', command: '/backlog' },
     research: { file: 'references/phases.md', command: '/research' },
   };

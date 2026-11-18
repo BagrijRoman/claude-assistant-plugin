@@ -163,7 +163,7 @@ describe('skill-resume', () => {
     assert.equal(systemMessage,
       "▸ /illustrations · 4/12 Logo · waits for the operator's review on the page · round 2 · illustration-samples — /illustrations resumes it");
     assert.match(hookSpecificOutput.additionalContext,
-      /\n- \/illustrations in illustration-samples: step "logo" \(4\/12 Logo · waits for the operator's review on the page · round 2\); see phases\.md › A fresh context\n/);
+      /\n- \/illustrations in illustration-samples: step "logo" \(4\/12 Logo · waits for the operator's review on the page · round 2\); see mechanics\.md › A fresh context\n/);
     writeState(root, 'illustration-samples', illustrations('states', 'in-progress', { pending: { question: 'Which states?' } }));
     assert.equal(output(start(root)).systemMessage,
       '▸ /illustrations · 7/12 States · in progress · a question waits for the operator · illustration-samples — /illustrations resumes it');

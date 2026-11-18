@@ -4,8 +4,14 @@
 |---------|------------|--------|-------|
 | `/illustrations [init [dir] \| continue \| status \| tab <id> \| revise \| pick logo <id> [<id>…] \| pick scene <place> <id> \| import logo <file> [--id <id>] \| import icons <folder> \| add \| publish \| save \| check]` | a human only (`disable-model-invocation`) | [bin/illustrations.mjs](../../bin/illustrations.mjs) `build`, `check`, `save`, `sprite`, `loop`, `spring`, `import`, `strings` — see [The script](#the-script) | 0.24.0 |
 
-Files: [skills/illustrations/SKILL.md](../../skills/illustrations/SKILL.md) (the entry point),
-[references/phases.md](../../skills/illustrations/references/phases.md) (the procedure per step),
+Files: [skills/illustrations/SKILL.md](../../skills/illustrations/SKILL.md) (the entry point: the
+arguments, the rules, what goes in, the folder, the progress), the procedure in five files read one
+at a time — [references/mechanics.md](../../skills/illustrations/references/mechanics.md) (what every
+step shares, the order of making, the variants), [references/steps.md](../../skills/illustrations/references/steps.md)
+(steps 0–5), [references/pictures.md](../../skills/illustrations/references/pictures.md) (steps 6–11),
+[references/modes.md](../../skills/illustrations/references/modes.md) (the other modes, the quick path),
+[references/import.md](../../skills/illustrations/references/import.md) (the customer's files) —,
+[references/script.md](../../skills/illustrations/references/script.md) (every command of the script),
 [references/catalog.md](../../skills/illustrations/references/catalog.md) (what to draw: states,
 scenes, onboarding, letters, reserve), [references/drawing.md](../../skills/illustrations/references/drawing.md)
 (how to draw: tokens, composition, animation, marks, loaders, icons),
@@ -46,7 +52,7 @@ own; the set takes a showcase's scheme and reading instead of asking again.
 | `pick scene <place> <id>` | the variant picked for a place drawn in several — `sign-in`, `not-found` or `hero`; the others stay in the set as alternatives |
 | `import logo <file> [--id <id>]` | the customer's own mark, analysed and copied onto tokens by the script, its motions proposed from its build, the loaders made from it; the geometry never changed without a word ([references/import.md](../../skills/illustrations/references/import.md)) |
 | `import icons <folder>` | the customer's own icons, normalised by the script to the 16 grid, a 1.5 stroke and `currentColor`; what still differs marked, micro-animations between states proposed |
-| `add` | a picture the catalog lacks, into one tab |
+| `add [what]` | a picture the catalog lacks, into one tab — the quick path: no intake, no plan beyond a line; with no set yet, a minimal one is laid (the folder, the scheme confirmed, one tab) and the picture drawn |
 | `publish` | build and publish the page as an artifact, or republish to the same address |
 | `save` | the script's save, once every tab is approved |
 | `check` | the script's checks |
@@ -111,7 +117,7 @@ setup steps, empty workspace, tour) → **Email templates** (the common letters,
 them, the product's own; a picture each; a trial of three letters first) → **Reserve** → **Save**.
 
 Before every tab the skill asks whether it is wanted — **full**, **simplified** (a reduced scope
-per tab, in `phases.md › Tab intake`) or **skipped** — and what to take into account; the wishes go
+per tab, in `mechanics.md › Tab intake`) or **skipped** — and what to take into account; the wishes go
 word for word into the plan and every builder's brief. Every tab is a plan the operator edits, then
 drawn by builders on the session's model (the drawing is what the customer chooses between), then
 published and reviewed: **Approve** / **Revise** — the revisions in the chat, each naming a picture
@@ -168,6 +174,7 @@ and how many; and, on `continue` or `status`, the checklist rebuilt from its sta
 | `import <dir> logo <file.svg> [--id <id>]` | the customer's mark analysed — viewBox and size, shapes, a merged outline (one path of several subpaths), named groups, stroked shapes and widths, raw colors by frequency, ids and what references them, what needs a hand (gradient, filter, mask, clip, text, raster), what can move — then kept as received in `review/logo/<id>.source.svg` and copied onto tokens as `review/logo/<id>.svg`: the body `currentColor`, white `--lg-ground`, the next colors `--lg-accent`, `--lg-accent-2`, `--lg-soft` (more are left and named), `<g id>` to `<id>__<name>` classes, other ids dropped, `width`/`height` to a viewBox; the geometry untouched | the report, one line per finding; `Wrote review/logo/peak.svg on tokens (…) and review/logo/peak.source.svg as received.`; the entry to add; exit 1 on a missing file or an id not in kebab-case |
 | `import <dir> icons <folder>` | every SVG of the folder: a square viewBox scaled to the 16 grid (a `<g transform="scale(…)">` around the drawing), every stroke width to 1.5, raw colors to `currentColor`, ids dropped, classes prefixed, into `review/icons/<id>.svg`; one not square, with text, a raster, a gradient, filter, mask or clip is named and left | `Shopping Cart.svg: 24-grid → 16; stroke 2 → 1.5; #333 → currentColor; 1 id removed → review/icons/shopping-cart.svg`; `2 icons of 4 written …` and the entries to add |
 | `strings <dir> [--out <file>]` | every word of the manifest as keys in `strings.<lang>.json` (the manifest's `lang`, else the state's): `<tab>.<id>.heading|message|action` for the pictures with words, `loaders.button|panel|start`, `emails.<id>.subject|heading|message|action|detail|alt` and `emails.template.sender|footer`; from the drafts while a review is on; the save writes it too | `Wrote …/strings.en.json with 12 strings` |
+| `tokens <dir> [--format json|tailwind] [--out <file>]` | the set's tokens for the product: `tokens.json` in the Style Dictionary shape — `color`, `ill`, `lg`, `motion`, `font`, `radius`, `shadow`, each token `{ value, dark }` with a `var()` turned into a `{group.key}` reference and the springs' `linear()` curves — and `tokens.tailwind.cjs`, a theme extension whose colors, fonts, radii, shadows, durations and easings are `var(--…)` references so both themes keep working; both unless `--format` names one; `--out` the file, or the folder for both | `Wrote …/tokens.json (64 tokens) and …/tokens.tailwind.cjs` |
 | `sprite <dir> [--out <file>]` | `illustrations.js`: one script that puts every picture into a page as `<symbol>`s (`lg-`, `ld-`, `ic-`, `ill-`) with a `<style>` of their keyframes, a reduced-motion rule for all of them and a pause (`html.ill-paused`) while the tab is in the background; its header says how to start an inlined picture on scroll; from the drafts while a review is on | `Wrote …/illustrations.js with 42 symbols` |
 
 Usage errors exit 2.
@@ -185,7 +192,8 @@ Usage errors exit 2.
   need from the SVG files and the sprite.
 - **Revisions by id.** A revision that names no picture is applied to the tab; one that names a
   picture that does not exist is asked about.
-- **Long.** Twelve steps with a review each; it spans sessions and resumes from `STATE.json`.
+- **Long.** Twelve steps with a review each; it spans sessions and resumes from `STATE.json`. The
+  quick path (`add`, `tab <id>`) is for one picture or one tab; a whole set is the long way.
 
 ## Tests
 
@@ -201,7 +209,7 @@ Usage errors exit 2.
   checked as a picture of its kind, a literal delay, a raw easing, a keyframe on `fill`, a last frame on `opacity: 0`, `ease-in`, a delay past one gesture, more than 30 animated nodes (a warning), a scheme whose accent fades into the ground in either theme, a picture of too many shapes (a warning), dark sets that disagree in either direction and a dark token
   with no light one; the spring prints a curve that starts at 0 and ends at 1, overshoots only with a bounce, and writes
   the token under `@supports` with its fallback; the loop makes a one-time gesture cyclic on a period of `--ill-duration-short`
-  and keeps a spring easing; the save writes a reduced-motion block into an animated picture; the sprite carries its reduced-motion sheet, its id and the background pause; the page has the speed switch and the pause; an imported mark's report, its source kept byte for byte, its copy on tokens passing `check`, a merged outline and a gradient named; icons normalised from a 24 grid, a 2 stroke, raw colors and ids, one not square and one with text left, the copies passing `check`; the strings exported with the states' words, a letter's subject and heading and the template's sender, nothing for a mark or an icon, and to another path; the word warnings for a long heading, a long message and a letter without alt; the hero in variants picked like the sign-in panel; the save refuses a draft tab, a scheme not chosen and a direction not chosen, then moves the files,
+  and keeps a spring easing; the save writes a reduced-motion block into an animated picture; the sprite carries its reduced-motion sheet, its id and the background pause; the page has the speed switch and the pause; an imported mark's report, its source kept byte for byte, its copy on tokens passing `check`, a merged outline and a gradient named; icons normalised from a 24 grid, a 2 stroke, raw colors and ids, one not square and one with text left, the copies passing `check`; the strings exported with the states' words, a letter's subject and heading and the template's sender, nothing for a mark or an icon, and to another path; the word warnings for a long heading, a long message and a letter without alt; the hero in variants picked like the sign-in panel; the tokens as JSON with light and dark values, references and springs, and as a Tailwind theme on `var()`; the save refuses a draft tab, a scheme not chosen and a direction not chosen, then moves the files,
   writes the page, manifest and sprite and marks the state done; the sprite goes where it is told;
   a foreign state and a bad command line stop it.
 - [tests/structure.test.mjs](../../tests/structure.test.mjs) — the skill directory, `SKILL.md`

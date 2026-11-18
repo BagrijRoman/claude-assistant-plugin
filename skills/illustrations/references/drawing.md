@@ -86,7 +86,7 @@ When the scheme comes from a showcase or a baseline that has no `--ill-*` of its
 
 ## Direction
 
-The hand of the set, chosen once on a sheet of four samples (`phases.md › Step 2 — Direction`) and
+The hand of the set, chosen once on a sheet of four samples (`steps.md › Step 2 — Direction`) and
 then held in every picture. A direction is a position on five axes; the plan names each, the chosen
 sheet shows them, and every builder's brief repeats them:
 
@@ -239,7 +239,7 @@ only as a loader, an icon only between its states (`› Icons`).
   optical size at 16 px is the test — nothing finer than the stroke, no more than two ideas, no
   diagonal under 30° that will alias.
 - The manner of the chosen icon library (the stroke, the corners) and of the mark; the domain's
-  own subjects only (`phases.md › Step 5 — Icons`).
+  own subjects only (`steps.md › Step 5 — Icons`).
 - **The customer's own icons** come in through `import icons` (`import.md`): normalised to this
   grid, stroke and `currentColor` by the script, their drawing untouched; what still differs from
   the manner is marked and proposed for a redraw, never silently redrawn.

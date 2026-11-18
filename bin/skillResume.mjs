@@ -188,7 +188,7 @@ const illustrations = (state) => {
     extra: state.pending ? 'a question waits for the operator' : '',
     model: `step "${state.step}"`,
     command: '/illustrations',
-    reference: 'phases.md › A fresh context',
+    reference: 'mechanics.md › A fresh context',
   };
 };
 

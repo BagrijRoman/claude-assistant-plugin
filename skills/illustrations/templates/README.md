@@ -17,6 +17,7 @@ anything here was saved. It lives with the documentation, so the showcase and th
 | `loaders/` | The loaders, `<id>.svg`: the picked mark's parts in motion; `--progress` for the determinate ones. |
 | `states/`, `scenes/`, `emails/` | The pictures, `<id>.svg`: `--ill-*` tokens only, no text, each with its own animation and a still last frame. |
 | `illustrations.js` | The sprite: one script that puts every picture into a page as `<symbol>`s with their styles. |
+| `tokens.json`, `tokens.tailwind.cjs` | The tokens for the product's tooling (`node bin/illustrations.mjs tokens .`): the Style Dictionary shape with light and dark values, and a Tailwind theme extension on `var()`. |
 | `strings.<lang>.json` | Every word beside a picture — the states' headings, messages and actions, the loaders' words, the letters' subjects, headings, messages, actions, details and alt — as keys for the product's i18n. |
 | `DECISIONS.md`, `CHANGELOG.md` | What was decided and why; what each round changed. |
 
@@ -30,6 +31,43 @@ inline an SVG file, or load the sprite once and reference a symbol:
 <svg class="ill" viewBox="0 0 320 240" role="img" aria-label="Nothing here yet"><use href="#ill-empty"/></svg>
 <svg class="lg" viewBox="0 0 64 64" aria-hidden="true"><use href="#lg-{{picked mark}}"/></svg>
 <svg class="ld" viewBox="0 0 64 64" role="status" aria-label="Loading"><use href="#ld-{{a loader}}"/></svg>
+```
+
+In React, one component wraps the `<use>`; in Vue, the same as a single-file component:
+
+```jsx
+// Illustration.jsx — <Illustration id="empty" label="Nothing here yet" />
+export function Illustration({ id, label, wide = false }) {
+  return (
+    <svg className="ill" viewBox={wide ? '0 0 560 240' : '0 0 320 240'} role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true}>
+      <use href={\`#ill-\${id}\`} />
+    </svg>
+  );
+}
+```
+
+```vue
+<!-- Illustration.vue — <Illustration id="empty" label="Nothing here yet" /> -->
+<script setup>
+defineProps({ id: String, label: String, wide: Boolean });
+</script>
+<template>
+  <svg class="ill" :viewBox="wide ? '0 0 560 240' : '0 0 320 240'" :role="label ? 'img' : undefined" :aria-label="label" :aria-hidden="label ? undefined : 'true'">
+    <use :href="\`#ill-\${id}\`" />
+  </svg>
+</template>
+```
+
+Load `illustrations.js` once (a `<script defer>` in the document, or an import in the app's entry);
+it injects the symbols and pauses every animation while the tab is in the background. A picture that
+must start when it scrolls into view, or pause off screen, is inlined from its SVG file instead (the
+symbols share one animation each) and driven by an observer:
+
+```js
+const seen = new IntersectionObserver((entries) => entries.forEach((e) => {
+  e.target.style.animationPlayState = e.isIntersecting ? 'running' : 'paused';
+}));
+document.querySelectorAll('svg.ill--inline').forEach((svg) => seen.observe(svg));
 ```
 
 Symbols are `ill-<id>` for a state, scene or letter picture, `lg-<id>` for a mark, `ld-<id>` for a

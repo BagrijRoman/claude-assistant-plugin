@@ -14,7 +14,7 @@ so the skills recommend a fresh context at their gates — `/clear`, then the co
 conversation carries that the next phase does not read, that nothing is lost, and why not `/compact`
 ([blueprint](../../skills/blueprint/references/mechanics.md#a-fresh-context),
 [showcase](../../skills/showcase/references/phases.md#a-fresh-context),
-[illustrations](../../skills/illustrations/references/phases.md#a-fresh-context),
+[illustrations](../../skills/illustrations/references/mechanics.md#a-fresh-context),
 [backlog](../../skills/backlog/references/mechanics.md#a-fresh-context),
 [research](../../skills/research/references/phases.md#a-fresh-context) › A fresh context).
 
@@ -83,7 +83,7 @@ It is a notice, not a guard: it blocks nothing and writes nothing.
 [dev-assistant] skill-resume: unfinished work in this project —
 - /blueprint in docs/blueprint: phase "capabilities" (6/8 Capabilities (L3) · not started); see mechanics.md › A fresh context
 - /showcase in docs/showcase: step "components" (7/21 Components · in progress); see phases.md › A fresh context
-- /illustrations in illustration-samples: step "logo" (4/12 Logo · waits for the operator's review on the page · round 2); see phases.md › A fresh context
+- /illustrations in illustration-samples: step "logo" (4/12 Logo · waits for the operator's review on the page · round 2); see mechanics.md › A fresh context
 When the operator runs the command, resume from that STATE.json as the skill says: read only what the current phase, step or mode needs, not the documents of the ones already approved.
 ```
 

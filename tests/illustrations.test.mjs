@@ -658,3 +658,33 @@ describe('illustrations.mjs words and letters', () => {
     assert.match(page, /id="states-hero-rack"[\s\S]*?Selected/);
   });
 });
+
+describe('illustrations.mjs tokens for the product', () => {
+  after(removeTempDirs);
+
+  it('writes the tokens as JSON with light and dark values, references and springs, and as a Tailwind theme on var()', () => {
+    const dir = set();
+    const result = run('tokens', dir);
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /^Wrote .*tokens\.json \(\d+ tokens\) and .*tokens\.tailwind\.cjs$/m);
+    const json = JSON.parse(readFileSync(join(dir, 'tokens.json'), 'utf8'));
+    assert.deepEqual(json.color.primary, { value: '#3b5bdb', dark: '#8da2f2' });
+    assert.deepEqual(json.ill.deep, { value: '#a4a8b9', dark: '#4f525d' });
+    assert.equal(json.lg.ground.value, '{color.surface}', 'a var() becomes a reference');
+    assert.equal(json.motion.duration.value, '600ms');
+    assert.match(json.motion['spring-snappy'].value, /^linear\(0, /, 'the curve, not the fallback');
+    assert.equal(json.font.sans.value.startsWith('ui-sans-serif'), true);
+    assert.ok(!('dark' in json.motion.duration), 'motion has no dark value');
+    const tailwind = readFileSync(join(dir, 'tokens.tailwind.cjs'), 'utf8');
+    assert.match(tailwind, /^module\.exports = \{/m);
+    assert.match(tailwind, /"ill-line": "var\(--ill-line\)"/);
+    assert.match(tailwind, /"primary": "var\(--color-primary\)"/);
+    assert.match(tailwind, /"transitionDuration": \{[^}]*"ill-short": "var\(--ill-duration-short\)"[^}]*"ill": "var\(--ill-duration\)"/);
+    assert.match(tailwind, /"ill-spring-snappy": "var\(--ill-spring-snappy\)"/);
+    const one = run('tokens', dir, '--format', 'json', '--out', join(dir, 'out', 'design-tokens.json'));
+    assert.equal(one.status, 0, one.stderr);
+    assert.ok(existsSync(join(dir, 'out', 'design-tokens.json')));
+    assert.ok(!existsSync(join(dir, 'out', 'tokens.tailwind.cjs')));
+    assert.equal(run('tokens', dir, '--format', 'scss').status, 2);
+  });
+});

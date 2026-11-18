@@ -29,8 +29,8 @@ script writes.
 | `DECISIONS.md`, `CHANGELOG.md`, `README.md` | the choices, the rounds, how to use the set |
 | after the save: `manifest.json`, `index.html`, `artifact.html`, `<tab>/<id>.svg`, `illustrations.js` | the set |
 
-The script: `node "${CLAUDE_PLUGIN_ROOT}/bin/illustrations.mjs" build | check | save | sprite <dir>`
-(`SKILL.md › The script`). `build` and `check` work on `review/` while it exists and on the saved
+The script: `node "${CLAUDE_PLUGIN_ROOT}/bin/illustrations.mjs" <command> <dir>`
+(`script.md`). `build` and `check` work on `review/` while it exists and on the saved
 set after; `save` needs every tab approved; `sprite` takes `--out <file>`.
 
 ## The manifest

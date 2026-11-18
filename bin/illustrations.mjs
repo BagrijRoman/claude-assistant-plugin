@@ -20,6 +20,9 @@
 //                                                        the customer's icons: each analysed and a copy normalised to the 16
 //                                                        grid, a 1.5 stroke and currentColor into review/icons/, with what
 //                                                        could not be normalised named
+//   node bin/illustrations.mjs tokens <dir> [--format json|tailwind] [--out <f>]
+//                                                        the tokens for the product: tokens.json (Style Dictionary shape, light
+//                                                        and dark, var() as references) and tokens.tailwind.cjs (a theme on var())
 //   node bin/illustrations.mjs strings <dir> [--out <f>] every word of the manifest — the states' headings, messages and
 //                                                        actions, the loaders' words, the letters' subjects, headings,
 //                                                        messages, actions and details — as keys in strings.<lang>.json,
@@ -44,11 +47,12 @@ const USAGE = `Usage: node bin/illustrations.mjs <command> <dir> [options]
   loop   <dir>               make every picture's and letter's animation cyclic (rest, rewind, play, rest)
   spring <dir> [--bounce <b>] [--name <n>]   a spring easing as linear(); --name writes it into tokens.css as --ill-spring-<n>
   strings <dir> [--out <f>]  every word of the manifest as keys in strings.<lang>.json, for the product's i18n
+  tokens <dir> [--format json|tailwind] [--out <f>]   tokens.json (Style Dictionary shape) and tokens.tailwind.cjs (a theme on var())
   import <dir> logo <file.svg> [--id <id>]   the customer's mark analysed and copied onto tokens into review/logo/
   import <dir> icons <folder>                the customer's icons analysed and normalised into review/icons/
 `;
 
-const COMMANDS = ['build', 'check', 'save', 'sprite', 'loop', 'spring', 'import', 'strings'];
+const COMMANDS = ['build', 'check', 'save', 'sprite', 'loop', 'spring', 'import', 'strings', 'tokens'];
 const HEADING_WORDS = 5;
 const MESSAGE_CHARS = 80;
 const TEMPLATES = fileURLToPath(new URL('../skills/illustrations/templates/', import.meta.url));
@@ -1216,6 +1220,70 @@ const importIcons = (dir, folder) => {
   print(`${plural(written, 'icon')} of ${files.length} written into review/icons/; the rest need a hand.${entries.length ? ` Next: add them to the icons tab (${entries.map((id) => `{ "id": "${id}", "file": "icons/${id}.svg", "from": "the customer's file" }`).join(', ')}), check, build, publish.` : ''}`);
 };
 
+// --- tokens: the set's values for the product's own tooling
+
+const TOKEN_GROUPS = [['--color-', 'color'], ['--ill-duration', 'motion'], ['--ill-stagger', 'motion'], ['--ill-ease', 'motion'], ['--ill-spring', 'motion'], ['--ill-', 'ill'], ['--lg-', 'lg'], ['--font-', 'font'], ['--radius-', 'radius'], ['--shadow-', 'shadow']];
+const tokenGroup = (name) => TOKEN_GROUPS.find(([prefix]) => name.startsWith(prefix))?.[1] ?? 'other';
+const tokenKey = (name) => (tokenGroup(name) === 'motion' ? name.replace(/^--ill-/, '') : name.replace(/^--(?:color|ill|lg|font|radius|shadow)-/, ''));
+const asReference = (value) => value.replace(/var\((--[\w-]+)\)/g, (_, name) => `{${tokenGroup(name)}.${tokenKey(name)}}`);
+
+const tokensJsonOf = (text) => {
+  const light = declarations(text, ':root {') ?? {};
+  const dark = declarations(text, ":root[data-theme='dark']") ?? {};
+  const springs = SPRING_BLOCK.exec(text)?.[2] ?? '';
+  const curves = Object.fromEntries([...springs.matchAll(/(--ill-spring-[\w-]+)\s*:\s*(linear\([^;]*\));/g)].map((m) => [m[1], m[2]]));
+  const out = {};
+  for (const [name, { value }] of Object.entries(light)) {
+    const group = tokenGroup(name);
+    out[group] ??= {};
+    const token = { value: asReference(curves[name] ?? value) };
+    if (dark[name]) token.dark = asReference(dark[name].value);
+    out[group][tokenKey(name)] = token;
+  }
+  return out;
+};
+
+const tailwindOf = (text) => {
+  const light = declarations(text, ':root {') ?? {};
+  const names = Object.keys(light);
+  const ref = (name) => `var(${name})`;
+  const colors = Object.fromEntries(names.filter((n) => ['color', 'ill', 'lg'].includes(tokenGroup(n))).map((n) => [tokenGroup(n) === 'color' ? tokenKey(n) : `${tokenGroup(n)}-${tokenKey(n)}`, ref(n)]));
+  const fontFamily = Object.fromEntries(names.filter((n) => tokenGroup(n) === 'font').map((n) => [tokenKey(n), ref(n)]));
+  const borderRadius = Object.fromEntries(names.filter((n) => tokenGroup(n) === 'radius').map((n) => [tokenKey(n), ref(n)]));
+  const boxShadow = Object.fromEntries(names.filter((n) => tokenGroup(n) === 'shadow').map((n) => [tokenKey(n), ref(n)]));
+  const transitionDuration = Object.fromEntries(names.filter((n) => /^--ill-(?:duration|stagger)/.test(n)).map((n) => [n.replace(/^--ill-duration-?/, 'ill-').replace(/^--ill-stagger/, 'ill-stagger').replace(/-$/, ''), ref(n)]));
+  const transitionTimingFunction = Object.fromEntries(names.filter((n) => /^--ill-(?:ease|spring)/.test(n)).map((n) => [n.replace(/^--ill-ease-?/, 'ill-').replace(/^--ill-spring-/, 'ill-spring-').replace(/-$/, ''), ref(n)]));
+  const theme = { theme: { extend: { colors, fontFamily, borderRadius, boxShadow, transitionDuration, transitionTimingFunction } } };
+  return `// The illustration set's tokens as a Tailwind theme extension — every value a var() on tokens.css, so the two themes
+// keep working and a scheme change is one file. Generated by dev-assistant's illustrations.mjs; a hand edit is lost.
+module.exports = ${JSON.stringify(theme, null, 2)};
+`;
+};
+
+const tokens = (dir, options) => {
+  loadState(dir);
+  const text = read(join(dir, 'tokens.css'));
+  if (!text) fail(`${join(dir, 'tokens.css')} not found`);
+  const format = options.format ?? 'both';
+  if (!['json', 'tailwind', 'both'].includes(format)) usage(`--format takes json or tailwind, got "${format}"`);
+  const out = options.out ? resolve(options.out) : null;
+  const written = [];
+  if (format !== 'tailwind') {
+    const json = tokensJsonOf(text);
+    const target = out && format === 'json' ? out : join(out ?? dir, 'tokens.json');
+    mkdirSync(dirname(target), { recursive: true });
+    writeFileSync(target, `${JSON.stringify(json, null, 2)}\n`);
+    written.push(`${target} (${plural(Object.values(json).reduce((n, group) => n + Object.keys(group).length, 0), 'token')})`);
+  }
+  if (format !== 'json') {
+    const target = out && format === 'tailwind' ? out : join(out ?? dir, 'tokens.tailwind.cjs');
+    mkdirSync(dirname(target), { recursive: true });
+    writeFileSync(target, tailwindOf(text));
+    written.push(target);
+  }
+  print(`Wrote ${written.join(' and ')}`);
+};
+
 // --- main
 
 const main = () => {
@@ -1250,6 +1318,14 @@ const main = () => {
       return;
     }
     usage('import takes "logo <file.svg>" or "icons <folder>"');
+  }
+  if (command === 'tokens') {
+    const options = {};
+    for (let i = 0; i < rest.length; i += 1) {
+      if ((rest[i] === '--format' || rest[i] === '--out') && rest[i + 1]) { options[rest[i].slice(2)] = rest[i + 1]; i += 1; } else usage(`unknown option for tokens: ${rest[i]}`);
+    }
+    tokens(dir, options);
+    return;
   }
   if (command === 'spring') {
     const options = {};
