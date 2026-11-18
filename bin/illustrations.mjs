@@ -20,6 +20,10 @@
 //                                                        the customer's icons: each analysed and a copy normalised to the 16
 //                                                        grid, a 1.5 stroke and currentColor into review/icons/, with what
 //                                                        could not be normalised named
+//   node bin/illustrations.mjs strings <dir> [--out <f>] every word of the manifest — the states' headings, messages and
+//                                                        actions, the loaders' words, the letters' subjects, headings,
+//                                                        messages, actions and details — as keys in strings.<lang>.json,
+//                                                        for the product's i18n; the save writes it too
 //   node bin/illustrations.mjs spring <dir> [--bounce <b>] [--name <smooth|snappy>]
 //                                                        a spring easing as linear(): printed, or written into the set's
 //                                                        tokens.css as --ill-spring-<name> (under @supports)
@@ -39,11 +43,14 @@ const USAGE = `Usage: node bin/illustrations.mjs <command> <dir> [options]
   sprite <dir> [--out <f>]   write the set as symbols into illustrations.js (or <f>)
   loop   <dir>               make every picture's and letter's animation cyclic (rest, rewind, play, rest)
   spring <dir> [--bounce <b>] [--name <n>]   a spring easing as linear(); --name writes it into tokens.css as --ill-spring-<n>
+  strings <dir> [--out <f>]  every word of the manifest as keys in strings.<lang>.json, for the product's i18n
   import <dir> logo <file.svg> [--id <id>]   the customer's mark analysed and copied onto tokens into review/logo/
   import <dir> icons <folder>                the customer's icons analysed and normalised into review/icons/
 `;
 
-const COMMANDS = ['build', 'check', 'save', 'sprite', 'loop', 'spring', 'import'];
+const COMMANDS = ['build', 'check', 'save', 'sprite', 'loop', 'spring', 'import', 'strings'];
+const HEADING_WORDS = 5;
+const MESSAGE_CHARS = 80;
 const TEMPLATES = fileURLToPath(new URL('../skills/illustrations/templates/', import.meta.url));
 const KINDS = ['scheme', 'directions', 'marks', 'loaders', 'icons', 'pictures', 'letters'];
 const SAMPLE_KINDS = ['marks', 'icons', 'pictures', 'letters'];
@@ -585,6 +592,55 @@ const withReducedMotion = (text) => {
   return text.replace(styleMatch[0], `<style>${css}</style>`);
 };
 
+/** The words beside a picture: short enough to be read at a glance and to survive a longer translation; a letter's picture named for the clients that show no image. */
+const checkWords = (where, tab, item) => {
+  const found = [];
+  const words = tab.kind === 'letters' ? { heading: item.heading, message: item.message } : item.words ?? {};
+  const heading = String(words.heading ?? '').trim();
+  const message = String(words.message ?? '').trim();
+  const name = `tab "${tab.id}": item "${item.id}"`;
+  if (heading && heading.split(/\s+/).length > HEADING_WORDS) found.push(warning(where, 0, `${name}: the heading "${heading}" is ${heading.split(/\s+/).length} words — keep it to ${HEADING_WORDS}, a glance and room for a longer translation`));
+  if (message && message.length > MESSAGE_CHARS) found.push(warning(where, 0, `${name}: the message is ${message.length} characters — keep it under ${MESSAGE_CHARS}; one sentence, one thing to do`));
+  if (tab.kind === 'letters' && item.file && !String(item.alt ?? '').trim()) found.push(warning(where, 0, `${name}: no "alt" — the picture goes out as an image, and a client that shows none reads the alt`));
+  return found;
+};
+
+/** Every word of the manifest as keys: <tab>.<id>.<field>, the loaders' words, the letters' template. */
+const stringsOf = (manifest) => {
+  const out = {};
+  for (const tab of manifest.tabs) {
+    if (tab.kind === 'loaders' && tab.words) { out.loaders = { ...tab.words }; continue; }
+    if (tab.kind === 'pictures') {
+      for (const item of tab.items) if (item.words) { out[tab.id] ??= {}; out[tab.id][item.id] = Object.fromEntries(Object.entries(item.words).filter(([, v]) => v != null && String(v).trim())); }
+      continue;
+    }
+    if (tab.kind === 'letters') {
+      out[tab.id] ??= {};
+      if (tab.template?.sender || tab.template?.footer) out[tab.id].template = Object.fromEntries(Object.entries({ sender: tab.template.sender, footer: tab.template.footer }).filter(([, v]) => v));
+      for (const item of tab.items) out[tab.id][item.id] = Object.fromEntries(Object.entries({ subject: item.subject, heading: item.heading, message: item.message, action: item.action, detail: item.detail, alt: item.alt }).filter(([, v]) => v != null && String(v).trim()));
+    }
+  }
+  return out;
+};
+
+const writeStrings = (dir, state, manifest, out) => {
+  const lang = manifest.lang ?? state.lang ?? 'en';
+  const target = resolve(out ?? join(dir, `strings.${lang}.json`));
+  mkdirSync(dirname(target), { recursive: true });
+  writeFileSync(target, `${JSON.stringify(stringsOf(manifest), null, 2)}\n`);
+  return target;
+};
+
+const strings = (dir, out) => {
+  const state = loadState(dir);
+  const stage = stageOf(dir);
+  if (!stage) fail('no manifest.json in review/ or in the folder — nothing to export');
+  const manifest = loadManifest(stage.base);
+  const target = writeStrings(dir, state, manifest, out);
+  const count = Object.values(stringsOf(manifest)).reduce((sum, tab) => sum + Object.values(tab).reduce((n, entry) => n + (typeof entry === 'string' ? 1 : Object.keys(entry).length), 0), 0);
+  print(`Wrote ${target} with ${plural(count, 'string')}${stage.review ? ' (from the drafts in review/)' : ''}: the keys the product's i18n takes — <tab>.<id>.<field>, loaders.<place>, <emails>.template.`);
+};
+
 const checkManifest = (stage, manifest) => {
   const found = [];
   const where = stage.review ? 'review/manifest.json' : 'manifest.json';
@@ -613,6 +669,7 @@ const checkManifest = (stage, manifest) => {
       if (!item.file.startsWith(`${tab.id}/`)) found.push(warning(where, 0, `tab "${tab.id}": "${item.file}" is not under ${tab.id}/ — the save keeps the path as it is`));
       if (!statOf(join(stage.base, item.file))?.isFile()) found.push(error(where, 0, `tab "${tab.id}": item "${item.id}" names ${item.file}, and there is no such file`));
       if (tab.kind === 'loaders' && item.mark && logo && !logo.items.some((mark) => mark.id === item.mark)) found.push(error(where, 0, `loader "${item.id}" is drawn from the mark "${item.mark}", which the logo tab does not have`));
+      found.push(...checkWords(where, tab, item));
     }
     if (tab.kind === 'marks' && tab.items.filter((item) => item.selected).length > 1) found.push(error(where, 0, `tab "${tab.id}": more than one mark is selected`));
     if (tab.kind === 'pictures') {
@@ -812,7 +869,8 @@ const save = (dir) => {
   writeFileSync(join(dir, 'STATE.json'), `${JSON.stringify(state, null, 2)}\n`);
   const result = buildPage(dir, state, final, loadManifest(dir));
   writeFileSync(join(dir, 'illustrations.js'), spriteOf(final, loadManifest(dir), manifest.project ?? state.project ?? ''));
-  print(`Saved ${plural(moved, 'picture')} into ${dir}: manifest.json, index.html, artifact.html, illustrations.js written, review/ removed, STATE.json done (${result.symbols} symbols).`);
+  const stringsFile = writeStrings(dir, state, manifest);
+  print(`Saved ${plural(moved, 'picture')} into ${dir}: manifest.json, index.html, artifact.html, illustrations.js, ${basename(stringsFile)} written, review/ removed, STATE.json done (${result.symbols} symbols).`);
 };
 
 // --- loop: a picture's one-time gesture made cyclic
@@ -1166,12 +1224,12 @@ const main = () => {
   if (!COMMANDS.includes(command)) usage(`unknown command "${command}"`);
   if (!dirArg) usage(`${command} needs the set's folder`);
   const dir = resolve(dirArg);
-  if (command === 'sprite') {
+  if (command === 'sprite' || command === 'strings') {
     let out;
     for (let i = 0; i < rest.length; i += 1) {
-      if (rest[i] === '--out' && rest[i + 1]) { out = rest[i + 1]; i += 1; } else usage(`unknown option for sprite: ${rest[i]}`);
+      if (rest[i] === '--out' && rest[i + 1]) { out = rest[i + 1]; i += 1; } else usage(`unknown option for ${command}: ${rest[i]}`);
     }
-    sprite(dir, out);
+    if (command === 'sprite') sprite(dir, out); else strings(dir, out);
     return;
   }
   if (command === 'import') {

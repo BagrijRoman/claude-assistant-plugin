@@ -369,7 +369,8 @@ drawn in it. Needs the scheme; takes the references of Intake and the reading's 
 
 The same shape for the three: **plan → approve → the trial drawn → published → reviewed → the rest
 drawn → check → build → publish → review → approve** (*A trial before the number* in Common
-mechanics; the plan marks the trial's pictures with *trial* at the end of their lines). Every picture **moves**, minimally and in a cycle — it rests, rewinds its gesture, plays it again —
+mechanics; the plan marks the trial's pictures with *trial* at the end of their lines). The words
+of every picture follow `catalog.md › Words`; `check` warns past their lengths. Every picture **moves**, minimally and in a cycle — it rests, rewinds its gesture, plays it again —
 and its rest pose is the complete still picture (`drawing.md › Animation`); the page shows it at its size and, for a state or an onboarding step,
 in place — the sample card with the picture small, the heading, the message and the one action.
 
@@ -408,22 +409,24 @@ in place — the sample card with the picture small, the heading, the message an
    device, a goodbye) — each marked *proposed* unless the documentation names it — and the
    product's own, from its flows and notifications: who sends what to whom and when. Each line: id,
    title, the moment, the subject, the heading, the message in one or two sentences, the action,
-   the secondary detail (a code, a date, a figure), the picture's idea. Approve (`plans/emails.md`),
-   IL-005.
+   the secondary detail (a code, a date, a figure), the picture's idea and its `alt` — by
+   `catalog.md › Words`. Approve (`plans/emails.md`), IL-005.
 2. **The template** is the page's: the brand header with the selected mark and the wordmark, the
    picture band, the heading, the message, the action, the detail, the footer — the tab's
    `template.sender` and `template.footer` from the documentation or the cast; the page draws its
    anatomy on the first letter with every part named. Say in the tab's `template.note` what a mail
-   client changes: the pictures go out as images (an animated GIF whose first frame is the still
-   picture, or a still PNG — the developer's call later, the page shows the animation as a promise
-   of what the GIF will do), a dark mail client may recolor the letter.
+   client changes (`catalog.md › Letters`): the pictures go out as images — an animated GIF under
+   1 MB whose first frame is the whole picture, since Outlook shows only that frame, and a still
+   PNG at 2× — the page shows the animation as a promise of what the GIF will do; the band's
+   background is the picture's `--ill-ground` for a client that blocks images; a dark mail client
+   may recolor the letter.
 3. **A picture per letter** (`drawing.md › Letter pictures`), the trial first — one letter of each
    group, reviewed — then the rest; about its moment — an invitation: a
    door opening onto the product's world; a reset: a key; a digest: the week's figures; an alert: a
    shield — 560 × 240, the subject in the middle third; a scene from Scenes reused where it fits
    (the same file named twice is one symbol). One builder per group. Entries: `id`, `title`,
    `group` (*Common letters* · *Beyond the common* · *The product's own*), `moment`, `subject`,
-   `to`, `heading`, `message`, `action`, `detail`, `file`, `animated`.
+   `to`, `heading`, `message`, `action`, `detail`, `alt`, `file`, `animated`.
 4. `check`, `build`, publish: the Template first, then every letter at 600 px as a mail client
    shows it, light as the letter's own, dark as a dark client renders it. Review; approve.
 
@@ -465,7 +468,7 @@ when `batches.<key>` is `trial`), when the operator wrote revisions outside the 
 **`pick logo <id> [<id>…]`** — confirm the ids exist; the first is `selected`, the rest
 `shortlist`; `STATE.json › selected`; IL-002 and IL-003; `build`; publish.
 
-**`pick scene <place> <id>`** — `place` is `sign-in` or `not-found`; confirm the id is a Scenes
+**`pick scene <place> <id>`** — `place` is `sign-in`, `not-found` or `hero`; confirm the id is a Scenes
 item with that `place`; it alone is `selected` among the place's variants;
 `STATE.json › selected.scenes.<place>`; an `IL-nnn` row; `build`; publish.
 

@@ -64,7 +64,7 @@ set after; `save` needs every tab approved; `sprite` takes `--out <file>`.
         "words": { "heading": "No sites yet", "message": "Add the first site to start.", "action": "Add a site" } } ] },
     { "id": "emails", "kind": "letters", "title": "Email templates", "lead": "…",
       "template": { "sender": "Name <hello@…>", "footer": "why they receive it", "note": "what a mail client changes" }, "items": [
-      { "id": "invitation", "title": "Invitation", "group": "Common letters", "moment": "when …", "subject": "…", "to": "…", "heading": "…", "message": "…", "action": "…", "detail": "…", "file": "emails/invitation.svg", "animated": true } ] }
+      { "id": "invitation", "title": "Invitation", "group": "Common letters", "moment": "when …", "subject": "…", "to": "…", "heading": "…", "message": "…", "action": "…", "detail": "…", "alt": "A door opening onto the print shop", "file": "emails/invitation.svg", "animated": true } ] }
   ]
 }
 ```
@@ -76,13 +76,18 @@ set after; `save` needs every tab approved; `sprite` takes `--out <file>`.
   file named by two items (a scene reused as a letter's picture) is one symbol per id.
 - Items are grouped on the page by `group`, in the order groups first appear; a loader's group is
   its mark.
-- A `pictures` item drawn as one of several variants of a place carries `place` (`sign-in` or
-  `not-found`) and, once picked, `selected: true`; the variants share a `group` so they stand side
+- A `pictures` item drawn as one of several variants of a place carries `place` (`sign-in`,
+  `not-found` or `hero`) and, once picked, `selected: true`; the variants share a `group` so they stand side
   by side. `check` refuses two selected variants of one place, and a saved set where a place with
   variants has none.
 - `scheme` items carry their own `light` and `dark` sets — the one place raw values are allowed,
   since they serve the choice — and the chosen one is `selected`; the tab stays in the saved set.
 - `animated` shows the *Moving* tag and the *Replay*; `motion` is one line of what moves.
+- A `letters` item carries `alt`, one line of what its picture shows, for the clients that show no
+  image; `check` warns without it. The words of every item — `words` of a picture, the loaders'
+  `words`, a letter's `subject`, `heading`, `message`, `action`, `detail`, `alt` and the tab's
+  `template` — are what `strings <dir>` and the save export as `strings.<lang>.json`, so they are
+  written as the product will show them (`catalog.md › Words`).
 - `directions` items carry `samples` instead of a file — one of each kind, each checked as a
   picture of that kind (`marks` and `icons` on `--lg-*`, `pictures` and `letters` on `--ill-*`),
   its classes prefixed by the sample's id — and `axes`; the chosen direction is `selected`; the tab

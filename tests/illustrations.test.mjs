@@ -48,7 +48,7 @@ const MANIFEST = {
       { id: 'empty', title: 'Nothing here yet', group: 'Empty', idea: 'A tray whose lid settles.', file: 'states/empty.svg', animated: true, usedIn: 'every list', words: { heading: 'No sites yet', message: 'Add the first one.', action: 'Add a site' } },
     ] },
     { id: 'emails', kind: 'letters', title: 'Email templates', lead: 'Letters.', template: { sender: 'Smoke <hello@smoke.example>', footer: 'Why you got this.' }, items: [
-      { id: 'invitation', title: 'Invitation', group: 'Common letters', moment: 'when a colleague is invited', subject: 'You are invited', to: 'taras@example.com', heading: 'Welcome', message: 'Accept to set your password.', action: 'Accept', detail: 'Valid 7 days.', file: 'emails/invitation.svg', animated: true },
+      { id: 'invitation', title: 'Invitation', group: 'Common letters', moment: 'when a colleague is invited', subject: 'You are invited', to: 'taras@example.com', heading: 'Welcome', alt: 'A door opening onto the print shop', message: 'Accept to set your password.', action: 'Accept', detail: 'Valid 7 days.', file: 'emails/invitation.svg', animated: true },
     ] },
   ],
 };
@@ -303,7 +303,8 @@ describe('illustrations.mjs save and sprite', () => {
     const dir = set();
     const result = run('save', dir);
     assert.equal(result.status, 0, result.stderr);
-    assert.match(result.stdout, /^Saved 9 pictures into .*: manifest\.json, index\.html, artifact\.html, illustrations\.js written, review\/ removed, STATE\.json done/m);
+    assert.match(result.stdout, /^Saved 9 pictures into .*: manifest\.json, index\.html, artifact\.html, illustrations\.js, strings\.en\.json written, review\/ removed, STATE\.json done/m);
+    assert.ok(existsSync(join(dir, 'strings.en.json')), 'the save writes the strings');
     assert.ok(!existsSync(join(dir, 'review')), 'review/ is gone');
     for (const file of ['logo/brayer.svg', 'loaders/brayer-roll.svg', 'icons/ream.svg', 'states/empty.svg', 'emails/invitation.svg', 'direction/invitation.svg', 'manifest.json', 'index.html', 'artifact.html', 'illustrations.js']) {
       assert.ok(existsSync(join(dir, file)), `missing ${file}`);
@@ -567,5 +568,93 @@ describe('illustrations.mjs import: the customer\'s own files', () => {
     const check = run('check', dir);
     assert.equal(check.status, 0, check.stdout);
     assert.equal(run('import', dir, 'icons', join(dir, 'nowhere')).status, 1);
+  });
+});
+
+describe('illustrations.mjs words and letters', () => {
+  after(removeTempDirs);
+
+  it('exports every word of the manifest as keys for the product\'s i18n', () => {
+    const dir = set();
+    const result = run('strings', dir);
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /Wrote .*strings\.en\.json with \d+ strings \(from the drafts in review\/\)/);
+    const strings = JSON.parse(readFileSync(join(dir, 'strings.en.json'), 'utf8'));
+    assert.deepEqual(strings.states.empty, { heading: 'No sites yet', message: 'Add the first one.', action: 'Add a site' });
+    assert.equal(strings.emails.invitation.subject, 'You are invited');
+    assert.equal(strings.emails.invitation.heading, 'Welcome');
+    assert.equal(strings.emails.template.sender, 'Smoke <hello@smoke.example>');
+    assert.ok(!('logo' in strings) && !('icons' in strings), 'a mark and an icon have no words');
+    const elsewhere = run('strings', dir, '--out', join(dir, 'out', 'ui.json'));
+    assert.equal(elsewhere.status, 0);
+    assert.ok(existsSync(join(dir, 'out', 'ui.json')));
+  });
+
+  it('warns on a heading past five words, a message past eighty characters, and a letter without alt', () => {
+    const dir = set({ manifest: withManifest((manifest) => {
+      manifest.tabs[5].items[0].words = { heading: 'There is nothing at all in here yet', message: 'x'.repeat(81), action: 'Add' };
+      manifest.tabs[6].items[0].heading = 'Welcome';
+      delete manifest.tabs[6].items[0].alt;
+    }) });
+    const result = run('check', dir);
+    assert.equal(result.status, 0, 'warnings only');
+    assert.match(result.stdout, /^warning: review\/manifest\.json — tab "states": item "empty": the heading "There is nothing at all in here yet" is 8 words — keep it to 5/m);
+    assert.match(result.stdout, /^warning: review\/manifest\.json — tab "states": item "empty": the message is 81 characters — keep it under 80/m);
+    assert.match(result.stdout, /^warning: review\/manifest\.json — tab "emails": item "invitation": no "alt" — the picture goes out as an image/m);
+    const quiet = set({ manifest: withManifest((manifest) => { manifest.tabs[6].items[0].alt = 'A door opening onto a print shop'; }) });
+    assert.doesNotMatch(run('check', quiet).stdout, /no "alt"/);
+  });
+
+  it('lets the hero be drawn in variants and picked like the sign-in panel', () => {
+    const dir = set({ manifest: withManifest((manifest) => {
+      manifest.tabs[5].items.push({ id: 'hero-press', title: 'The press', group: 'Hero', place: 'hero', file: 'states/empty.svg' }, { id: 'hero-rack', title: 'The rack', group: 'Hero', place: 'hero', file: 'states/empty.svg', selected: true });
+    }) });
+    assert.equal(run('check', dir).status, 0);
+    const page = readFileSync((run('build', dir), join(dir, 'review', 'index.html')), 'utf8');
+    assert.match(page, /id="states-hero-rack"[\s\S]*?Selected/);
+  });
+});
+
+describe('illustrations.mjs words and letters', () => {
+  after(removeTempDirs);
+
+  it('exports every word of the manifest as keys for the product\'s i18n', () => {
+    const dir = set();
+    const result = run('strings', dir);
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /Wrote .*strings\.en\.json with \d+ strings \(from the drafts in review\/\)/);
+    const strings = JSON.parse(readFileSync(join(dir, 'strings.en.json'), 'utf8'));
+    assert.deepEqual(strings.states.empty, { heading: 'No sites yet', message: 'Add the first one.', action: 'Add a site' });
+    assert.equal(strings.emails.invitation.subject, 'You are invited');
+    assert.equal(strings.emails.invitation.heading, 'Welcome');
+    assert.equal(strings.emails.template.sender, 'Smoke <hello@smoke.example>');
+    assert.ok(!('logo' in strings) && !('icons' in strings), 'a mark and an icon have no words');
+    const elsewhere = run('strings', dir, '--out', join(dir, 'out', 'ui.json'));
+    assert.equal(elsewhere.status, 0);
+    assert.ok(existsSync(join(dir, 'out', 'ui.json')));
+  });
+
+  it('warns on a heading past five words, a message past eighty characters, and a letter without alt', () => {
+    const dir = set({ manifest: withManifest((manifest) => {
+      manifest.tabs[5].items[0].words = { heading: 'There is nothing at all in here yet', message: 'x'.repeat(81), action: 'Add' };
+      manifest.tabs[6].items[0].heading = 'Welcome';
+      delete manifest.tabs[6].items[0].alt;
+    }) });
+    const result = run('check', dir);
+    assert.equal(result.status, 0, 'warnings only');
+    assert.match(result.stdout, /^warning: review\/manifest\.json — tab "states": item "empty": the heading "There is nothing at all in here yet" is 8 words — keep it to 5/m);
+    assert.match(result.stdout, /^warning: review\/manifest\.json — tab "states": item "empty": the message is 81 characters — keep it under 80/m);
+    assert.match(result.stdout, /^warning: review\/manifest\.json — tab "emails": item "invitation": no "alt" — the picture goes out as an image/m);
+    const quiet = set({ manifest: withManifest((manifest) => { manifest.tabs[6].items[0].alt = 'A door opening onto a print shop'; }) });
+    assert.doesNotMatch(run('check', quiet).stdout, /no "alt"/);
+  });
+
+  it('lets the hero be drawn in variants and picked like the sign-in panel', () => {
+    const dir = set({ manifest: withManifest((manifest) => {
+      manifest.tabs[5].items.push({ id: 'hero-press', title: 'The press', group: 'Hero', place: 'hero', file: 'states/empty.svg' }, { id: 'hero-rack', title: 'The rack', group: 'Hero', place: 'hero', file: 'states/empty.svg', selected: true });
+    }) });
+    assert.equal(run('check', dir).status, 0);
+    const page = readFileSync((run('build', dir), join(dir, 'review', 'index.html')), 'utf8');
+    assert.match(page, /id="states-hero-rack"[\s\S]*?Selected/);
   });
 });

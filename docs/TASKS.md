@@ -1198,6 +1198,34 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T59 — `/illustrations` words and letters: the rules of microcopy, the strings exported, the letter's picture as an image, the hero in variants · `done` (0.32.0)
+
+From the same review (Lili, 2026-11-11): the catalog's words had no rules of tone or length; the words
+stayed in the manifest instead of reaching the product's i18n; a letter's GIF that starts from an empty
+frame arrives empty in the desktop Outlook; no PNG, alt or weight limit; the hero had no variants.
+
+What was done:
+- **`catalog.md › Words`**: the product's voice, never the user's fault, one thing to do, the heading up to 5
+  words and the message up to 80 characters with a third of room for a translation, placeholders kept;
+  `check` warns past the lengths (`checkWords`), and the Steps 6–8 and 9 procedures point at the rules.
+- **`strings <dir> [--out <file>]`**: every word of the manifest as keys in `strings.<lang>.json` —
+  `<tab>.<id>.heading|message|action`, `loaders.button|panel|start`, `emails.<id>.subject|…|alt`,
+  `emails.template.sender|footer`; the save writes it too; the set's README names it; *Done when* lists it.
+- **Letters as images** (`catalog.md › Letters`, `drawing.md › Letter pictures`): the first frame is the
+  whole picture (Outlook shows only that frame), a GIF under 1 MB and a PNG at 2× exported from the SVG,
+  `alt` in the manifest (`check` warns without it; the export carries it), the band's background the
+  picture's `--ill-ground` for a client that blocks images; Step 9's entries and the template note follow.
+- **The hero in 2–3 variants** (`place: "hero"`), picked with `pick scene hero <id>` like the sign-in
+  panel and the 404 page; SKILL.md, `catalog.md`, `phases.md`, `page.md` and the page say so.
+- Tests: the strings with the states' words, a letter's subject and heading and the template's sender,
+  nothing for a mark or an icon, to another path, and at the save; the word warnings; the hero picked.
+  Version 0.32.0.
+
+Done when:
+- `npm test` passes.
+- A product's i18n file is fed from `strings.<lang>.json` without retyping a word; a letter's GIF opened in
+  Outlook shows the whole picture.
+
 ## T58 — `/illustrations import`: the customer's own logo and icons taken in, analysed and normalised by the script · `done` (0.31.0)
 
 From the same review (Lili, 2026-11-11): the skill had no path for a logo or an icon set the customer

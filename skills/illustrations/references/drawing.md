@@ -258,7 +258,11 @@ a sign-in panel may be `0 0 560 240` with `wide: true`.
 
 `viewBox="0 0 560 240"`: the band at the top of a 600 px letter. The subject in the middle third,
 the sides calm, so a narrow client that crops the sides loses nothing. The letter's own plate is
-the picture's `--ill-ground`. The same rules of motion; the developer exports the GIF or the PNG.
+the picture's `--ill-ground`, and the band's background in the letter's HTML too. The same rules
+of motion, with one more: **the first frame is the whole picture** — the gesture a small motion of
+a part, never an appearance from nothing — because the desktop Outlook shows only a GIF's first
+frame. The developer exports a GIF under 1 MB and a PNG at 2× from the SVG; the manifest's `alt`
+goes with them (`catalog.md › Letters`).
 
 ## What makes a picture look generated, and how to avoid it
 

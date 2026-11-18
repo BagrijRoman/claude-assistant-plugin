@@ -17,6 +17,7 @@ anything here was saved. It lives with the documentation, so the showcase and th
 | `loaders/` | The loaders, `<id>.svg`: the picked mark's parts in motion; `--progress` for the determinate ones. |
 | `states/`, `scenes/`, `emails/` | The pictures, `<id>.svg`: `--ill-*` tokens only, no text, each with its own animation and a still last frame. |
 | `illustrations.js` | The sprite: one script that puts every picture into a page as `<symbol>`s with their styles. |
+| `strings.<lang>.json` | Every word beside a picture — the states' headings, messages and actions, the loaders' words, the letters' subjects, headings, messages, actions, details and alt — as keys for the product's i18n. |
 | `DECISIONS.md`, `CHANGELOG.md` | What was decided and why; what each round changed. |
 
 ## Use a picture

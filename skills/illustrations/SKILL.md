@@ -37,7 +37,7 @@ the project.
 | `tab <id>` | make or remake one tab — `scheme`, `direction`, `logo`, `loaders`, `icons`, `states`, `scenes`, `onboarding`, `emails`, `reserve` — through its intake, plan, drawing and review |
 | `revise` | take the operator's revisions from the chat for the tab in review, redraw those pictures only, rebuild, republish, ask again |
 | `pick logo <id> [<id>…]` | the first id is the primary mark, the rest the shortlist the loaders are made from |
-| `pick scene <place> <id>` | the variant picked for a place drawn in several — `sign-in` (the authorization layout) or `not-found` (the 404 page); the others stay in the set as alternatives |
+| `pick scene <place> <id>` | the variant picked for a place drawn in several — `sign-in` (the authorization layout), `not-found` (the 404 page) or `hero` (the landing page's first screen); the others stay in the set as alternatives |
 | `import logo <file> [--id <id>]` | the customer's own mark: the script analyses it (groups, shapes, strokes, colors, ids, what can move), keeps it as received and writes a copy on tokens; you show the copy, propose its motions from its build, and the loaders are made from it — the geometry never changed without permission (`references/import.md`) |
 | `import icons <folder>` | the customer's own icons: each analysed and normalised by the script to the 16 grid, a 1.5 stroke and `currentColor`, what it cannot normalise named; you show them, mark what still differs, and propose the state transitions worth a micro-animation (`references/import.md`) |
 | `add` | a picture the catalog lacks, into one tab, through that tab's review |
@@ -197,6 +197,7 @@ same way every time, so that you draw and decide, and never assemble a page by h
 | `build <dir>` | the review page from `review/manifest.json` and the SVG files: `review/index.html` (opens from disk) and `review/artifact.html` (the fragment the `Artifact` tool publishes); after the save, the set's own `index.html` and `artifact.html` |
 | `check <dir>` | the manifest (every file there, ids unique and kebab-case, one mark and one scheme selected, a loader's mark known), every SVG (tokens only, no id, text, gradient, raw duration, delay or easing, its classes and keyframes its own, keyframes on transform, opacity and stroke-dashoffset only and never ending on opacity 0, no ease-in, no delay past one gesture, a warning past 30 animated nodes or 24 KB), the two dark sets of `tokens.css` |
 | `save <dir>` | refuses while a tab is not `approved` in `STATE.json` or no scheme is marked chosen; otherwise moves every file out of `review/` (a reduced-motion block written into each animated picture's `<style>`), writes `manifest.json`, the page, `illustrations.js`, removes `review/`, marks the state done |
+| `strings <dir> [--out <file>]` | every word of the manifest as keys in `strings.<lang>.json` — `<tab>.<id>.heading|message|action`, `loaders.<place>`, `emails.<id>.subject|heading|message|action|detail|alt`, `emails.template.sender|footer` — for the product's i18n; the save writes it too |
 | `sprite <dir> [--out <file>]` | the set as `<symbol>`s in one script — `lg-<id>` a mark, `ld-<id>` a loader, `ic-<id>` an icon, `ill-<id>` a picture — for a showcase or the product; with a reduced-motion sheet for every symbol and a pause while the tab is in the background |
 | `loop <dir>` | every picture's, scene's and letter's animation made cyclic: the picture rests, rewinds its gesture, plays it again and rests, on one period of tokens per picture; idempotent, a loader and a picture that already loops are left as they are |
 | `spring <dir> [--bounce <b>] [--name <n>]` | a spring's response as a `linear()` easing — printed; with `--name`, written into `tokens.css` as `--ill-spring-<n>` under `@supports`, the fallback on `:root`. The template ships `smooth` (bounce 0) and `snappy` (0.15); run it only when the direction wants another spring |
@@ -234,7 +235,7 @@ the page. The key is the step's name in `STATE.json › steps`.
 | 4 Loaders | `loaders` | for the primary mark and each shortlisted one, 3–5 loaders from the mark's own parts, at 64 / 32 / 16 px, one determinate; in place | 2 |
 | 5 Icons | `icons` | the icons of the product's own subjects, on the 16 px grid in the mark's manner, at 16 / 20 / 24, each with where it is used | 2 |
 | 6 States | `states` | a picture for every state a screen can be in — the catalog's and the product's own — each with its words and its action, drawn in place; **a trial of 3–4 first**, reviewed, then the rest | 2 |
-| 7 Scenes | `scenes` | scenes from the product's world — **the sign-in panel (the authorization layout) and the 404 page in several variants each, 3–4 different ideas, one picked per place**; a hero, an announcement, a letter's band | 1 |
+| 7 Scenes | `scenes` | scenes from the product's world — **the sign-in panel (the authorization layout) and the 404 page in several variants each, 3–4 different ideas, and the hero in 2–3, one picked per place**; an announcement, a letter's band | 1 |
 | 8 Onboarding | `onboarding` | the first minutes with the product — the welcome, the first thing to do, the setup's steps, the empty workspace, the tour — each with its words | 1, 5 |
 | 9 Email templates | `emails` | the template with its parts named, then every letter — the common ones and the product's own — filled in, a picture each; a trial of 3 letters first | 3, 2 |
 | 10 Reserve | `reserve` | pictures for situations the product will meet later, each with when; proposed from the catalog and the documentation | 5 |
@@ -249,11 +250,11 @@ first `Selected` and the others `Shortlist`, writes `STATE.json › selected`, f
 in `DECISIONS.md`, rebuilds and republishes; the loaders are then made from the selected mark and
 the shortlist, so the operator sees two or three marks in motion before settling.
 
-**The sign-in panel and the 404 page are drawn in several variants** — 3–4 each, different ideas
-from the product's world rather than one idea redrawn — because they are the two pictures a
-customer meets first and most often, and they choose them like the mark: from pictures. The
-variants of a place stand side by side on the Scenes tab under the place's heading, each with
-`place: "sign-in"` or `place: "not-found"` in the manifest; `pick scene <place> <id>` marks the
+**The sign-in panel, the 404 page and the hero are drawn in several variants** — 3–4 each for the
+first two, 2–3 for the hero, different ideas from the product's world rather than one idea redrawn
+— because they are the pictures a customer meets first and most often, and they choose them like
+the mark: from pictures. The variants of a place stand side by side on the Scenes tab under the
+place's heading, each with `place: "sign-in"`, `"not-found"` or `"hero"` in the manifest; `pick scene <place> <id>` marks the
 picked one `Selected`, writes `STATE.json › selected.scenes.<place>` and an `IL-nnn` row, rebuilds
 and republishes. The alternatives stay in the set and in the sprite — the product may show them
 in rotation — and `check` refuses two selected variants of one place, and a saved set where a
@@ -327,7 +328,7 @@ The operator always sees which stage the run is in, what is done and what comes 
 
 - `STATE.json` shows every tab `approved` or `skipped`, `save` done and `step` `done`.
 - `check` reports no error on the saved set; `build` writes the same page twice.
-- The folder holds `manifest.json`, `index.html`, `artifact.html`, `illustrations.js`, `tokens.css`,
+- The folder holds `manifest.json`, `index.html`, `artifact.html`, `illustrations.js`, `strings.<lang>.json`, `tokens.css`,
   the SVG files of every tab and no `review/`; `README.md` says how to use them.
 - Every variant group has its pick in `STATE.json › selected` and its row in `DECISIONS.md`.
 - The operator has looked at the page in both themes, on the artifact's address or from disk, and

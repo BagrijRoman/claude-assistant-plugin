@@ -7,7 +7,31 @@ suggest — each proposal marked *proposed* so the operator says yes or no. Noth
 the catalog "has it": every picture names where it is used.
 
 The id is the file's name and the symbol's (`ill-<id>`); the words are a starting point, to be
-rewritten in the product's own terms and voice.
+rewritten in the product's own terms and voice — by the rules of *Words* below.
+
+## Words
+
+The heading, the message and the action beside a picture are read in a glance, by someone who did
+not get what they came for. Every plan's words follow these, and `check` warns past the lengths:
+
+- **The product's voice, warm and plain.** The words of the documentation's glossary, never the
+  system's ("no records returned" is "nothing here yet"); no exclamation marks, no jokes in an
+  error.
+- **Never the user's fault.** Not "you entered an invalid address" but "that address does not look
+  right"; not "you have no permission" but "this needs a different role". The product takes the
+  blame for a failure and offers a way.
+- **One thing to do.** One action, in the verb of the thing ("Add a site", "Try again", "Ask for
+  access"), never two buttons of equal weight; a state with nothing to do has no action.
+- **Short, with room to grow.** The heading up to **5 words**, the message up to **80 characters**
+  (one sentence: what happened, or what to do); a translation runs a third longer, so the layout
+  must take that — never a word that only fits in English.
+- **Specific where it can be**: the count, the name, the date ("3 sites waiting", "closed on 12
+  May"), as a placeholder in the plan ({count}, {name}); the export keeps the placeholder.
+
+The words go out with the set: `node bin/illustrations.mjs strings <dir>` (and the save) write
+`strings.<lang>.json` — `<tab>.<id>.heading|message|action`, `loaders.button|panel|start`,
+`emails.<id>.subject|heading|message|action|detail|alt`, `emails.template.sender|footer` — so the
+product's i18n takes every key and the picture needs no words of its own.
 
 ## States
 
@@ -57,10 +81,10 @@ moments and instruments.
 
 | Id | Where | What it shows |
 |----|-------|---------------|
-| `sign-in-<idea>` | the panel beside the sign-in form (the authorization layout) — **3–4 variants**, one picked | the product's world at rest, one slow motion (smoke thinning over a plant, a meter turning, figures rising into a report); each variant a different idea: the place, the object, the moment, the instrument |
-| `hero` | the home or landing page's first screen | the product's promise in one picture: the thing, the result, the people around it as shapes, never faces |
+| `sign-in-<idea>` | the panel beside the sign-in form (the authorization layout) — **3–4 variants** (`place: "sign-in"`), one picked | the product's world at rest, one slow motion (smoke thinning over a plant, a meter turning, figures rising into a report); each variant a different idea: the place, the object, the moment, the instrument |
+| `hero-<idea>` | the home or landing page's first screen — **2–3 variants** (`place: "hero"`), one picked | the product's promise in one picture: the thing, the result, the people around it as shapes, never faces; each variant a different promise, not one redrawn |
 | `announcement` | a release note, a banner | something new arriving into the world of the product |
-| `not-found-<idea>` | the 404 page — **3–4 variants**, one picked | a place in the product's world with the 404 worked in as an object (a sign, a gate, a tag); each variant a different place or object, never one idea redrawn |
+| `not-found-<idea>` | the 404 page — **3–4 variants** (`place: "not-found"`), one picked | a place in the product's world with the 404 worked in as an object (a sign, a gate, a tag); each variant a different place or object, never one idea redrawn |
 | `letter-band` | the band of a letter with no picture of its own | the world of the product, wide, calm |
 | `first-setup` · `import` · `approval` · `report-ready` · `target-reached` | the moments of the product's loop | each moment as an object and a result: a box opening, files pouring into a ledger, a stamp, a bound report, a flag on a bar |
 
@@ -78,7 +102,22 @@ moments and instruments.
 
 ## Letters
 
-Each letter: its moment, subject, heading, message, action, detail and the picture's idea.
+Each letter: its moment, subject, heading, message, action, detail, the picture's idea and its
+`alt`. **The picture goes out as an image**, and mail clients are not browsers:
+
+- **The first frame is the whole picture.** Outlook on the desktop shows only the first frame of a
+  GIF, so a picture that starts from an empty `from` state arrives empty there: the animation is
+  drawn so that its first frame is the complete still picture too (the gesture is a small motion
+  of a part, not an appearance), or the developer exports the still first.
+- **Two exports per picture, both from the SVG**: an animated GIF under **1 MB** (600 px wide,
+  the loop of the page, 8–12 frames a second) and a still **PNG at 2×** (1200 px wide) for the
+  clients that play nothing and for the plain-text fallback's link.
+- **`alt` in the manifest**, one line of what the picture shows ("A door opening onto the print
+  shop"): the clients that show no image read it; `check` warns when it is missing; the export
+  carries it.
+- **A fallback ground.** The picture's `--ill-ground` is also the band's background color in the
+  letter's HTML, so a client that blocks images shows a calm plate, not a hole; a dark client may
+  recolor the letter — the picture is drawn to read on both.
 
 **Common letters** — every product sends them:
 
