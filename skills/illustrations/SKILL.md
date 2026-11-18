@@ -1,7 +1,7 @@
 ---
 name: illustrations
 description: Draws the illustration set of a project from what its documentation says — marks for a logo in two rounds (6–9, then more around the idea the operator pointed at) and the loaders made from the one picked, a picture for every state a screen can be in (empty, nothing found, no access, 404, offline, done and the product's own), scenes from its world, and a full page of email templates with a picture per letter — every picture themable, animated where that tells its story, and reviewed by the operator on one shared page with tabs and two themes before a single file is saved into the documentation's illustrations folder (the docs repository or docs/, chosen in a dialog). Reuses a showcase's scheme and reading; a showcase reuses the set. Human-invoked only.
-argument-hint: "[init [dir] | continue | status | tab <id> | revise | pick logo <id> [<id>…] | pick scene <place> <id> | add | publish | save | check]"
+argument-hint: "[init [dir] | continue | status | tab <id> | revise | pick logo <id> [<id>…] | pick scene <place> <id> | import logo <file> [--id <id>] | import icons <folder> | add | publish | save | check]"
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(node:*), Bash(ls:*), Bash(mkdir:*), Bash(cp:*), Bash(find:*), AskUserQuestion, Agent, Artifact, SendUserFile
 ---
@@ -38,6 +38,8 @@ the project.
 | `revise` | take the operator's revisions from the chat for the tab in review, redraw those pictures only, rebuild, republish, ask again |
 | `pick logo <id> [<id>…]` | the first id is the primary mark, the rest the shortlist the loaders are made from |
 | `pick scene <place> <id>` | the variant picked for a place drawn in several — `sign-in` (the authorization layout) or `not-found` (the 404 page); the others stay in the set as alternatives |
+| `import logo <file> [--id <id>]` | the customer's own mark: the script analyses it (groups, shapes, strokes, colors, ids, what can move), keeps it as received and writes a copy on tokens; you show the copy, propose its motions from its build, and the loaders are made from it — the geometry never changed without permission (`references/import.md`) |
+| `import icons <folder>` | the customer's own icons: each analysed and normalised by the script to the 16 grid, a 1.5 stroke and `currentColor`, what it cannot normalise named; you show them, mark what still differs, and propose the state transitions worth a micro-animation (`references/import.md`) |
 | `add` | a picture the catalog lacks, into one tab, through that tab's review |
 | `publish` | build the review page and publish it as an artifact (or republish to the same address); tell the operator the address |
 | `save` | the script's save: every tab approved → the files moved out of `review/`, the page, manifest and sprite written |
@@ -112,6 +114,11 @@ already there:
   what the operator asks for.
 - **A design baseline** in the documentation — tokens, a palette, a logo, drawn screens, a
   Figma export: the scheme and the mark follow it, and the set proposes only where it is silent.
+- **The customer's own files** — a logo they already have, an icon set they use: the most common
+  case. `import logo <file>` and `import icons <folder>` take them in (`references/import.md`):
+  the Logo step then shows the imported mark and draws nothing new unless asked, the loaders are
+  made from its parts, and the Icons step starts from the normalised set. Ask at Intake whether
+  such files exist before planning a single mark.
 - **References the operator gives** at Intake — pictures they like, sites, brands, a mood board,
   as files or addresses: a reader describes each one's traits (line, angle, detail, palette, mood,
   motion) into `SOURCES.md › References`; the Direction step builds its proposals from them.
@@ -193,6 +200,8 @@ same way every time, so that you draw and decide, and never assemble a page by h
 | `sprite <dir> [--out <file>]` | the set as `<symbol>`s in one script — `lg-<id>` a mark, `ld-<id>` a loader, `ic-<id>` an icon, `ill-<id>` a picture — for a showcase or the product; with a reduced-motion sheet for every symbol and a pause while the tab is in the background |
 | `loop <dir>` | every picture's, scene's and letter's animation made cyclic: the picture rests, rewinds its gesture, plays it again and rests, on one period of tokens per picture; idempotent, a loader and a picture that already loops are left as they are |
 | `spring <dir> [--bounce <b>] [--name <n>]` | a spring's response as a `linear()` easing — printed; with `--name`, written into `tokens.css` as `--ill-spring-<n>` under `@supports`, the fallback on `:root`. The template ships `smooth` (bounce 0) and `snappy` (0.15); run it only when the direction wants another spring |
+| `import <dir> logo <file.svg> [--id <id>]` | the customer's mark analysed — groups, shapes, a merged outline, strokes, raw colors, ids, what needs a hand (a gradient, text, a raster), what can move — then kept as received in `review/logo/<id>.source.svg` and copied onto tokens (colors by frequency: the body `currentColor`, white the ground, the next the accents; `<g id>` to prefixed classes; ids dropped) as `review/logo/<id>.svg`, the geometry untouched; it prints the manifest entry to add |
+| `import <dir> icons <folder>` | every SVG of the folder analysed and normalised into `review/icons/<id>.svg`: a square viewBox scaled to the 16 grid, every stroke to 1.5, raw colors to `currentColor`, ids dropped, classes prefixed; one not square, with text, a raster or a gradient is named and left for a hand; it prints the entries to add |
 
 Run `loop` after every drawing round (every picture's and letter's animation made cyclic), `check`
 before every publish and fix what it lists; run `build` after every change to the
@@ -291,6 +300,8 @@ The operator always sees which stage the run is in, what is done and what comes 
 | `revise` | Read the revisions → Redraw → Publish → Review |
 | `pick logo <id>` | Check the marks → Mark them → Decisions → Publish |
 | `pick scene <place> <id>` | Check the variants → Mark it → Decision → Publish |
+| `import logo <file>` | Analyse → The copy on tokens → Motions proposed → Publish → Review → Approve |
+| `import icons <folder>` | Analyse → Normalise → What differs → Micro-animations proposed → Publish → Review → Approve |
 | `add` | What and where → Draw → Publish → Review |
 | `publish` | Build → Check → Publish → The address |
 | `save` | Check the approvals → Save → Sprite → Report |

@@ -11,6 +11,15 @@
 //   node bin/illustrations.mjs sprite <dir> [--out <f>]  illustrations.js: every picture as a <symbol>, with its styles
 //   node bin/illustrations.mjs loop   <dir>              every picture's and letter's one-time animation made cyclic: the
 //                                                        picture rests, rewinds its gesture, plays it again and rests
+//   node bin/illustrations.mjs import <dir> logo <file.svg> [--id <id>]
+//                                                        the customer's mark: analysed (groups, shapes, strokes, colors, ids,
+//                                                        what can move), kept as is in review/logo/<id>.source.svg, and a copy
+//                                                        on tokens and prefixed classes written as review/logo/<id>.svg —
+//                                                        the geometry untouched
+//   node bin/illustrations.mjs import <dir> icons <folder>
+//                                                        the customer's icons: each analysed and a copy normalised to the 16
+//                                                        grid, a 1.5 stroke and currentColor into review/icons/, with what
+//                                                        could not be normalised named
 //   node bin/illustrations.mjs spring <dir> [--bounce <b>] [--name <smooth|snappy>]
 //                                                        a spring easing as linear(): printed, or written into the set's
 //                                                        tokens.css as --ill-spring-<name> (under @supports)
@@ -19,8 +28,8 @@
 // missing, does not parse or belongs to something else. Findings are printed one per line —
 // `error: <file>:<line> — <what>` — and `check` exits 1 on an error. Usage errors exit 2.
 
-import { mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const USAGE = `Usage: node bin/illustrations.mjs <command> <dir> [options]
@@ -30,9 +39,11 @@ const USAGE = `Usage: node bin/illustrations.mjs <command> <dir> [options]
   sprite <dir> [--out <f>]   write the set as symbols into illustrations.js (or <f>)
   loop   <dir>               make every picture's and letter's animation cyclic (rest, rewind, play, rest)
   spring <dir> [--bounce <b>] [--name <n>]   a spring easing as linear(); --name writes it into tokens.css as --ill-spring-<n>
+  import <dir> logo <file.svg> [--id <id>]   the customer's mark analysed and copied onto tokens into review/logo/
+  import <dir> icons <folder>                the customer's icons analysed and normalised into review/icons/
 `;
 
-const COMMANDS = ['build', 'check', 'save', 'sprite', 'loop', 'spring'];
+const COMMANDS = ['build', 'check', 'save', 'sprite', 'loop', 'spring', 'import'];
 const TEMPLATES = fileURLToPath(new URL('../skills/illustrations/templates/', import.meta.url));
 const KINDS = ['scheme', 'directions', 'marks', 'loaders', 'icons', 'pictures', 'letters'];
 const SAMPLE_KINDS = ['marks', 'icons', 'pictures', 'letters'];
@@ -1004,6 +1015,149 @@ const loop = (dir) => {
   print(`${plural(changed, 'picture')} made cyclic; the others already loop or have no animation.`);
 };
 
+// --- import: the customer's own files
+
+const NAMED_COLORS = { white: '#ffffff', black: '#000000' };
+const COLOR_VALUE = /#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})(?![\w-])|\brgba?\([^)]*\)|\b(?:white|black)\b/g;
+const slug = (name) => name.replace(/\.svg$/i, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'mark';
+const isWhite = (color) => /^#(?:fff|ffff|ffffff|ffffffff)$/i.test(color) || /^white$/i.test(color) || /^rgba?\(\s*255\s*,?\s*255\s*,?\s*255/.test(color);
+
+/** What a file is made of, and what of it can move. */
+const analyzeSvg = (text, svg) => {
+  const body = svg.body;
+  const groups = [...body.matchAll(/<g\b([^>]*)>/g)].map((m) => /\s(?:id|class)="([^"]*)"/.exec(m[1])?.[1] ?? '');
+  const shapes = {};
+  for (const [, tag] of body.matchAll(/<(path|rect|circle|ellipse|line|polygon|polyline)\b/g)) shapes[tag] = (shapes[tag] ?? 0) + 1;
+  const paths = [...body.matchAll(/<path\b[^>]*\sd="([^"]*)"/g)].map((m) => (m[1].match(/[Mm]/g) ?? []).length);
+  const total = Object.values(shapes).reduce((a, b) => a + b, 0);
+  const merged = total === 1 && paths[0] > 1 ? paths[0] : 0;
+  const stroked = (body.match(/\sstroke="(?!none)[^"]+"|stroke\s*:\s*(?!none)[^;"]+/g) ?? []).length;
+  const colors = {};
+  for (const [value] of `${body}\n${svg.style}`.matchAll(COLOR_VALUE)) { const key = NAMED_COLORS[value.toLowerCase()] ?? value.toLowerCase(); colors[key] = (colors[key] ?? 0) + 1; }
+  const ids = [...body.matchAll(/\sid="([^"]*)"/g)].map((m) => m[1]);
+  const refs = [...`${body}\n${svg.style}`.matchAll(/url\(#([^)]+)\)/g)].map((m) => m[1]);
+  const defs = (body.match(/<(?:linearGradient|radialGradient|pattern|filter|mask|clipPath|marker)\b/g) ?? []).length;
+  const text_ = (body.match(/<text\b/g) ?? []).length;
+  const images = (body.match(/<(?:image|foreignObject)\b/g) ?? []).length;
+  const widths = [...new Set([...body.matchAll(/stroke-width="([^"]+)"|stroke-width\s*:\s*([^;"]+)/g)].map((m) => (m[1] ?? m[2]).trim()))];
+  const size = Buffer.byteLength(text);
+  return { viewBox: svg.viewBox, groups, shapes, total, merged, stroked, colors, ids, refs, defs, text: text_, images, widths, size };
+};
+
+const reportMark = (name, a) => {
+  const lines = [];
+  lines.push(`${name}: viewBox ${a.viewBox ?? 'none'}, ${a.size > 1024 ? `${Math.round(a.size / 1024)} KB` : `${a.size} B`}`);
+  lines.push(`  shapes: ${a.total ? Object.entries(a.shapes).map(([tag, n]) => `${n} ${tag}`).join(', ') : 'none'}${a.merged ? ` — one path of ${a.merged} subpaths (a merged outline)` : ''}`);
+  lines.push(`  groups: ${a.groups.length ? a.groups.map((g) => g || '(unnamed)').join(', ') : 'none'}`);
+  lines.push(`  strokes: ${a.stroked ? `${a.stroked} stroked shape${a.stroked === 1 ? '' : 's'}, width${a.widths.length === 1 ? '' : 's'} ${a.widths.join(', ') || '?'}` : 'none — filled shapes only'}`);
+  lines.push(`  colors: ${Object.keys(a.colors).length ? Object.entries(a.colors).sort((x, y) => y[1] - x[1]).map(([c, n]) => `${c} ×${n}`).join(', ') : 'none raw (currentColor or tokens)'}`);
+  if (a.ids.length) lines.push(`  ids: ${a.ids.join(', ')}${a.refs.length ? ` (referenced: ${[...new Set(a.refs)].join(', ')})` : ''}`);
+  if (a.defs || a.text || a.images) lines.push(`  needs a hand: ${[a.defs && `${a.defs} gradient/filter/mask/clip`, a.text && `${a.text} <text>`, a.images && `${a.images} raster or foreign`].filter(Boolean).join(', ')} — ask before flattening`);
+  const moves = [];
+  if (a.groups.filter(Boolean).length) moves.push(`each named group is a part a loader can move on its own: ${a.groups.filter(Boolean).join(', ')}`);
+  if (a.merged) moves.push(`the outline is one path of ${a.merged} subpaths; it moves as one — splitting it into parts changes the file and needs the operator's permission`);
+  if (a.stroked) moves.push('a stroked shape can draw itself (stroke-dasharray and an animated stroke-dashoffset)');
+  if (!a.groups.filter(Boolean).length && !a.stroked) moves.push('a whole mark: a wipe (a rect in --lg-ground sliding off it), an appearance with a shift, a ring or a pulse around it; the mark itself stays still');
+  lines.push(`  can move: ${moves.join('; ')}`);
+  return lines;
+};
+
+/** The mark's copy on tokens: colors mapped by frequency, ids to prefixed classes, geometry untouched. */
+const tokenizeMark = (text, svg, id, a) => {
+  const ranked = Object.entries(a.colors).sort((x, y) => y[1] - x[1]).map(([c]) => c);
+  const map = {};
+  const tokens = ['var(--lg-accent)', 'var(--lg-accent-2)', 'var(--lg-soft)'];
+  let body = false;
+  for (const color of ranked) {
+    if (isWhite(color)) { map[color] = 'var(--lg-ground)'; continue; }
+    if (!body) { map[color] = 'currentColor'; body = true; continue; }
+    map[color] = tokens.shift() ?? null;
+  }
+  let out = text.replace(/<\?xml[^>]*>\s*/g, '').replace(/<!--[\s\S]*?-->\s*/g, '').trim();
+  out = out.replace(COLOR_VALUE, (value) => { const key = NAMED_COLORS[value.toLowerCase()] ?? value.toLowerCase(); return map[key] ?? value; });
+  out = out.replace(/<g\b([^>]*)\sid="([^"]*)"/g, (_, before, name) => `<g${before} class="${id}__${slug(name)}"`);
+  out = out.replace(/\sid="[^"]*"/g, '');
+  out = out.replace(/\sclass="([^"]*)"/g, (_, classes) => ` class="${classes.split(/\s+/).filter(Boolean).map((c) => (c.startsWith(`${id}__`) || c === id ? c : `${id}__${c}`)).join(' ')}"`);
+  out = out.replace(/<svg\b([^>]*)>/, (_, attrs) => {
+    let kept = attrs.replace(/\s(?:width|height)="[^"]*"/g, '');
+    if (!/viewBox=/.test(kept)) { const w = /width="([\d.]+)/.exec(attrs)?.[1]; const h = /height="([\d.]+)/.exec(attrs)?.[1]; if (w && h) kept += ` viewBox="0 0 ${w} ${h}"`; }
+    if (!/aria-hidden/.test(kept)) kept += ' aria-hidden="true"';
+    return `<svg${kept}>`;
+  });
+  const left = ranked.filter((c) => map[c] === null);
+  // The comment names no raw color: check reads a comment line that also holds markup, and the sprite drops none
+  const header = `<!-- The customer's own mark, imported as is (the source beside it, ${id}.source.svg, holds the original colors);
+     the geometry untouched, every color mapped to a token — ${Object.keys(map).length || 'no'} color${Object.keys(map).length === 1 ? '' : 's'} mapped. Classes carry the mark's id ("${id}"). -->\n`;
+  return { out: `${header}${out}\n`, map, left };
+};
+
+const importLogo = (dir, source, idOption) => {
+  loadState(dir);
+  const path = resolve(source);
+  const text = read(path);
+  if (!text) fail(`${source} not found`);
+  const svg = parseSvg(text);
+  if (!svg) fail(`${source} is not an SVG`);
+  const id = idOption ?? slug(basename(source));
+  if (!/^[a-z][a-z0-9-]*$/.test(id)) fail(`--id must be kebab-case, got "${id}"`);
+  const a = analyzeSvg(text, svg);
+  for (const line of reportMark(basename(source), a)) print(line);
+  const folder = join(dir, 'review', 'logo');
+  mkdirSync(folder, { recursive: true });
+  writeFileSync(join(folder, `${id}.source.svg`), text);
+  const { out, map, left } = tokenizeMark(text, svg, id, a);
+  writeFileSync(join(folder, `${id}.svg`), out);
+  print(`Wrote review/logo/${id}.svg on tokens (${Object.entries(map).map(([c, t]) => `${c} → ${t ?? 'left'}`).join(', ') || 'no raw color'}) and review/logo/${id}.source.svg as received.${left.length ? ` ${left.length} color${left.length === 1 ? '' : 's'} beyond the tokens left as is: ${left.join(', ')} — check will name them; map them by hand or ask.` : ''}`);
+  print(`Next: add { "id": "${id}", "file": "logo/${id}.svg", "source": "logo/${id}.source.svg", "from": "the customer's file", "selected": true } to the logo tab, check, build, publish.`);
+};
+
+const importIcons = (dir, folder) => {
+  loadState(dir);
+  const from = resolve(folder);
+  if (!statOf(from)?.isDirectory()) fail(`${folder} is not a folder`);
+  const files = readdirSync(from).filter((name) => name.toLowerCase().endsWith('.svg')).sort();
+  if (!files.length) fail(`${folder} holds no SVG file`);
+  const target = join(dir, 'review', 'icons');
+  mkdirSync(target, { recursive: true });
+  let written = 0;
+  const entries = [];
+  for (const name of files) {
+    const text = read(join(from, name));
+    const svg = text && parseSvg(text);
+    const id = slug(name);
+    if (!svg) { print(`${name}: not an SVG — skipped`); continue; }
+    const a = analyzeSvg(text, svg);
+    const notes = [];
+    const box = (svg.viewBox ?? '').split(/[\s,]+/).map(Number);
+    const side = box.length === 4 && box[2] === box[3] ? box[2] : null;
+    if (!side) { print(`${name}: viewBox ${svg.viewBox ?? 'none'} is not square — redraw by hand on the 16 grid`); continue; }
+    if (a.defs || a.text || a.images) { print(`${name}: ${[a.defs && 'a gradient, filter, mask or clip', a.text && 'text', a.images && 'a raster image'].filter(Boolean).join(', ')} — redraw by hand`); continue; }
+    const scale = 16 / side;
+    let body = svg.body.replace(/<!--[\s\S]*?-->/g, '');
+    if (side !== 16) notes.push(`${side}-grid → 16`);
+    const widthsSeen = a.widths;
+    const inner = (1.5 / scale);
+    body = body.replace(/stroke-width="[^"]+"/g, `stroke-width="${+inner.toFixed(3)}"`).replace(/stroke-width\s*:\s*[^;"]+/g, `stroke-width: ${+inner.toFixed(3)}`);
+    if (widthsSeen.length && !(widthsSeen.length === 1 && Math.abs(Number(widthsSeen[0]) * scale - 1.5) < 0.01)) notes.push(`stroke ${widthsSeen.join('/')} → 1.5`);
+    const raw = Object.keys(a.colors);
+    body = body.replace(COLOR_VALUE, () => 'currentColor');
+    if (raw.length) notes.push(`${raw.join(', ')} → currentColor`);
+    if (a.ids.length) { body = body.replace(/\sid="[^"]*"/g, ''); notes.push(`${a.ids.length} id${a.ids.length === 1 ? '' : 's'} removed`); }
+    body = body.replace(/\sclass="([^"]*)"/g, (_, classes) => ` class="${classes.split(/\s+/).filter(Boolean).map((c) => (c.startsWith(`${id}__`) ? c : `${id}__${c}`)).join(' ')}"`);
+    const wrapped = side === 16 ? body.trim() : `<g transform="scale(${+scale.toFixed(4)})">${body.trim()}</g>`;
+    const out = `<!-- The customer's own icon "${name}", imported: ${notes.length ? notes.join('; ') : 'already on the 16 grid, a 1.5 stroke and currentColor'}; the drawing untouched. Classes carry the icon's id ("${id}"). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" aria-hidden="true">
+  ${wrapped}
+</svg>
+`;
+    writeFileSync(join(target, `${id}.svg`), out);
+    written += 1;
+    entries.push(id);
+    print(`${name}: ${notes.length ? notes.join('; ') : 'as is'} → review/icons/${id}.svg`);
+  }
+  print(`${plural(written, 'icon')} of ${files.length} written into review/icons/; the rest need a hand.${entries.length ? ` Next: add them to the icons tab (${entries.map((id) => `{ "id": "${id}", "file": "icons/${id}.svg", "from": "the customer's file" }`).join(', ')}), check, build, publish.` : ''}`);
+};
+
 // --- main
 
 const main = () => {
@@ -1019,6 +1173,25 @@ const main = () => {
     }
     sprite(dir, out);
     return;
+  }
+  if (command === 'import') {
+    const [what, source, ...options] = rest;
+    if (what === 'logo') {
+      if (!source) usage('import logo needs the file');
+      let id;
+      for (let i = 0; i < options.length; i += 1) {
+        if (options[i] === '--id' && options[i + 1]) { id = options[i + 1]; i += 1; } else usage(`unknown option for import logo: ${options[i]}`);
+      }
+      importLogo(dir, source, id);
+      return;
+    }
+    if (what === 'icons') {
+      if (!source) usage('import icons needs the folder');
+      if (options.length) usage(`too many arguments for import icons: ${options.join(' ')}`);
+      importIcons(dir, source);
+      return;
+    }
+    usage('import takes "logo <file.svg>" or "icons <folder>"');
   }
   if (command === 'spring') {
     const options = {};

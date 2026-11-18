@@ -138,7 +138,8 @@ pictures a builder keeps open while drawing, and a reviewer compares a new pictu
 
 ## Animation
 
-Every picture moves — minimally, to tell its story — except a mark and an icon.
+Every picture moves — minimally, to tell its story — except a mark and an icon: a mark moves
+only as a loader, an icon only between its states (`› Icons`).
 
 - **One gesture.** A picture has one thing that moves, with one small reason: the lid settles, the
   loupe drifts and pauses, the lock rattles once, the parcel lands, the check draws itself. A
@@ -218,6 +219,11 @@ Every picture moves — minimally, to tell its story — except a mark and an ic
   last keyframe are the mark at rest.
 - **Shown late, never blinking**: the product shows a loader only after about 250 ms of waiting
   (`--ill-duration-instant` and a little), so a fast answer never flashes one; say so in `use`.
+- **From an imported mark** (`import.md`): what moves is what the file's build allows — its named
+  groups as parts; a stroked outline drawing itself; a merged or single-path mark left whole, with
+  a wipe (a rect in `--lg-ground` sliding off it), an appearance with a shift, a ring or a pulse
+  around it. The mark's geometry is never changed for a loader; a part the operator allows to be
+  split off is cut in the copy, on the operator's word.
 - Three sizes from one file: at 16 px only the biggest motion reads — if the loader is unreadable
   at 16, make one of the mark's loaders a simple one for buttons and rows and say so in `use`.
 - **Determinate**: `--progress` from the parent, 0 to 1 — `stroke-dashoffset: calc(200 * (1 -
@@ -234,6 +240,13 @@ Every picture moves — minimally, to tell its story — except a mark and an ic
   diagonal under 30° that will alias.
 - The manner of the chosen icon library (the stroke, the corners) and of the mark; the domain's
   own subjects only (`phases.md › Step 5 — Icons`).
+- **The customer's own icons** come in through `import icons` (`import.md`): normalised to this
+  grid, stroke and `currentColor` by the script, their drawing untouched; what still differs from
+  the manner is marked and proposed for a redraw, never silently redrawn.
+- **An icon moves only between its states.** A still icon is its rest pose; an icon that toggles
+  in the product may have a second file `<id>-<motion>.svg` with the transition — the check drawing
+  itself, the bell swinging once, the chevron turning, the star filling — on `--ill-duration-short`
+  or `--ill-duration-instant`, ending on the other state; never an idle motion, never a loop.
 
 ## Pictures
 

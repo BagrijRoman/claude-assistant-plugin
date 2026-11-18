@@ -337,7 +337,8 @@ drawn in it. Needs the scheme; takes the references of Intake and the reading's 
 
 ## Step 4 — Loaders
 
-1. **Plan**: for the primary mark and each shortlisted one, 3–5 loaders, each a motion of the
+1. **Plan**: for the primary mark and each shortlisted one (an imported mark: the motions its
+   build allows, `import.md › import logo`), 3–5 loaders, each a motion of the
    mark's own parts — they turn, light up in turn, draw themselves, beat, travel an arc — with
    what it is for (a button or a row at 16 px, a panel at 32, a long wait or the start of the
    application at 64), and one **determinate** loader per mark (a part fills as the share grows,
@@ -352,7 +353,8 @@ drawn in it. Needs the scheme; takes the references of Intake and the reading's 
 
 ## Step 5 — Icons
 
-1. **Plan** the icons of the product's own subjects — what the icon library chosen by the project
+1. **Plan** the icons of the product's own subjects — after the customer's own icons, when they
+   gave some (`import.md › import icons`) — what the icon library chosen by the project
    (or the standard set) has no fit for: for a carbon product a scope, an emission source by kind, a
    factor, a meter, a site by type — each with where it is used; nothing is added because a set
    "should have it". The manner follows the mark: the same stroke, the same corners. Approve
@@ -466,6 +468,11 @@ when `batches.<key>` is `trial`), when the operator wrote revisions outside the 
 **`pick scene <place> <id>`** — `place` is `sign-in` or `not-found`; confirm the id is a Scenes
 item with that `place`; it alone is `selected` among the place's variants;
 `STATE.json › selected.scenes.<place>`; an `IL-nnn` row; `build`; publish.
+
+**`import logo <file> [--id <id>]`** and **`import icons <folder>`** — the customer's own mark
+and icons taken in without redrawing: `import.md`. The Logo step is then the imported mark alone,
+the loaders are planned from what its build allows, and the Icons step starts from the normalised
+set.
 
 **`add`** — a picture the catalog lacks: ask what and which tab; its plan line; draw; publish; the
 tab's review again.

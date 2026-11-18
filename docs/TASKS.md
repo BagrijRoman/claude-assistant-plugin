@@ -1198,6 +1198,40 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T58 — `/illustrations import`: the customer's own logo and icons taken in, analysed and normalised by the script · `done` (0.31.0)
+
+From the same review (Lili, 2026-11-11): the skill had no path for a logo or an icon set the customer
+already has, though that is the most common request.
+
+What was done:
+- **`import logo <file> [--id <id>]`**: `node bin/illustrations.mjs import <dir> logo <file>` reports what the
+  file is made of — viewBox and size, shapes, a merged outline (one path of several subpaths), named groups,
+  stroked shapes and widths, raw colors by frequency, ids and references, what needs a hand (gradient, filter,
+  mask, clip, text, raster) — and **what can move** (a named group a part, a stroked shape drawing itself, a
+  merged outline moving as one, a whole mark a wipe, a shift, a ring or a pulse); keeps the file as received
+  in `review/logo/<id>.source.svg` and writes `review/logo/<id>.svg` on tokens (the body `currentColor`,
+  white the ground, the next colors the accents, `<g id>` to prefixed classes, ids dropped, a viewBox from
+  width and height), the geometry untouched; prints the entry to add.
+- **`import icons <folder>`**: every SVG normalised into `review/icons/<id>.svg` — a square viewBox scaled
+  to the 16 grid, strokes to 1.5, raw colors to `currentColor`, ids dropped, classes prefixed — one not
+  square, with text, a raster or a gradient named and left for a hand; prints the entries to add.
+- **The procedure** in `references/import.md`: the report read to the operator; a gradient, text or a mask
+  flattened only on a word; the loaders planned from what the build allows (a merged outline split only
+  with permission, in the copy); the imported mark is the mark, no new marks unless asked; icons that
+  differ from the manner marked and proposed for a redraw; micro-animations only between an icon's two
+  states (`drawing.md › Icons`: a second file `<id>-<motion>.svg`, the still icon its rest pose). The source is
+  never edited, shown or put in the sprite.
+- SKILL.md (the argument, the modes, *What goes in* — ask at Intake whether such files exist —, the script
+  table, the stage table), `phases.md` (Other modes; Loaders and Icons point at the import), the pages and the
+  index rows; tests: the mark's report, its source byte for byte, its copy passing `check`, a merged outline
+  and a gradient named; the icons from a 24 grid, a 2 stroke, raw colors and ids, one not square and one with
+  text left, the copies passing `check`. Version 0.31.0.
+
+Done when:
+- `npm test` passes.
+- A customer's logo goes through `import logo` to loaders without its geometry changing, and the operator
+  hears what the file allows before the loaders are planned.
+
 ## T57 — `/illustrations` graphics in numbers: contrast measured, one line width, a deep face, counted compositions, examples from a trade, the logo in two rounds · `done` (0.30.0)
 
 From the same review (Lili, 2026-11-11): the graphic rules were firm but without numbers; the line width

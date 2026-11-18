@@ -479,3 +479,93 @@ describe('illustrations.mjs graphics in numbers', () => {
     assert.match(mark, /class="brayer__roller"/);
   });
 });
+
+describe('illustrations.mjs import: the customer\'s own files', () => {
+  after(removeTempDirs);
+
+  const CUSTOMER_MARK = `<?xml version="1.0"?>
+<!-- Made in an editor -->
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48">
+  <g id="Body"><path d="M4 40 L24 8 L44 40 Z" fill="#1F2A44"/><path d="M14 40 L24 24 L34 40 Z" fill="#FFFFFF"/></g>
+  <g id="Flame"><circle cx="24" cy="12" r="5" fill="#E8A33D" stroke="#1f2a44" stroke-width="2"/></g>
+  <rect id="base" x="4" y="40" width="40" height="4" fill="#1F2A44"/>
+</svg>`;
+
+  it('analyses the customer\'s mark, keeps the source and writes a copy on tokens with the geometry untouched', () => {
+    const dir = set();
+    const source = join(dir, 'customer-logo.svg');
+    writeFileSync(source, CUSTOMER_MARK);
+    const result = run('import', dir, 'logo', source, '--id', 'peak');
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /^customer-logo\.svg: viewBox none, \d+ B$/m);
+    assert.match(result.stdout, /^  shapes: 2 path, 1 circle, 1 rect$/m);
+    assert.match(result.stdout, /^  groups: Body, Flame$/m);
+    assert.match(result.stdout, /^  strokes: 1 stroked shape, width 2$/m);
+    assert.match(result.stdout, /^  colors: #1f2a44 ×3, #ffffff ×1, #e8a33d ×1$/m);
+    assert.match(result.stdout, /^  ids: Body, Flame, base$/m);
+    assert.match(result.stdout, /^  can move: each named group is a part a loader can move on its own: Body, Flame; a stroked shape can draw itself/m);
+    assert.match(result.stdout, /Wrote review\/logo\/peak\.svg on tokens \(#1f2a44 → currentColor, #ffffff → var\(--lg-ground\), #e8a33d → var\(--lg-accent\)\) and review\/logo\/peak\.source\.svg as received\./);
+    assert.equal(readFileSync(join(dir, 'review', 'logo', 'peak.source.svg'), 'utf8'), CUSTOMER_MARK, 'the source is kept byte for byte');
+    const copy = readFileSync(join(dir, 'review', 'logo', 'peak.svg'), 'utf8');
+    assert.match(copy, /^<!-- The customer's own mark, imported as is/);
+    assert.match(copy, /<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg" viewBox="0 0 48 48" aria-hidden="true">/);
+    assert.match(copy, /<g class="peak__body"><path d="M4 40 L24 8 L44 40 Z" fill="currentColor"\/><path d="M14 40 L24 24 L34 40 Z" fill="var\(--lg-ground\)"\/><\/g>/);
+    assert.match(copy, /<g class="peak__flame"><circle cx="24" cy="12" r="5" fill="var\(--lg-accent\)" stroke="currentColor" stroke-width="2"\/><\/g>/);
+    assert.match(copy, /<rect x="4" y="40" width="40" height="4" fill="currentColor"\/>/);
+    assert.doesNotMatch(copy, /\sid=|<\?xml|Made in an editor|#1F2A44/i, 'the editor header, the ids and the raw colors are gone');
+    assert.match(copy, /3 colors mapped/);
+    // in the manifest, the copy passes every check as a mark
+    const manifest = JSON.parse(readFileSync(join(dir, 'review', 'manifest.json'), 'utf8'));
+    manifest.tabs[2].items.push({ id: 'peak', title: 'Peak', file: 'logo/peak.svg', source: 'logo/peak.source.svg', from: "the customer's file" });
+    writeFileSync(join(dir, 'review', 'manifest.json'), JSON.stringify(manifest));
+    const check = run('check', dir);
+    assert.equal(check.status, 0, check.stdout);
+    assert.equal(run('import', dir, 'logo', join(dir, 'none.svg')).status, 1);
+    assert.equal(run('import', dir, 'logo', source, '--id', 'Peak').status, 1, 'the id is kebab-case');
+    assert.equal(run('import', dir, 'drawings', source).status, 2);
+  });
+
+  it('names what the mark needs a hand for, and a merged outline that moves as one', () => {
+    const dir = set();
+    const source = join(dir, 'merged.svg');
+    writeFileSync(source, '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g"><stop offset="0"/></linearGradient></defs><path d="M2 2 L10 2 L10 10 Z M20 20 L30 20 L30 30 Z" fill="url(#g)"/></svg>');
+    const result = run('import', dir, 'logo', source);
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /^merged\.svg: viewBox 0 0 64 64/m);
+    assert.match(result.stdout, /^  shapes: 1 path — one path of 2 subpaths \(a merged outline\)$/m);
+    assert.match(result.stdout, /^  needs a hand: 1 gradient\/filter\/mask\/clip — ask before flattening$/m);
+    assert.match(result.stdout, /^  can move: the outline is one path of 2 subpaths; it moves as one — splitting it into parts changes the file and needs the operator's permission; a whole mark: a wipe/m);
+    assert.ok(existsSync(join(dir, 'review', 'logo', 'merged.svg')));
+  });
+
+  it('normalises the customer\'s icons to the 16 grid, a 1.5 stroke and currentColor, and names what it cannot', () => {
+    const dir = set();
+    const folder = join(dir, 'customer-icons');
+    mkdirSync(folder);
+    writeFileSync(join(folder, 'Shopping Cart.svg'), '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path id="cart" d="M3 3h2l2 12h11l2-8H6" fill="none" stroke="#333333" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="20" r="1.5" fill="#333"/></svg>');
+    writeFileSync(join(folder, 'bell.svg'), '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path class="body" d="M4 11 L12 11 L11 6 A3 3 0 0 0 5 6 Z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>');
+    writeFileSync(join(folder, 'wide.svg'), '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 16"><rect width="32" height="16"/></svg>');
+    writeFileSync(join(folder, 'fancy.svg'), '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><text x="1" y="9">A</text></svg>');
+    writeFileSync(join(folder, 'notes.txt'), 'not an icon');
+    const result = run('import', dir, 'icons', folder);
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /^Shopping Cart\.svg: 24-grid → 16; stroke 2 → 1\.5; #333333, #333 → currentColor; 1 id removed → review\/icons\/shopping-cart\.svg$/m);
+    assert.match(result.stdout, /^bell\.svg: as is → review\/icons\/bell\.svg$/m);
+    assert.match(result.stdout, /^wide\.svg: viewBox 0 0 32 16 is not square — redraw by hand on the 16 grid$/m);
+    assert.match(result.stdout, /^fancy\.svg: text — redraw by hand$/m);
+    assert.match(result.stdout, /^2 icons of 4 written into review\/icons\/; the rest need a hand\. Next: add them to the icons tab/m);
+    const cart = readFileSync(join(dir, 'review', 'icons', 'shopping-cart.svg'), 'utf8');
+    assert.match(cart, /viewBox="0 0 16 16"/);
+    assert.match(cart, /<g transform="scale\(0\.6667\)"><path d="M3 3h2l2 12h11l2-8H6" fill="none" stroke="currentColor" stroke-width="2\.25" stroke-linecap="round"\/><circle cx="9" cy="20" r="1\.5" fill="currentColor"\/><\/g>/);
+    assert.doesNotMatch(cart, /\sid=/);
+    const bell = readFileSync(join(dir, 'review', 'icons', 'bell.svg'), 'utf8');
+    assert.match(bell, /class="bell__body"/);
+    assert.doesNotMatch(bell, /<g transform/);
+    const manifest = JSON.parse(readFileSync(join(dir, 'review', 'manifest.json'), 'utf8'));
+    manifest.tabs[4].items.push({ id: 'shopping-cart', title: 'Cart', file: 'icons/shopping-cart.svg' }, { id: 'bell', title: 'Bell', file: 'icons/bell.svg' });
+    writeFileSync(join(dir, 'review', 'manifest.json'), JSON.stringify(manifest));
+    const check = run('check', dir);
+    assert.equal(check.status, 0, check.stdout);
+    assert.equal(run('import', dir, 'icons', join(dir, 'nowhere')).status, 1);
+  });
+});
