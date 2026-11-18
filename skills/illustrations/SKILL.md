@@ -1,6 +1,6 @@
 ---
 name: illustrations
-description: Draws the illustration set of a project from what its documentation says — fifteen marks for a logo and the loaders made from the one picked, a picture for every state a screen can be in (empty, nothing found, no access, 404, offline, done and the product's own), scenes from its world, and a full page of email templates with a picture per letter — every picture themable, animated where that tells its story, and reviewed by the operator on one shared page with tabs and two themes before a single file is saved into the documentation's illustrations folder (the docs repository or docs/, chosen in a dialog). Reuses a showcase's scheme and reading; a showcase reuses the set. Human-invoked only.
+description: Draws the illustration set of a project from what its documentation says — marks for a logo in two rounds (6–9, then more around the idea the operator pointed at) and the loaders made from the one picked, a picture for every state a screen can be in (empty, nothing found, no access, 404, offline, done and the product's own), scenes from its world, and a full page of email templates with a picture per letter — every picture themable, animated where that tells its story, and reviewed by the operator on one shared page with tabs and two themes before a single file is saved into the documentation's illustrations folder (the docs repository or docs/, chosen in a dialog). Reuses a showcase's scheme and reading; a showcase reuses the set. Human-invoked only.
 argument-hint: "[init [dir] | continue | status | tab <id> | revise | pick logo <id> [<id>…] | pick scene <place> <id> | add | publish | save | check]"
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(node:*), Bash(ls:*), Bash(mkdir:*), Bash(cp:*), Bash(find:*), AskUserQuestion, Agent, Artifact, SendUserFile
@@ -74,7 +74,7 @@ of one file. The script's `check` refuses anything else.
 drawing, no gradient, filter or mask (they need ids), and every class and keyframe starts with the
 picture's own id (`empty__lid`, `empty-settle`). `check` refuses a clash.
 
-**The manner first, the number after.** Nothing is drawn fifteen or thirty times before the
+**The manner first, the number after.** Nothing is drawn nine or thirty times before the
 operator has chosen how the set is drawn: the Direction step shows three manners on sheets of four
 samples each, and a big tab (States, Scenes, Onboarding, Email templates) starts with a trial of a
 few pictures reviewed before the rest. A revision of the manner is then cheap.
@@ -221,7 +221,7 @@ the page. The key is the step's name in `STATE.json › steps`.
 | 0 Intake | `intake` | the folder, the reading (or a showcase's), the name, the language, the cast the letters go to | — |
 | 1 Color scheme | `scheme` | the tokens — from a showcase or a design baseline, confirmed; otherwise three schemes on the page, one chosen; the tab stays, the chosen one marked | the reading |
 | 2 Direction | `direction` | **the manner of the whole set, settled before anything is drawn in number**: three directions, each a sheet of four samples — a mark, an icon, a state, a letter band — in one hand, told apart by line, angle, detail, accent and motion, built from the references and the reading; one chosen, or mixed; its sheet becomes the builders' reference | 1, the references |
-| 3 Logo | `logo` | **15 marks** from ideas in the product, on three grounds and at five sizes, with the wordmark; reviewed; one picked as primary and two or three shortlisted | 1 |
+| 3 Logo | `logo` | **marks in two rounds** — 6–9 from three ideas in the product, then 4–6 more around the idea the operator points at — on three grounds and at five sizes, in one color and inverted, with the wordmark; reviewed; one picked as primary and two or three shortlisted | 1 |
 | 4 Loaders | `loaders` | for the primary mark and each shortlisted one, 3–5 loaders from the mark's own parts, at 64 / 32 / 16 px, one determinate; in place | 2 |
 | 5 Icons | `icons` | the icons of the product's own subjects, on the 16 px grid in the mark's manner, at 16 / 20 / 24, each with where it is used | 2 |
 | 6 States | `states` | a picture for every state a screen can be in — the catalog's and the product's own — each with its words and its action, drawn in place; **a trial of 3–4 first**, reviewed, then the rest | 2 |
@@ -233,8 +233,9 @@ the page. The key is the step's name in `STATE.json › steps`.
 
 ## Variants and picks
 
-The marks are **fifteen**, because a customer chooses better between things than from a
-description, and a logo is the choice they care most about. `pick logo <id> [<id>…]` marks the
+The marks come **in two rounds** — 6–9 first, then 4–6 around the idea the operator pointed at —
+because a customer chooses better between things than from a description, a logo is the choice they
+care most about, and fifteen drawn at once come out alike. `pick logo <id> [<id>…]` marks the
 first `Selected` and the others `Shortlist`, writes `STATE.json › selected`, fills IL-002 and IL-003
 in `DECISIONS.md`, rebuilds and republishes; the loaders are then made from the selected mark and
 the shortlist, so the operator sees two or three marks in motion before settling.

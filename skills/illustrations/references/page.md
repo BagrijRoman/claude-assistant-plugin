@@ -54,11 +54,11 @@ set after; `save` needs every tab approved; `sprite` takes `--out <file>`.
           { "id": "linework-state", "kind": "pictures", "file": "direction/linework-state.svg", "animated": true },
           { "id": "linework-letter", "kind": "letters", "file": "direction/linework-letter.svg", "animated": true } ] } ] },
     { "id": "logo", "kind": "marks", "title": "Logo", "lead": "…", "items": [
-      { "id": "valley", "title": "Valley", "idea": "…", "file": "logo/valley.svg", "from": "where in the product", "selected": true, "shortlist": false } ] },
+      { "id": "brayer", "title": "Brayer", "idea": "…", "file": "logo/brayer.svg", "from": "where in the product", "selected": true, "shortlist": false } ] },
     { "id": "loaders", "kind": "loaders", "title": "Loaders", "lead": "…", "words": { "button": "Saving…", "panel": "Loading your sites…", "start": "Starting Name" }, "items": [
-      { "id": "valley-turn", "title": "Sunrise", "mark": "valley", "idea": "…", "file": "loaders/valley-turn.svg", "use": "a panel loading", "determinate": false } ] },
+      { "id": "brayer-roll", "title": "Rolling", "mark": "brayer", "idea": "…", "file": "loaders/brayer-roll.svg", "use": "a panel loading", "determinate": false } ] },
     { "id": "icons", "kind": "icons", "title": "Icons", "lead": "…", "items": [
-      { "id": "site", "title": "Site", "group": "From the domain", "file": "icons/site.svg", "usedIn": "the sites list" } ] },
+      { "id": "ream", "title": "Ream", "group": "From the domain", "file": "icons/ream.svg", "usedIn": "the stock list" } ] },
     { "id": "states", "kind": "pictures", "title": "States", "lead": "…", "items": [
       { "id": "empty", "title": "Nothing here yet", "group": "Empty", "idea": "…", "file": "states/empty.svg", "animated": true, "motion": "the lid settles", "usedIn": "every list before its first row", "wide": false,
         "words": { "heading": "No sites yet", "message": "Add the first site to start.", "action": "Add a site" } } ] },
@@ -157,7 +157,7 @@ The operator writes them in the chat, each naming a picture by its id — the ch
 copies `tab/id` — and what should change:
 
 ```
-logo/valley — the sun too big; move it left
+logo/brayer — the handle too long; shorten it
 states/empty — the lid too heavy, thinner; settle slower
 emails — every picture lighter in the dark theme
 ```

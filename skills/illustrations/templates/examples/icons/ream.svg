@@ -1,0 +1,9 @@
+<!-- An icon of the product's own subject: a ream of paper, the 16-unit grid, a 1.5-unit stroke in
+     currentColor, round caps and joins, no fill but currentColor or var(--lg-*). It must read at
+     16 px, so nothing finer than the stroke and no more than two ideas: the stack, and the top
+     sheet's corner lifted. Classes start with the icon's id ("ream"). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" aria-hidden="true">
+  <path d="M3 5.5 L11 5.5 L11 13 L3 13 Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M5 3.5 L13 3.5 L13 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M8 5.5 L11 8.5" fill="none" stroke="var(--lg-accent)" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

@@ -19,7 +19,7 @@ A product is recognised by its pictures before it is recognised by its screens: 
 tab, the loader that is the mark in motion, the empty tray on the first list, the door on the
 invitation letter. `/showcase` draws them as one step among twenty, inside a site the customer
 reads top to bottom, and the operator chooses between pictures described in a chat. This skill
-makes the pictures the whole job: fifteen marks instead of a few, every state of the catalog and the
+makes the pictures the whole job: marks in two rounds instead of a few, every state of the catalog and the
 product's own, a page of letters, a reserve — drawn to one hand, on tokens, light and dark, and
 reviewed where a picture can be judged: on one page with tabs, published as a shared artifact, in
 both themes, with every animation replayable. The operator revises picture by picture through the
@@ -100,8 +100,8 @@ cast; the empty page published once, so the address exists from the start) → *
 (confirmed from a showcase or a baseline, or three proposals on the page, one chosen) →
 **Direction** (three manners on sheets of four samples each, built from the references and the
 reading, told apart by line, angle, detail, accent and motion; one chosen or mixed, before anything
-is drawn in number) → **Logo** (fifteen marks from five ideas tried three ways; the lineup looked at; a primary picked and two or
-three shortlisted) → **Loaders** (3–5 per mark of the primary and the shortlist, one determinate;
+is drawn in number) → **Logo** (6–9 marks from three ideas, the lineup looked at on three grounds, at 16 px, in one color and
+inverted; 4–6 more around the idea the operator points at; a primary picked and two or three shortlisted) → **Loaders** (3–5 per mark of the primary and the shortlist, one determinate;
 in place) → **Icons** (the domain's own subjects in the mark's manner) → **States** (the catalog's
 and the product's own, each with words and action; a trial of four reviewed before the rest) → **Scenes** (the sign-in panel and the 404 page in 3–4 variants each, one picked per place with
 `pick scene`, the alternatives kept; a hero, an announcement, a letter band, the domain's moments) → **Onboarding** (welcome, first step,
@@ -157,7 +157,7 @@ and how many; and, on `continue` or `status`, the checklist rebuilt from its sta
 | Command | Does | Reports |
 |---------|------|---------|
 | `build <dir>` | the page from `review/manifest.json` and the SVG files (or from the saved set's `manifest.json`): every file parsed once, its styles into the head once, a `<symbol>` per id, the tabs in the manifest's order, a direction's samples as a sheet — `index.html` (a whole document) and `artifact.html` (the fragment to publish) | `Wrote review/index.html and review/artifact.html with 42 pictures`; a file that is not an SVG stops it |
-| `check <dir>` | the manifest: every file there, ids kebab-case and unique per tab, at most one mark selected, at most one selected variant per place, a loader's mark known, a saved scheme tab with a chosen scheme and a saved directions tab with a chosen direction, a direction's samples of a known kind with files, a file outside its tab's folder (warning); every SVG: a viewBox, no raw color (hex, a color function, a named value, a token of another family), no `<text>`, `<image>`, gradient, pattern, filter, mask, clip or marker, no `id`, every class and keyframe starting with the picture's id (a shared picture's prefix is its file's owner), every animation on a `--ill-duration` token with no literal time in its duration or delay and no raw `cubic-bezier()`, `linear()` or `steps()` easing, every keyframe on `transform`, `opacity` or `stroke-dashoffset` only and never ending on `opacity: 0`, no `ease-in`, no delay longer than `--ill-duration`, more than 30 animated nodes (warning), a size over 24 KB (warning); `tokens.css`: the two dark sets declare the same tokens with the same values, every dark token has a light one | `error: review/states/empty.svg:12 — the color #abcdef is a raw value; draw with --ill-* tokens`, one per line; exit 1 on an error |
+| `check <dir>` | the manifest: every file there, ids kebab-case and unique per tab, at most one mark selected, at most one selected variant per place, a loader's mark known, a saved scheme tab with a chosen scheme and a saved directions tab with a chosen direction, a direction's samples of a known kind with files, a file outside its tab's folder (warning); every SVG: a viewBox, no raw color (hex, a color function, a named value, a token of another family), no `<text>`, `<image>`, gradient, pattern, filter, mask, clip or marker, no `id`, every class and keyframe starting with the picture's id (a shared picture's prefix is its file's owner), every animation on a `--ill-duration` token with no literal time in its duration or delay and no raw `cubic-bezier()`, `linear()` or `steps()` easing, every keyframe on `transform`, `opacity` or `stroke-dashoffset` only and never ending on `opacity: 0`, no `ease-in`, no delay longer than `--ill-duration`, more than 30 animated nodes (warning), a size over 24 KB (warning); `tokens.css`: the two dark sets declare the same tokens with the same values, every dark token has a light one, and in each theme the outline reads at 3:1 or more on `fill`, `soft` and `ground`, the accent on `fill` and `ground`, a mark's accent on its ground (WCAG 1.4.11); a picture of more than 20 shapes (warning) | `error: review/states/empty.svg:12 — the color #abcdef is a raw value; draw with --ill-* tokens`, one per line; exit 1 on an error |
 | `save <dir>` | refuses while a tab is not `approved` in `STATE.json` (names them), while the scheme tab has no chosen scheme or the directions tab no chosen direction, while a place drawn in variants has none picked, or while a named file is missing; otherwise moves every file out of `review/` into the set's folder (a scheme's sample too; a `prefers-reduced-motion` block for its animated rules written into each picture's `<style>`), writes `manifest.json`, `index.html`, `artifact.html` and `illustrations.js`, removes `review/`, marks `save` done and `step` `done` with the date | `Saved 42 pictures into …` |
 | `loop <dir>` | every picture's, scene's and letter's one-time animation made cyclic — the picture rests, rewinds its gesture, plays it again and rests, on one period of tokens per picture (`calc(var(--ill-duration-short) * n)`), the delays baked in; a loader and a picture that already loops are left as they are; idempotent | `looped states/empty.svg`, one per file; `12 pictures made cyclic; the others already loop or have no animation.` |
 | `spring <dir> [--bounce <b>] [--name <n>]` | the step response of a spring as a `linear()` easing over one duration — bounce 0 critically damped, `b` in (0, 1) a damping ratio of 1 − b — printed; with `--name`, written into the set's `tokens.css` as `--ill-spring-<n>` under `@supports (animation-timing-function: linear(0, 1))`, with `var(--ill-ease)` as the fallback on `:root` | `linear(0, 0.037, …, 1)`; `Wrote --ill-spring-snappy (bounce 0.15) into …/tokens.css` |
@@ -168,7 +168,7 @@ Usage errors exit 2.
 ## Limitations
 
 - **Guidance plus a script, not enforcement.** The page, the checks and the save are code; the
-  drawing is the model's and the operator's taste — fifteen marks exist so that there is something
+  drawing is the model's and the operator's taste — the marks come in rounds so that there is something
   to choose from, and some will be rejected.
 - **The artifact needs the `Artifact` tool.** A session without it reviews from disk; the shared
   address is then whatever the operator makes of `review/index.html`.
@@ -191,7 +191,7 @@ Usage errors exit 2.
   duration, a text, an id, a class, a selector and a keyframe not the picture's own, a family
   crossed, a gradient, a missing file, two items on one id, a loader from an unknown mark, two marks
   selected, an id not in kebab-case, a direction's sample without a file or of a wrong kind, a sample
-  checked as a picture of its kind, a literal delay, a raw easing, a keyframe on `fill`, a last frame on `opacity: 0`, `ease-in`, a delay past one gesture, more than 30 animated nodes (a warning), dark sets that disagree in either direction and a dark token
+  checked as a picture of its kind, a literal delay, a raw easing, a keyframe on `fill`, a last frame on `opacity: 0`, `ease-in`, a delay past one gesture, more than 30 animated nodes (a warning), a scheme whose accent fades into the ground in either theme, a picture of too many shapes (a warning), dark sets that disagree in either direction and a dark token
   with no light one; the spring prints a curve that starts at 0 and ends at 1, overshoots only with a bounce, and writes
   the token under `@supports` with its fallback; the loop makes a one-time gesture cyclic on a period of `--ill-duration-short`
   and keeps a spring easing; the save writes a reduced-motion block into an animated picture; the sprite carries its reduced-motion sheet, its id and the background pause; the page has the speed switch and the pause; the save refuses a draft tab, a scheme not chosen and a direction not chosen, then moves the files,

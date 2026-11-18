@@ -26,23 +26,23 @@ const MANIFEST = {
     ] },
     { id: 'direction', kind: 'directions', title: 'Direction', lead: 'Manners.', items: [
       { id: 'linework', title: 'Linework', idea: 'Outlines, three-quarter view.', selected: true, axes: { line: '2.5 outline', angle: 'three-quarter', detail: 'two faces and a shadow', accent: 'once' }, samples: [
-        { id: 'valley', kind: 'marks', file: 'direction/valley.svg' },
-        { id: 'site', kind: 'icons', file: 'direction/site.svg' },
+        { id: 'brayer', kind: 'marks', file: 'direction/brayer.svg' },
+        { id: 'ream', kind: 'icons', file: 'direction/ream.svg' },
         { id: 'empty', kind: 'pictures', file: 'direction/empty.svg', animated: true },
         { id: 'invitation', kind: 'letters', file: 'direction/invitation.svg', animated: true },
       ] },
       { id: 'flat', title: 'Flat', idea: 'No outlines.', samples: [
-        { id: 'valley', kind: 'marks', file: 'direction/valley.svg' },
+        { id: 'brayer', kind: 'marks', file: 'direction/brayer.svg' },
       ] },
     ] },
     { id: 'logo', kind: 'marks', title: 'Logo', lead: 'Marks.', items: [
-      { id: 'valley', title: 'Valley', idea: 'Two ridges and a sun.', file: 'logo/valley.svg', selected: true, from: 'the sites' },
+      { id: 'brayer', title: 'Valley', idea: 'The ink roller and its stripe.', file: 'logo/brayer.svg', selected: true, from: 'the sites' },
     ] },
     { id: 'loaders', kind: 'loaders', title: 'Loaders', lead: 'The mark in motion.', items: [
-      { id: 'valley-turn', title: 'Sunrise', mark: 'valley', idea: 'The sun travels its arc.', file: 'loaders/valley-turn.svg', use: 'a panel loading', determinate: true },
+      { id: 'brayer-roll', title: 'Rolling', mark: 'brayer', idea: 'The roller rocks and the stripe draws itself.', file: 'loaders/brayer-roll.svg', use: 'a panel loading', determinate: true },
     ] },
     { id: 'icons', kind: 'icons', title: 'Icons', lead: 'Icons.', items: [
-      { id: 'site', title: 'Site', group: 'From the domain', file: 'icons/site.svg', usedIn: 'the sites list' },
+      { id: 'ream', title: 'Ream', group: 'From the domain', file: 'icons/ream.svg', usedIn: 'the stock list' },
     ] },
     { id: 'states', kind: 'pictures', title: 'States', lead: 'Pictures.', items: [
       { id: 'empty', title: 'Nothing here yet', group: 'Empty', idea: 'A tray whose lid settles.', file: 'states/empty.svg', animated: true, usedIn: 'every list', words: { heading: 'No sites yet', message: 'Add the first one.', action: 'Add a site' } },
@@ -70,7 +70,7 @@ const set = ({ approved = true, manifest = MANIFEST } = {}) => {
   for (const folder of ['logo', 'loaders', 'icons', 'states', 'emails']) cpSync(join(TEMPLATES, 'examples', folder), join(dir, 'review', folder), { recursive: true });
   // the direction sheet reuses the examples as its samples, under the tab's folder
   mkdirSync(join(dir, 'review', 'direction'));
-  for (const [folder, file] of [['logo', 'valley'], ['icons', 'site'], ['states', 'empty'], ['emails', 'invitation']]) cpSync(join(TEMPLATES, 'examples', folder, `${file}.svg`), join(dir, 'review', 'direction', `${file}.svg`));
+  for (const [folder, file] of [['logo', 'brayer'], ['icons', 'ream'], ['states', 'empty'], ['emails', 'invitation']]) cpSync(join(TEMPLATES, 'examples', folder, `${file}.svg`), join(dir, 'review', 'direction', `${file}.svg`));
   writeFileSync(join(dir, 'review', 'manifest.json'), JSON.stringify(manifest, null, 2));
   return dir;
 };
@@ -106,7 +106,7 @@ describe('illustrations.mjs build', () => {
     assert.match(page, /<section class="panel" role="tabpanel" id="overview">/);
     assert.match(page, /<section class="panel" role="tabpanel" id="states" hidden>/);
     // every picture once as a symbol with its own prefix, its styles in the head, referenced by <use>
-    for (const id of ['lg-valley', 'ld-valley-turn', 'ic-site', 'ill-empty', 'ill-invitation']) {
+    for (const id of ['lg-brayer', 'ld-brayer-roll', 'ic-ream', 'ill-empty', 'ill-invitation']) {
       assert.equal(page.split(`<symbol id="${id}"`).length - 1, 1, `${id} should be one symbol`);
       assert.ok(page.includes(`<use href="#${id}"/>`), `${id} should be used`);
     }
@@ -121,8 +121,8 @@ describe('illustrations.mjs build', () => {
     assert.match(page, /<div class="ground ground--inverted">/);
     assert.match(page, /style="width:16px;height:16px"/);
     assert.match(page, /<span class="wordmark">.*Smoke<\/span>/);
-    assert.match(page, /<article class="item item--selected" data-item id="logo-valley">/);
-    assert.match(page, /<span class="top__mark"><svg[^>]*><use href="#lg-valley"\/><\/svg><\/span>/);
+    assert.match(page, /<article class="item item--selected" data-item id="logo-brayer">/);
+    assert.match(page, /<span class="top__mark"><svg[^>]*><use href="#lg-brayer"\/><\/svg><\/span>/);
     // loaders at three sizes, animated, with the determinate row and the three in-place samples
     assert.match(page, /<svg class="ld ld--sm"[^>]*data-animated/);
     assert.match(page, /--progress:0\.66/);
@@ -144,14 +144,14 @@ describe('illustrations.mjs build', () => {
     assert.match(page, /data-scheme-use="moss" aria-pressed="false">Try it on every picture</);
     // a direction is a sheet of its samples, each a symbol of its own, the chosen one marked, its axes listed
     assert.match(page, /<article class="direction item--selected" data-item id="direction-linework">/);
-    for (const id of ['dir-valley', 'dir-site', 'dir-empty', 'dir-invitation']) assert.equal(page.split(`<symbol id="${id}"`).length - 1, 1, `${id} once`);
+    for (const id of ['dir-brayer', 'dir-ream', 'dir-empty', 'dir-invitation']) assert.equal(page.split(`<symbol id="${id}"`).length - 1, 1, `${id} once`);
     assert.match(page, /<div class="direction__cell direction__cell--letter">.*<use href="#dir-invitation"\/>/);
     assert.match(page, /<dt>Angle<\/dt><dd>three-quarter<\/dd>/);
     // the chosen scheme marked, its sample drawn once as a symbol of its own; icons at three sizes on two grounds
     assert.match(page, /<article class="scheme scheme-slate item--selected"/);
     assert.match(page, /<symbol id="scheme-slate"/);
     assert.match(page, /<div class="icon-row icon-row--inverted"/);
-    assert.match(page, /<svg class="ic ic--16"[^>]*><use href="#ic-site"\/>/);
+    assert.match(page, /<svg class="ic ic--16"[^>]*><use href="#ic-ream"\/>/);
   });
 
   it('shows the scheme proposals on their own values, with a sample picture', () => {
@@ -213,11 +213,11 @@ describe('illustrations.mjs check', () => {
 
   it('holds a mark to currentColor and the --lg-* tokens, and a picture to the --ill-* tokens', () => {
     const dir = set();
-    edit(dir, 'review/logo/valley.svg', 'fill="var(--lg-accent)"', 'fill="var(--ill-accent)"');
+    edit(dir, 'review/logo/brayer.svg', 'fill="var(--lg-accent)"', 'fill="var(--ill-accent)"');
     edit(dir, 'review/states/empty.svg', 'fill="var(--ill-accent)"', 'fill="var(--lg-accent)"');
     const result = run('check', dir);
     assert.equal(result.status, 1);
-    assert.match(result.stdout, /^error: review\/logo\/valley\.svg:\d+ — fill="var\(--ill-accent\)" is not a token; use currentColor or a var\(--lg-…\) token$/m);
+    assert.match(result.stdout, /^error: review\/logo\/brayer\.svg:\d+ — fill="var\(--ill-accent\)" is not a token; use currentColor or a var\(--lg-…\) token$/m);
     assert.match(result.stdout, /^error: review\/states\/empty\.svg:\d+ — fill="var\(--lg-accent\)" is not a token; use var\(--ill-…\)$/m);
   });
 
@@ -232,14 +232,14 @@ describe('illustrations.mjs check', () => {
       manifest.tabs[2].items.push({ id: 'Peak', title: 'Peak', file: 'logo/peak.svg', selected: true });
       manifest.tabs[3].items[0].mark = 'river';
       manifest.tabs[5].items.push({ id: 'empty', title: 'Again', file: 'states/empty.svg' });
-      manifest.tabs[1].items[1].samples = [{ id: 'Bad', kind: 'marks', file: 'direction/none.svg' }, { id: 'odd', kind: 'loaders', file: 'direction/valley.svg' }];
+      manifest.tabs[1].items[1].samples = [{ id: 'Bad', kind: 'marks', file: 'direction/none.svg' }, { id: 'odd', kind: 'loaders', file: 'direction/brayer.svg' }];
     }) });
     const result = run('check', dir);
     assert.equal(result.status, 1);
     assert.match(result.stdout, /^error: review\/manifest\.json — tab "logo": item id "Peak" is not kebab-case$/m);
     assert.match(result.stdout, /^error: review\/manifest\.json — tab "logo": item "Peak" names logo\/peak\.svg, and there is no such file$/m);
     assert.match(result.stdout, /^error: review\/manifest\.json — tab "logo": more than one mark is selected$/m);
-    assert.match(result.stdout, /^error: review\/manifest\.json — loader "valley-turn" is drawn from the mark "river", which the logo tab does not have$/m);
+    assert.match(result.stdout, /^error: review\/manifest\.json — loader "brayer-roll" is drawn from the mark "river", which the logo tab does not have$/m);
     assert.match(result.stdout, /^error: review\/manifest\.json — tab "states": two items share the id "empty"$/m);
     assert.match(result.stdout, /^error: review\/manifest\.json — direction "flat": a sample's id "Bad" is not kebab-case$/m);
     assert.match(result.stdout, /^error: review\/manifest\.json — direction "flat": sample "Bad" names direction\/none\.svg, and there is no such file$/m);
@@ -248,8 +248,8 @@ describe('illustrations.mjs check', () => {
 
   it('checks a direction\'s samples as pictures of their kind', () => {
     const dir = set();
-    edit(dir, 'review/direction/valley.svg', 'fill="var(--lg-accent)"', 'fill="#123456"');
-    assert.match(run('check', dir).stdout, /^error: review\/direction\/valley\.svg:\d+ — the color #123456 is a raw value; draw with --lg-\* tokens$/m);
+    edit(dir, 'review/direction/brayer.svg', 'fill="var(--lg-accent)"', 'fill="#123456"');
+    assert.match(run('check', dir).stdout, /^error: review\/direction\/brayer\.svg:\d+ — the color #123456 is a raw value; draw with --lg-\* tokens$/m);
   });
 
   it('reports dark sets that disagree, in either direction, and a dark value with no light one', () => {
@@ -305,7 +305,7 @@ describe('illustrations.mjs save and sprite', () => {
     assert.equal(result.status, 0, result.stderr);
     assert.match(result.stdout, /^Saved 9 pictures into .*: manifest\.json, index\.html, artifact\.html, illustrations\.js written, review\/ removed, STATE\.json done/m);
     assert.ok(!existsSync(join(dir, 'review')), 'review/ is gone');
-    for (const file of ['logo/valley.svg', 'loaders/valley-turn.svg', 'icons/site.svg', 'states/empty.svg', 'emails/invitation.svg', 'direction/invitation.svg', 'manifest.json', 'index.html', 'artifact.html', 'illustrations.js']) {
+    for (const file of ['logo/brayer.svg', 'loaders/brayer-roll.svg', 'icons/ream.svg', 'states/empty.svg', 'emails/invitation.svg', 'direction/invitation.svg', 'manifest.json', 'index.html', 'artifact.html', 'illustrations.js']) {
       assert.ok(existsSync(join(dir, file)), `missing ${file}`);
     }
     const state = JSON.parse(readFileSync(join(dir, 'STATE.json'), 'utf8'));
@@ -316,10 +316,10 @@ describe('illustrations.mjs save and sprite', () => {
     assert.match(page, /This is the saved set\./);
     assert.match(page, /The saved set/);
     const sprite = readFileSync(join(dir, 'illustrations.js'), 'utf8');
-    for (const id of ['lg-valley', 'ld-valley-turn', 'ic-site', 'ill-empty', 'ill-invitation']) assert.ok(sprite.includes(`<symbol id=\\"${id}\\"`), `${id} in the sprite`);
+    for (const id of ['lg-brayer', 'ld-brayer-roll', 'ic-ream', 'ill-empty', 'ill-invitation']) assert.ok(sprite.includes(`<symbol id=\\"${id}\\"`), `${id} in the sprite`);
     assert.match(sprite, /@keyframes empty-settle/);
     assert.match(sprite, /dev-assistant-illustrations/);
-    assert.doesNotMatch(sprite, /dir-valley/, 'a direction sheet is not part of the product\'s sprite');
+    assert.doesNotMatch(sprite, /dir-brayer/, 'a direction sheet is not part of the product\'s sprite');
     // a second save has nothing to save; check and build still work on the saved set
     assert.match(run('save', dir).stderr, /nothing to save: no review\/manifest\.json/);
     assert.equal(run('check', dir).status, 0);
@@ -418,7 +418,7 @@ describe('illustrations.mjs motion rules and where motion runs', () => {
     const picture = readFileSync(join(dir, 'states', 'empty.svg'), 'utf8');
     assert.match(picture, /@media \(prefers-reduced-motion: reduce\) \{ \.empty__lid, \.empty__leaf, \.empty__glint \{ animation-duration: 0\.01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; \} \}/);
     assert.equal((picture.match(/prefers-reduced-motion/g) ?? []).length, 1);
-    assert.doesNotMatch(readFileSync(join(dir, 'icons', 'site.svg'), 'utf8'), /prefers-reduced-motion/, 'a still picture gets no block');
+    assert.doesNotMatch(readFileSync(join(dir, 'icons', 'ream.svg'), 'utf8'), /prefers-reduced-motion/, 'a still picture gets no block');
     assert.equal(run('check', dir).status, 0, 'the block passes the checks');
     const sprite = readFileSync(join(dir, 'illustrations.js'), 'utf8');
     assert.match(sprite, /id=\\"dev-assistant-illustrations-sprite\\"/);
@@ -436,5 +436,46 @@ describe('illustrations.mjs motion rules and where motion runs', () => {
     assert.match(page, /html\.is-hidden svg \* \{ animation-play-state: paused !important; \}/);
     assert.match(page, /data-speed-set/);
     assert.match(page, /visibilitychange/);
+  });
+});
+
+describe('illustrations.mjs graphics in numbers', () => {
+  after(removeTempDirs);
+
+  it('measures the contrast of the tokens in both themes and refuses an accent that fades into its ground', () => {
+    const dir = set();
+    assert.equal(run('check', dir).status, 0, 'the template reads apart');
+    const css = readFileSync(join(dir, 'tokens.css'), 'utf8');
+    // the accent of the light theme turned pale; the dark sets left alone, so only one theme fails
+    writeFileSync(join(dir, 'tokens.css'), css.replace('--ill-accent: #3b5bdb;', '--ill-accent: #dfe3f5;'));
+    const result = run('check', dir);
+    assert.equal(result.status, 1);
+    assert.match(result.stdout, /^error: tokens\.css:\d+ — --ill-accent #dfe3f5 on --ill-fill #ffffff is 1\.2\d:1 in the light theme — below 3:1 \(WCAG 1\.4\.11\)/m);
+    assert.match(result.stdout, /--ill-accent #dfe3f5 on --ill-ground #eef0f6 is 1\.\d+:1 in the light theme/);
+    assert.doesNotMatch(result.stdout, /in the dark theme/);
+    // the mark's accent on its ground, through var(--color-surface), in the dark theme (both dark sets changed)
+    writeFileSync(join(dir, 'tokens.css'), css.replaceAll('--lg-accent: #8da2f2;', '--lg-accent: #202228;'));
+    assert.match(run('check', dir).stdout, /^error: tokens\.css:\d+ — --lg-accent #202228 on --lg-ground #17181d is 1\.\d+:1 in the dark theme/m);
+  });
+
+  it('warns past 20 shapes in a picture, and says nothing of a mark', () => {
+    const dir = set();
+    edit(dir, 'review/states/empty.svg', '<circle class="empty__glint" cx="116"', '<circle cx="1" cy="1" r="1" fill="var(--ill-soft)"/>'.repeat(12) + '<circle class="empty__glint" cx="116"');
+    const result = run('check', dir);
+    assert.equal(result.status, 0, 'a warning only');
+    assert.match(result.stdout, /^warning: review\/states\/empty\.svg — 2\d shapes — more than 20; a spot carries about 8 parts, a scene about 14/m);
+    assert.doesNotMatch(result.stdout, /logo\/brayer\.svg — \d+ shapes/);
+  });
+
+  it('ships examples that pass every check, with the deep face and no stock image', () => {
+    const dir = set();
+    const result = run('check', dir);
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    assert.match(result.stdout, /read apart\.$/m);
+    const empty = readFileSync(join(dir, 'review', 'states', 'empty.svg'), 'utf8');
+    assert.match(empty, /var\(--ill-deep\)/);
+    assert.match(empty, /press bed/, 'the product\'s own object, named in the comment');
+    const mark = readFileSync(join(dir, 'review', 'logo', 'brayer.svg'), 'utf8');
+    assert.match(mark, /class="brayer__roller"/);
   });
 });

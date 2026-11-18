@@ -1198,6 +1198,43 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T57 — `/illustrations` graphics in numbers: contrast measured, one line width, a deep face, counted compositions, examples from a trade, the logo in two rounds · `done` (0.30.0)
+
+From the same review (Lili, 2026-11-11): the graphic rules were firm but without numbers; the line width
+contradicted itself (2.5 at 320, 2 at 160, "the same file"); depth had three tones and no gradients; the
+examples carried the stock images the rules forbid (a leaf, a valley with a sun), and builders copy
+examples; fifteen marks from one model come out alike.
+
+What was done:
+- **Contrast measured**: `check` reads `tokens.css` and, in each theme, requires 3:1 or more (WCAG 1.4.11)
+  for the outline on `fill`, `soft` and `ground`, the accent on `fill` and `ground`, a mark's accent on its
+  ground (through `var()`, a token the dark set leaves out taken from the light one); an error names the pair,
+  the values, the ratio and the theme.
+- **One line width** for the set — 2.5, or 2 for the lighter hand — whatever a picture's size on the page; a
+  line half as heavy at half size is accepted and is why detail stays coarse; detail lines one step thinner;
+  icons 1.5; a mark nothing under 2 (`drawing.md › Composition`, `› Direction`).
+- **`--ill-deep`**: the face turned from the light, in the template's three blocks, the tokens table, the page's
+  swatches; "three faces and one shadow" replaces "two faces".
+- **Counted**: a spot about 8 parts, a scene about 14, `check` warns past 20 shapes in a picture or a letter
+  band; the accent at most about 15 % of the area; the silhouette and the squint tests before a picture is sent.
+- **Examples from a trade** — a print shop's order book: the mark `brayer` (the ink roller and its stripe), the
+  loader `brayer-roll`, the icon `ream`, the state `empty` as the press bed with its platen settling and a
+  proof leaf drifting onto the pile, the deep face used; `invitation` kept. The tests, `page.md`'s sample
+  manifest and `drawing.md` follow the ids.
+- **The logo in two rounds**: 6–9 marks from three ideas (a builder per idea), the lineup looked at on three
+  grounds, at 16 px, in one color and inverted; the operator points at an idea; 4–6 more around it; then the
+  pick. Every plan says for each mark **what it is not** — the well-known marks its shape is near. SKILL.md
+  (description, the steps table, *Variants and picks*), `phases.md › Step 3`, `drawing.md › Marks`, the pages
+  and the index rows.
+- Tests: the template reads apart; a pale accent fails in the light theme only; a dark mark accent on its
+  surface fails in the dark theme; the shape warning for a picture and not a mark; the examples pass with the
+  deep face. Version 0.30.0.
+
+Done when:
+- `npm test` passes.
+- A new set's first marks are 6–9 and come out different; a scheme with a weak accent is caught by `check`
+  before the operator sees it.
+
 ## T56 — `/illustrations` motion that protects itself: reduced motion with the picture, the motion checks, the page's speed switch · `done` (0.29.0)
 
 From the same review (Lili, 2026-11-11): reduced motion was honoured only by the review page, so an SVG

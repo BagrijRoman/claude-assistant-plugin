@@ -101,7 +101,7 @@ yes or no to each.
 
 **Subagents** (`Agent`, `general-purpose`) draw in parallel, on the session's model — the drawing
 is what the customer chooses between, so it is not sent to a smaller model. One builder per 4–6
-pictures (3 builders for the 15 marks; a builder per group of states; one per mark for its
+pictures (a builder per idea for the marks; a builder per group of states; one per mark for its
 loaders; one per group of letters). A brief names the quality bar of `drawing.md › Presentable`
 word for word, and: the files to read (`drawing.md`, the plan,
 `plans/direction.md` and the chosen direction's sheet in `review/direction/` — the reference of the
@@ -162,7 +162,7 @@ starts before this answer. Intake (0) and Save (10) have none.
 |------|------|------------|
 | 1 Color scheme | three schemes on the page, each on mini-UI with a sample picture, one chosen | the showcase's, the baseline's or the documentation's, confirmed in one question |
 | 2 Direction | three sheets of four samples each, from the references and the reading; one chosen or mixed | one sheet from the references or the baseline, confirmed |
-| 3 Logo | 15 marks, grouped by idea, on three grounds and five sizes; a primary and a shortlist of 2–3 | 5 marks; a primary, one shortlisted |
+| 3 Logo | marks in two rounds (6–9, then 4–6 around the chosen idea), grouped by idea, on three grounds and five sizes, in one color and inverted; a primary and a shortlist of 2–3 | 5 marks; a primary, one shortlisted |
 | 4 Loaders | 3–5 loaders per mark of the primary and the shortlist, one determinate; in place | 2 loaders of the primary mark, one determinate |
 | 5 Icons | every subject of the domain the icon library has no fit for, with where it is used | the 6–8 the planned screens need |
 | 6 States | the catalog's states and the product's own, each with words, action and the in-place sample; a trial of four first | the core eight (empty, nothing found, error, no access, offline, done, 404, loading companion), words only |
@@ -194,7 +194,7 @@ the files instead. Nothing in the procedure is skipped for it.
   Or say "go on here" to continue in this context.
   ```
 
-  Name what the step really piled up — the fifteen marks' SVG in the builders' replies, three
+  Name what the step really piled up — the marks' SVG in the builders' replies, three
   rounds of revisions, the screenshots looked at — not this list. After the save, *Next* is whatever
   the operator does next. A plugin cannot clear or compact the context itself; the operator's two
   commands do it. If the operator says to go on here, go on.
@@ -279,7 +279,7 @@ accent-2, soft), light and dark.
 
 ## Step 2 — Direction
 
-The manner of the whole set, settled on four pictures before fifteen marks and thirty states are
+The manner of the whole set, settled on four pictures before the marks and thirty states are
 drawn in it. Needs the scheme; takes the references of Intake and the reading's *The world*.
 
 1. **Plan three directions** (`plans/direction.md`), each one line of reasoning from the references,
@@ -309,22 +309,27 @@ drawn in it. Needs the scheme; takes the references of Intake and the reading's 
 
 ## Step 3 — Logo
 
-1. **Plan 15 ideas** for a mark, grouped by where they come from — the product's **object** (the
-   thing it is about), its **action** (what it does to the thing), the **initial** (a letterform
-   with the domain in it), an **abstract** form (the domain's geometry: a grid, a flow, a cycle),
-   the **domain's own symbol** (what its trade draws) — three per group, one line each: the idea,
-   what is in the mark, how many colors it needs (one, two, more). Approve (`plans/logo.md`).
-2. **Draw** on the session's model, three builders with five marks each
+1. **Plan the first round: three ideas, 6–9 marks** — the ideas chosen from where a mark comes
+   from (the product's **object**, its **action**, the **initial** with the domain in it, an
+   **abstract** form of the domain's geometry, the **domain's own symbol**), two or three marks per
+   idea, one line each: the idea, what is in the mark, how many colors it needs (one, two, more),
+   and **what it is not** — the well-known marks its shape is near, named so the builder moves
+   away from them (`drawing.md › Marks`). Approve (`plans/logo.md`).
+2. **Draw** on the session's model, a builder per idea
    (`drawing.md › Marks`), in the hand of the chosen direction, its mark sample as the reference: 64-unit grid, `currentColor` as the body, the knockouts in
    `var(--lg-ground)`, the accents in `var(--lg-accent)` and `var(--lg-accent-2)`, the soft fill
    in `var(--lg-soft)`; detailed enough to be a logo, simple enough to read at 16 px; the parts a
    loader can set in motion in groups of their own. Each builder returns the manifest entries
    (`id`, `title`, `idea`, `file`, `from` — where in the product it comes from).
-3. `check`, `build`, publish, screenshots: the lineup on three grounds and at 16 px is where a weak
-   mark shows — look at it yourself and say which marks you would drop and why, before the
-   operator looks.
-4. **Review** (Common mechanics): revisions by id; then the **pick**: ask (`AskUserQuestion`,
-   header `Mark`, the ids in the question text) for the primary mark, your recommendation first;
+3. `check`, `build`, publish, screenshots: the lineup on three grounds, at 16 px, in one color and
+   inverted is where a weak mark shows — look at it yourself and say which marks you would drop and
+   why, and which known logo any of them is too near, before the operator looks.
+4. **The idea** (Common mechanics: revisions by id first): ask (`AskUserQuestion`, header `Idea`)
+   which idea to go on with, your recommendation first — or that one of the marks is already it.
+   **The second round**: 4–6 more marks around that idea — its other readings, its other parts in
+   motion, one or two colors — by one builder, published beside the first; the first round stays
+   on the tab. Then the **pick**: ask (header `Mark`, the ids in the question text) for the
+   primary mark, your recommendation first;
    then (header `Shortlist`, multiSelect) two or three marks the loaders will also be made from.
    `pick logo <primary> <shortlist…>`: `selected: true` on the primary, `shortlist: true` on the
    others, `STATE.json › selected.logo` and `selected.shortlist`, IL-002 and IL-003, `build`,

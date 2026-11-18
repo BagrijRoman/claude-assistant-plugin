@@ -58,6 +58,7 @@
   --ill-fill: #ffffff;            /* the lit face of an object */
   --ill-soft: #e4e6ee;            /* the shaded face, a secondary object */
   --ill-muted: #c3c6d3;           /* the shadow under an object, a far object */
+  --ill-deep: #a4a8b9;            /* the face turned away from the light: depth without a gradient */
   --ill-accent: #3b5bdb;          /* the one brand touch in a picture */
   --ill-accent-soft: #c7d2f6;     /* the accent's tint: a glow, a cushion, a highlight */
   --ill-highlight: #ffffff;       /* a glint, a reflection */
@@ -142,6 +143,7 @@
     --ill-fill: #262830;
     --ill-soft: #33363f;
     --ill-muted: #43464f;
+    --ill-deep: #4f525d;
     --ill-accent: #8da2f2;
     --ill-accent-soft: #2b3657;
     --ill-highlight: #f3f3f5;
@@ -194,6 +196,7 @@
   --ill-fill: #262830;
   --ill-soft: #33363f;
   --ill-muted: #43464f;
+  --ill-deep: #4f525d;
   --ill-accent: #8da2f2;
   --ill-accent-soft: #2b3657;
   --ill-highlight: #f3f3f5;

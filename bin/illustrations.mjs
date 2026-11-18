@@ -43,6 +43,10 @@ const COLOR_FUNCTION = /\b(?:rgba?|hsla?|oklch|oklab|lab|lch|color|color-mix)\(/
 const LITERAL_TIME = /(?<![\w-])\d+(?:\.\d+)?m?s\b/;
 const ANIMATABLE = ['transform', 'opacity', 'stroke-dashoffset'];
 const NODE_BUDGET = 30;
+const PART_BUDGET = 20;
+const CONTRAST_FLOOR = 3;
+/** The pairs that must read apart at 3:1 (WCAG 1.4.11, graphical objects): the outline against every face it borders, the accent on the faces it sits on. */
+const CONTRAST_PAIRS = [['--ill-line', '--ill-fill'], ['--ill-line', '--ill-soft'], ['--ill-line', '--ill-ground'], ['--ill-accent', '--ill-fill'], ['--ill-accent', '--ill-ground'], ['--lg-accent', '--lg-ground']];
 const REDUCED_MOTION = 'animation-duration: 0.01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important;';
 
 const print = (text) => process.stdout.write(`${text}\n`);
@@ -296,7 +300,7 @@ const renderOverview = (manifest, state, stage) => {
     if (status === 'awaiting-review') return ['review', `In review${state.rounds?.[tab.id] ? ` · round ${state.rounds[tab.id]}` : ''}`];
     return ['draft', 'Draft'];
   };
-  const tokens = ['--color-primary', '--ill-line', '--ill-fill', '--ill-soft', '--ill-muted', '--ill-accent', '--ill-accent-soft', '--ill-ground', '--ill-positive', '--ill-caution', '--ill-negative', '--lg-accent'];
+  const tokens = ['--color-primary', '--ill-line', '--ill-fill', '--ill-soft', '--ill-muted', '--ill-deep', '--ill-accent', '--ill-accent-soft', '--ill-ground', '--ill-positive', '--ill-caution', '--ill-negative', '--lg-accent'];
   const about = manifest.about ?? null;
   const aboutHtml = about ? `<div class="about"><div class="group"><h3>${escapeHtml(about.title ?? 'About the product')}</h3></div>
 ${(Array.isArray(about.lead) ? about.lead : about.lead ? [about.lead] : []).map((para) => `<p class="about__lead">${escapeHtml(para)}</p>`).join('')}
@@ -516,6 +520,48 @@ const checkMotion = (file, text, style, tokens) => {
   return found;
 };
 
+/** How many shapes a picture is made of; past the budget it reads as noise at half size. */
+const checkParts = (file, text, tab) => {
+  if (!['pictures', 'letters'].includes(tab.kind)) return [];
+  const parts = (text.replace(/<!--[\s\S]*?-->/g, '').match(/<(?:path|rect|circle|ellipse|line|polygon|polyline)\b/g) ?? []).length;
+  return parts > PART_BUDGET ? [warning(file, 0, `${parts} shapes — more than ${PART_BUDGET}; a spot carries about 8 parts, a scene about 14 — take away until the silhouette reads`)] : [];
+};
+
+// --- contrast: the tokens of each theme read apart
+
+const luminance = (hex) => {
+  const full = hex.length === 4 ? `#${[...hex.slice(1)].map((c) => c + c).join('')}` : hex;
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(full.slice(i, i + 2), 16) / 255).map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const contrastOf = (a, b) => { const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x); return (hi + 0.05) / (lo + 0.05); };
+/** A token's hex in a theme — the theme's set, else the light one as the cascade has it — through one level of var() (--lg-ground: var(--color-surface)). */
+const hexOf = (set, light, name) => {
+  const value = (set[name] ?? light[name])?.value;
+  if (!value) return null;
+  if (/^#[0-9a-f]{3,8}$/i.test(value)) return value.length === 9 ? value.slice(0, 7) : value;
+  const ref = /^var\((--[\w-]+)\)$/.exec(value)?.[1];
+  const target = ref && (set[ref] ?? light[ref])?.value;
+  return target && /^#[0-9a-f]{3,8}$/i.test(target) ? target : null;
+};
+const checkContrast = (dir) => {
+  const text = read(join(dir, 'tokens.css'));
+  if (!text) return [];
+  const light = declarations(text, ':root {') ?? {};
+  const themes = { light, dark: declarations(text, ":root[data-theme='dark']") };
+  const found = [];
+  for (const [theme, set] of Object.entries(themes)) {
+    if (!set) continue;
+    for (const [a, b] of CONTRAST_PAIRS) {
+      const [ha, hb] = [hexOf(set, light, a), hexOf(set, light, b)];
+      if (!ha || !hb) continue;
+      const ratio = contrastOf(ha, hb);
+      if (ratio < CONTRAST_FLOOR) found.push(error('tokens.css', (set[a] ?? light[a]).line, `${a} ${ha} on ${b} ${hb} is ${ratio.toFixed(2)}:1 in the ${theme} theme — below ${CONTRAST_FLOOR}:1 (WCAG 1.4.11); an outline and an accent must read on every face they touch`));
+    }
+  }
+  return found;
+};
+
 /** The picture's <style> with a reduced-motion block for its animated rules, so the picture protects itself wherever it is inlined. */
 const withReducedMotion = (text) => {
   if (text.includes('prefers-reduced-motion')) return text;
@@ -616,12 +662,13 @@ const check = (dir) => {
   if (!stage) fail('no manifest.json in review/ or in the folder — nothing to check');
   const manifest = loadManifest(stage.base);
   const tokens = durationTokens(dir);
-  const found = [...checkManifest(stage, manifest), ...checkDarkSets(dir)];
+  const found = [...checkManifest(stage, manifest), ...checkDarkSets(dir), ...checkContrast(dir)];
   const checkFile = (tab, item) => {
     if (!item.file || !statOf(join(stage.base, item.file))?.isFile()) return;
     const path = join(stage.base, item.file);
     const file = { path, toString: () => `${stage.review ? 'review/' : ''}${item.file}` };
-    found.push(...checkSvg(file, read(path), tab, item, tokens));
+    const text = read(path);
+    found.push(...checkSvg(file, text, tab, item, tokens), ...checkParts(file, text, tab));
   };
   for (const tab of manifest.tabs) {
     if (tab.kind === 'scheme') continue;
@@ -635,7 +682,7 @@ const check = (dir) => {
   const pictures = manifest.tabs.reduce((sum, tab) => sum + (tab.kind === 'scheme' ? 0 : tab.kind === 'directions' ? tab.items.reduce((n, item) => n + (item.samples ?? []).length, 0) : tab.items.length), 0);
   print(found.length
     ? `${plural(errors, 'error')}, ${plural(found.length - errors, 'warning')}`
-    : `${plural(pictures, 'picture')} checked: every file is there, drawn on tokens with no id, text or raw color, its classes and keyframes its own; the dark sets agree.`);
+    : `${plural(pictures, 'picture')} checked: every file is there, drawn on tokens with no id, text or raw color, its classes and keyframes its own; the dark sets agree and read apart.`);
   if (errors) process.exit(1);
 };
 

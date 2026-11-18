@@ -1,0 +1,10 @@
+<!-- A mark: 64-unit grid, drawn in currentColor; knockouts cut in var(--lg-ground); one accent in
+     var(--lg-accent). No id attributes, no text, no literal color. Every class and keyframe starts
+     with the mark's id ("brayer"). The product is a print shop's order book; its mark is the brayer —
+     the ink roller — and the stripe of ink it leaves. The roller and the stripe are the parts a loader
+     will set in motion. Not a mountain, not a swoosh, not an initial: the trade's own tool. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true">
+  <g class="brayer__handle"><path d="M38 10 L54 26" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><circle cx="55" cy="27" r="5" fill="currentColor"/></g>
+  <g class="brayer__roller"><rect x="8" y="22" width="40" height="18" rx="9" fill="currentColor"/><circle cx="17" cy="31" r="2.5" fill="var(--lg-ground)"/></g>
+  <g class="brayer__stripe"><rect x="8" y="47" width="44" height="6" rx="3" fill="var(--lg-accent)"/></g>
+</svg>

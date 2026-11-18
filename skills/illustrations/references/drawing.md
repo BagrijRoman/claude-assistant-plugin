@@ -2,8 +2,8 @@
 
 The conventions that make a picture themable, clash-free on one page and good to look at. The
 script's `check` enforces the mechanical ones; the rest is what you hold yourself and every builder
-to. One example of each kind passes every check: `templates/examples/logo/valley.svg`,
-`templates/examples/loaders/valley-turn.svg`, `templates/examples/icons/site.svg`,
+to. One example of each kind passes every check: `templates/examples/logo/brayer.svg`,
+`templates/examples/loaders/brayer-roll.svg`, `templates/examples/icons/ream.svg`,
 `templates/examples/states/empty.svg`, `templates/examples/emails/invitation.svg`. Read the one
 you need before drawing.
 
@@ -43,7 +43,7 @@ you need before drawing.
   or marker (they need ids): draw depth with flat shapes — a shaded face in `--ill-soft`, a shadow
   in `--ill-muted`, a glint in `--ill-highlight`.
 - **Every class and keyframe starts with the picture's id**: `empty__lid`, `empty-settle`;
-  `valley-turn__sun`, `valley-turn-orbit`. The `<style>` of every picture is moved into one head.
+  `brayer-roll__roller`, `brayer-roll-ink`. The `<style>` of every picture is moved into one head.
 - **No `<text>`**: words stand beside a picture as HTML, so no picture is redrawn per language. No
   `<image>`, no `<foreignObject>`.
 - The file is small: under 24 KB (`check` warns above it). Paths with two decimals at most; a
@@ -57,12 +57,14 @@ Three families, in `tokens.css`, light and dark; a picture uses one family and n
 
 | Family | Who draws with it | Tokens |
 |--------|-------------------|--------|
-| `--ill-*` | states, scenes, onboarding, reserve, letter pictures | `line` the outlines and the darkest detail · `fill` the lit face of an object · `soft` the shaded face, a second object · `muted` the shadow under a thing, a far thing · `accent` the one brand touch · `accent-soft` its tint: a glow, a cushion · `highlight` a glint · `ground` the disc a picture stands on · `positive` · `caution` · `negative` the feedback tones |
+| `--ill-*` | states, scenes, onboarding, reserve, letter pictures | `line` the outlines and the darkest detail · `fill` the lit face of an object · `soft` the shaded face, a second object · `muted` the shadow under a thing, a far thing · `deep` the face turned from the light, depth without a gradient · `accent` the one brand touch · `accent-soft` its tint: a glow, a cushion · `highlight` a glint · `ground` the disc a picture stands on · `positive` · `caution` · `negative` the feedback tones |
 | `currentColor` + `--lg-*` | marks, loaders, icons | `currentColor` the body (the page gives it the color) · `--lg-ground` the color behind the mark, for knockouts · `--lg-accent` the first accent · `--lg-accent-2` a second · `--lg-soft` a soft fill |
 | `--ill-duration-instant` · `--ill-duration-short` · `--ill-duration` · `--ill-duration-long` · `--ill-stagger` · `--ill-ease` · `--ill-ease-in-out` · `--ill-spring-smooth` · `--ill-spring-snappy` | every animation | a press or a toggle (150 ms) · a glint, a small settle, an echo (300 ms) · one gesture (600 ms) · a loader's cycle, the rest between loops (1400 ms) · the step between parts appearing (60 ms) · the two easings · the two springs (no bounce; a little bounce), `linear()` where supported and `--ill-ease` elsewhere |
 
 Anything else — a hex, `rgb()`, a named color, a literal `600ms` in a duration or a delay, a raw
-`cubic-bezier()` — fails `check`. On the brand
+`cubic-bezier()` — fails `check`. `check` also measures the tokens: the outline against every face it borders (`fill`, `soft`,
+`ground`) and the accent on `fill` and `ground` — and a mark's accent on its ground — read apart at
+3:1 or more in both themes (WCAG 1.4.11); a scheme that fails is changed, not excused. On the brand
 ground the page turns `--lg-accent` and `--lg-accent-2` into the foreground and `--lg-soft` into
 nothing, so a mark drawn with accents still reads on its own color; draw it so that it does.
 
@@ -90,7 +92,7 @@ sheet shows them, and every builder's brief repeats them:
 
 | Axis | The choices | What it changes |
 |------|-------------|-----------------|
-| **Line** | outlines in `--ill-line` (2.5 units; or 2 for a lighter hand) · flat faces with no outline, edges from the fills meeting · outline only on the subject, flat around it | the first impression: drawn or built |
+| **Line** | outlines in `--ill-line` (2.5 units, or 2 for a lighter hand — one width for the whole set) · flat faces with no outline, edges from the fills meeting · outline only on the subject, flat around it | the first impression: drawn or built |
 | **Angle** | front-on · three-quarter with one visible side · isometric | how much depth a picture carries, how a shelf or a box reads |
 | **Detail** | spare (the subject and its ground) · furnished (a second object, a texture of dots or lines) · rich (a scene) | the time a picture takes to read; richer pictures need larger sizes |
 | **Accent** | one touch of `--ill-accent` per picture · the accent and its tint as a field · a mark in one color, two, or more | where the eye lands; how the mark sits in the product's chrome |
@@ -104,6 +106,12 @@ pictures a builder keeps open while drawing, and a reviewer compares a new pictu
 
 - **One subject, one idea.** A state is one object in one situation; a scene is one place with
   one thing happening. Three objects at most; the second and third smaller and in `--ill-soft`.
+- **Counted.** A spot (a state, an onboarding step) is about 8 parts — shapes a reader could name;
+  a scene about 14; `check` warns past 20 shapes in a file. The accent covers at most about a
+  seventh of the picture (15 % of its area): a handle, a seal, a light — never a whole object.
+- **Two tests before a picture is sent**: the silhouette — fill everything in `--ill-line` in your
+  head: is the thing still recognisable? — and the squint — at half size, does one shape lead and
+  the rest support it, or is it an even texture?
 - **The product's own things.** Draw what the documentation's world has — its instruments, its
   records, its places — not a generic rocket, a generic astronaut, a generic magnifying glass
   over a generic document. A loupe is fine when the state is *nothing found*; it looks over the
@@ -111,8 +119,11 @@ pictures a builder keeps open while drawing, and a reviewer compares a new pictu
 - **A ground to stand on**: an ellipse in `--ill-ground` under the subject, a shadow in
   `--ill-muted` under it — its own `<ellipse>`, so it can move with the thing. Nothing floats
   unless floating is the point.
-- **Lines**: one stroke width per size — 2.5 for a 320 × 240 picture, 2 for a 160 × 120 spot
-  (the same file; keep detail that survives halving), 1.5 for an icon; round caps and joins
+- **Lines**: one outline width for the whole set — 2.5 units, or 2 when the direction chose the
+  lighter hand — on every picture whatever its size on the page: a 320 × 240 file shown at 160 has
+  a line half as heavy, and that is accepted; it is why detail is kept coarse enough to survive
+  halving. A detail line (a seam, a vein of texture) may be one step thinner (2 under 2.5, 1.5
+  under 2), nothing thinner; icons 1.5; a mark nothing under 2. Round caps and joins
   (`stroke-linecap="round" stroke-linejoin="round"`); outlines in `--ill-line` only where an edge
   needs it — faces of a thing meet without a line when their fills differ.
 - **The accent once**: one thing in `--ill-accent` per picture (the handle, the seal, the leaf,
@@ -183,8 +194,15 @@ Every picture moves — minimally, to tell its story — except a mark and an ic
   units; counters (the holes) at least 4 units; it must read in the 16 px row of the lineup, where
   a weak mark shows. Make the thing recognisable by silhouette alone.
 - **Ideas from the product**: its object, its action, its initial with the domain in it, the
-  domain's geometry, the trade's own symbol. Fifteen marks are five ideas tried three ways, not
-  fifteen unrelated drawings; say in `idea` which, and in `from` where in the product it comes from.
+  domain's geometry, the trade's own symbol. The marks come in two rounds — 6–9 first, three
+  ideas tried two or three ways, then 4–6 more around the idea the operator pointed at — never
+  fifteen at once, which come out alike; say in `idea` which, and in `from` where in the product it
+  comes from.
+- **Not somebody's logo.** For every mark, name the well-known marks its shape is near — a
+  mountain-and-sun, a swoosh, a shield with an initial, a speech bubble, a chain link, a leaf — and
+  move away from them before it is drawn; the plan says for each mark what it is not. The lineup
+  is looked at at 16 px, in one color and inverted (dark on light, light on dark): a mark that
+  needs its colors, its size or its ground to be read is dropped.
 - **Parts in groups**: `<g class="<id>__sun">`, `<g class="<id>__ridge">` — the parts a loader
   will move. A mark with parts animates; a mark that is one path does not.
 - Clear space: nothing of the mark within 4 units of the grid's edge. The wordmark is page text
@@ -235,7 +253,8 @@ the picture's `--ill-ground`. The same rules of motion; the developer exports th
   floating shapes around a thing: the stock vocabulary. Draw the product's own objects instead.
 - Everything centred and symmetrical: let the subject sit a little off centre, the ground wider on
   one side, the second object overlapping the first.
-- Gradients and glows for depth: use the two faces (`fill`, `soft`) and one shadow (`muted`).
+- Gradients and glows for depth: use the three faces (`fill` lit, `soft` shaded, `deep` turned
+  away) and one shadow (`muted`).
 - The same blob in every picture: vary the ground's width and the subject's scale across the set.
 - A motion that bounces or spins: one slow settle.
 - Pastel everything: one strong accent, the rest quiet.
