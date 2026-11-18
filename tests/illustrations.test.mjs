@@ -347,7 +347,7 @@ describe('illustrations.mjs motion tokens', () => {
   it('accepts a stagger delay and a spring easing, and reports a literal time and a raw easing', () => {
     const dir = set();
     const file = 'review/states/empty.svg';
-    edit(dir, file, 'animation-delay: var(--ill-duration);', 'animation-delay: calc(var(--ill-stagger) * 2);');
+    edit(dir, file, 'animation-delay: calc(var(--ill-duration) * 0.85);', 'animation-delay: calc(var(--ill-stagger) * 2);');
     edit(dir, file, 'animation: empty-settle var(--ill-duration) var(--ill-ease) 1 both;', 'animation: empty-settle var(--ill-duration) var(--ill-spring-snappy) 1 both;');
     assert.equal(run('check', dir).status, 0);
     edit(dir, file, 'animation-delay: calc(var(--ill-stagger) * 2);', 'animation-delay: 120ms;');
@@ -402,7 +402,7 @@ describe('illustrations.mjs motion rules and where motion runs', () => {
     const file = 'review/states/empty.svg';
     edit(dir, file, '@keyframes empty-glint { 0% { opacity: 0; } 100% { opacity: 1; } }', '@keyframes empty-glint { 0% { opacity: 0; fill: var(--ill-accent); } 100% { opacity: 0; } }');
     edit(dir, file, 'animation: empty-settle var(--ill-duration) var(--ill-ease) 1 both;', 'animation: empty-settle var(--ill-duration) ease-in 1 both;');
-    edit(dir, file, 'animation-delay: var(--ill-duration);', 'animation-delay: calc(var(--ill-duration) * 2);');
+    edit(dir, file, 'animation-delay: calc(var(--ill-duration) * 0.85);', 'animation-delay: calc(var(--ill-duration) * 2);');
     edit(dir, file, '<circle class="empty__glint" cx="116"', '<circle class="empty__lid" cx="1" cy="1" r="1" fill="var(--ill-soft)"/>'.repeat(31) + '<circle class="empty__glint" cx="116"');
     const result = run('check', dir);
     assert.equal(result.status, 1);
@@ -686,5 +686,32 @@ describe('illustrations.mjs tokens for the product', () => {
     assert.ok(existsSync(join(dir, 'out', 'design-tokens.json')));
     assert.ok(!existsSync(join(dir, 'out', 'tokens.tailwind.cjs')));
     assert.equal(run('tokens', dir, '--format', 'scss').status, 2);
+  });
+});
+
+describe('illustrations.mjs choreography', () => {
+  after(removeTempDirs);
+
+  it('rests --ill-rest between two plays of a gesture, and leaves a picture seen often one-shot', () => {
+    const dir = set({ manifest: withManifest((manifest) => {
+      manifest.tabs[5].items.push({ id: 'empty-often', title: 'Often', group: 'Empty', file: 'states/often.svg', animated: true, frequency: 'often' });
+    }) });
+    writeFileSync(join(dir, 'review', 'states', 'often.svg'), readFileSync(join(dir, 'review', 'states', 'empty.svg'), 'utf8').replaceAll('empty', 'often'));
+    const result = run('loop', dir);
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /looped states\/empty\.svg/);
+    assert.doesNotMatch(result.stdout, /often\.svg/);
+    const looped = readFileSync(join(dir, 'review', 'states', 'empty.svg'), 'utf8');
+    const steps = Number(/empty-settle-loop calc\(var\(--ill-duration-short\) \* (\d+)\)/.exec(looped)[1]);
+    assert.ok(steps * 300 >= 6000 + 2 * 1400, `the period (${steps * 300} ms) holds the rest and the gesture twice`);
+    assert.match(readFileSync(join(dir, 'review', 'states', 'often.svg'), 'utf8'), /animation: often-settle var\(--ill-duration\) var\(--ill-ease\) 1 both/);
+  });
+
+  it('refuses a part that appears from scale(0)', () => {
+    const dir = set();
+    edit(dir, 'review/states/empty.svg', '@keyframes empty-glint { 0% { opacity: 0; } 100% { opacity: 1; } }', '@keyframes empty-glint { 0% { opacity: 0; transform: scale(0); } 100% { opacity: 1; transform: scale(1); } }');
+    const result = run('check', dir);
+    assert.equal(result.status, 1);
+    assert.match(result.stdout, /^error: review\/states\/empty\.svg:\d+ — @keyframes empty-glint passes through scale\(0\); a part appears from scale\(0\.9–0\.97\) and opacity 0/m);
   });
 });

@@ -59,7 +59,7 @@ Three families, in `tokens.css`, light and dark; a picture uses one family and n
 |--------|-------------------|--------|
 | `--ill-*` | states, scenes, onboarding, reserve, letter pictures | `line` the outlines and the darkest detail · `fill` the lit face of an object · `soft` the shaded face, a second object · `muted` the shadow under a thing, a far thing · `deep` the face turned from the light, depth without a gradient · `accent` the one brand touch · `accent-soft` its tint: a glow, a cushion · `highlight` a glint · `ground` the disc a picture stands on · `positive` · `caution` · `negative` the feedback tones |
 | `currentColor` + `--lg-*` | marks, loaders, icons | `currentColor` the body (the page gives it the color) · `--lg-ground` the color behind the mark, for knockouts · `--lg-accent` the first accent · `--lg-accent-2` a second · `--lg-soft` a soft fill |
-| `--ill-duration-instant` · `--ill-duration-short` · `--ill-duration` · `--ill-duration-long` · `--ill-stagger` · `--ill-ease` · `--ill-ease-in-out` · `--ill-spring-smooth` · `--ill-spring-snappy` | every animation | a press or a toggle (150 ms) · a glint, a small settle, an echo (300 ms) · one gesture (600 ms) · a loader's cycle, the rest between loops (1400 ms) · the step between parts appearing (60 ms) · the two easings · the two springs (no bounce; a little bounce), `linear()` where supported and `--ill-ease` elsewhere |
+| `--ill-duration-instant` · `--ill-duration-short` · `--ill-duration` · `--ill-duration-long` · `--ill-stagger` · `--ill-rest` · `--ill-ease` · `--ill-ease-in-out` · `--ill-spring-smooth` · `--ill-spring-snappy` | every animation | a press or a toggle (150 ms) · a glint, a small settle, an echo (300 ms) · one gesture (600 ms) · a loader's cycle, the rest between loops (1400 ms) · the step between parts appearing (60 ms) · the rest between two plays of a gesture in the product (6 s) · the two easings · the two springs (no bounce; a little bounce), `linear()` where supported and `--ill-ease` elsewhere |
 
 Anything else — a hex, `rgb()`, a named color, a literal `600ms` in a duration or a delay, a raw
 `cubic-bezier()` — fails `check`. `check` also measures the tokens: the outline against every face it borders (`fill`, `soft`,
@@ -153,10 +153,25 @@ only as a loader, an icon only between its states (`› Icons`).
   animates `transform`, `opacity` or `stroke-dashoffset` and nothing else — a color change is a
   part in the new color appearing over the old; its last frame is never `opacity: 0`. `check`
   refuses each of these.
-- **Parts appear in order** — the ground, the subject, the details, the accent — each
-  `animation-delay: calc(var(--ill-stagger) * n)` on the token, `n` its place in the order (the
-  ground 0, the subject 1, details 2–3, the accent last); an echo after the whole gesture waits
-  `var(--ill-duration)`. Never a literal delay, never a delay longer than the gesture itself.
+- **Every part has a role, and the role sets its motion.** The **lead** is the one thing the
+  picture is about — the subject or the part that does the gesture: it moves first, travels
+  farthest and longest. The **support** is the echo — the leaf after the lid, the glint after the
+  check: shorter, smaller, after the lead. The **decoration** — glints, dots, a texture line, the
+  accent — only appears (`opacity`, no travel) or stays still. Everything else — the ground, the
+  shadow's shape, the far objects — is **static**. If two parts want to be the lead, the picture
+  has two ideas: take one out. "Order without meaning is just delay": a part that has no reason to
+  come after another comes with it.
+- **Parts appear in order, the steps shrinking** — the ground, the lead, the details, the accent
+  — on `--ill-stagger`, each step shorter than the one before so the group reads as one arrival
+  and not a metronome: `calc(var(--ill-stagger) * 1)`, `* 1.6`, `* 2`, `* 2.3` for the second,
+  third, fourth and fifth parts (the first waits nothing); and the treatment varies with the role
+  — the lead travels the full few units, the support half, the decoration none. The whole group
+  is in by `--ill-duration`.
+- **The echo takes over before the gesture ends**: `animation-delay: calc(var(--ill-duration) *
+  0.85)` — it starts in the lead's last stretch, so the two read as one gesture instead of a
+  queue. Never a literal delay, never a delay longer than the gesture itself.
+- **A part appears from almost there**: `scale(0.95)` (0.9–0.97) and `opacity: 0`, or a shift of
+  a few units — never from `scale(0)`, never from off the canvas. `check` refuses `scale(0)`.
 - **The shadow moves as a shadow.** When a thing lifts or lands, its shadow is its own
   `<ellipse>` in `--ill-muted` animated with `transform: scale()` and `opacity` (smaller and
   lighter as the thing rises), never a `filter` or a blur.
@@ -169,9 +184,16 @@ only as a loader, an icon only between its states (`› Icons`).
 - **A budget**: at most 30 animated nodes in a picture (`check` warns past it), at most 3 pictures moving on one screen of
   the product (the rest still or paused off screen), and every tab looked at once with the CPU
   slowed 4× in the browser's devtools before it is published — a stutter there is a stutter on a
-  phone.
-- **Cyclic, always.** Every picture, scene and letter picture loops: it rests, rewinds its gesture,
-  plays it again and rests — a slow breath, never a flicker. A builder draws the gesture **once**
+  phone — and, before the save, once on a real mid-range phone: throttling models a slow CPU, not
+  a weak GPU or a small memory budget.
+- **Cyclic, rarely.** Every picture, scene and letter picture loops: it rests, rewinds its gesture,
+  plays it again and rests — an attention loop, not a spinner: the rest between two plays is
+  `--ill-rest` (6 s), long enough that the picture is a still thing which moves now and then.
+  **A picture the user meets many times a day** — an empty list, a filter with no match, a row
+  loading — carries `frequency: "often"` in the manifest, plays its small gesture once when it
+  appears and stays still: `loop` leaves it one-shot (`catalog.md › States`). A picture seen
+  rarely — the welcome, the first success, the 404, an onboarding step — may take the whole
+  gesture and the echo. Never a flicker. A builder draws the gesture **once**
   (`animation: <id>-<name> var(--ill-duration) var(--ill-ease) 1 both`, echoes on `animation-delay`
   tokens) with the **last keyframe the complete picture**, and `node bin/illustrations.mjs loop
   <dir>` turns it into the cycle: each animation gets a loop keyframe set on one period per picture
@@ -213,7 +235,9 @@ only as a loader, an icon only between its states (`› Icons`).
 
 - The mark's own SVG with its parts in motion — never a new drawing, never a generic ring. They
   turn, light up in turn, draw themselves (a stroke with `stroke-dasharray` and an animated
-  `stroke-dashoffset`), beat, travel an arc, fill up.
+  `stroke-dashoffset`), beat, travel an arc, fill up. A path that draws itself carries
+  `pathLength="100"`, so `stroke-dasharray: 100` and a `stroke-dashoffset` from 100 to 0 draw any
+  path without measuring it.
 - The id is `<mark>-<motion>`; every class and keyframe starts with it.
 - `animation: … var(--ill-duration-long) var(--ill-ease-in-out) infinite`; the loop's first and
   last keyframe are the mark at rest.
@@ -246,7 +270,10 @@ only as a loader, an icon only between its states (`› Icons`).
 - **An icon moves only between its states.** A still icon is its rest pose; an icon that toggles
   in the product may have a second file `<id>-<motion>.svg` with the transition — the check drawing
   itself, the bell swinging once, the chevron turning, the star filling — on `--ill-duration-short`
-  or `--ill-duration-instant`, ending on the other state; never an idle motion, never a loop.
+  or `--ill-duration-instant`, ending on the other state; never an idle motion, never a loop. A
+  press is `transform: scale(0.97)` on `:active` over `--ill-duration-instant`, and a hover
+  motion lives under `@media (hover: hover) and (pointer: fine)` only, since a tap fires a false
+  hover; the product's stylesheet carries both, the icon file carries the drawing.
 
 ## Pictures
 

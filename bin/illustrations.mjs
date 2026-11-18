@@ -517,6 +517,7 @@ const checkMotion = (file, text, style, tokens) => {
         for (const property of stop.body.split(';').map((d) => d.split(':')[0].trim()).filter(Boolean)) {
           if (!ANIMATABLE.includes(property)) found.push(error(file, lineOf(block.prelude), `@keyframes ${name} animates ${property}; a picture animates only ${ANIMATABLE.join(', ')} — cheap to paint and themable`));
         }
+        if (/scale\(\s*0(?:\s*,\s*0)?\s*\)|scale[XY]\(\s*0\s*\)/.test(stop.body)) found.push(error(file, lineOf(block.prelude), `@keyframes ${name} passes through scale(0); a part appears from scale(0.9–0.97) and opacity 0, never from nothing`));
       }
       const last = stops.find((stop) => stop.at.includes(100)) ?? stops[stops.length - 1];
       if (last && /opacity\s*:\s*0(?![.\d])/.test(last.body)) found.push(error(file, lineOf(block.prelude), `@keyframes ${name} ends on opacity: 0; the last frame is the whole picture, where reduced motion and the loop rest`));
@@ -881,7 +882,7 @@ const save = (dir) => {
 
 /** The milliseconds of the duration tokens, from tokens.css (light block), with the template's values as fallback. */
 const durationTokens = (dir) => {
-  const values = { '--ill-duration-instant': 150, '--ill-duration-short': 300, '--ill-duration': 600, '--ill-duration-long': 1400, '--ill-stagger': 60 };
+  const values = { '--ill-duration-instant': 150, '--ill-duration-short': 300, '--ill-duration': 600, '--ill-duration-long': 1400, '--ill-stagger': 60, '--ill-rest': 6000 };
   const text = dir ? read(join(dir, 'tokens.css')) : '';
   for (const name of Object.keys(values)) {
     const found = new RegExp(`${name}:\\s*([\\d.]+)(ms|s)\\s*;`).exec(text);
@@ -960,7 +961,7 @@ const loopSvg = (text, tokens) => {
   }
   if (!runs.length) return null;
   const maxEnd = Math.max(...runs.map((run) => run.delay + run.duration));
-  const hold = tokens['--ill-duration-long'];
+  const hold = tokens['--ill-rest']; // a gesture repeats rarely: an attention loop, not a spinner
   const unit = tokens['--ill-duration-short'];
   const steps = Math.ceil((hold + 2 * maxEnd) / unit);
   const period = steps * unit;
@@ -1063,7 +1064,8 @@ const loop = (dir) => {
   const tokens = durationTokens(dir);
   const files = new Set();
   for (const tab of manifest.tabs) {
-    if (tab.kind === 'pictures' || tab.kind === 'letters') tab.items.forEach((item) => item.file && files.add(item.file));
+    // a picture the user meets many times a day plays its small gesture once and stays still: no loop for it
+    if (tab.kind === 'pictures' || tab.kind === 'letters') tab.items.forEach((item) => item.file && item.frequency !== 'often' && files.add(item.file));
     if (tab.kind === 'directions') tab.items.forEach((item) => (item.samples ?? []).filter((s) => s.kind === 'pictures' || s.kind === 'letters').forEach((s) => files.add(s.file)));
   }
   let changed = 0;

@@ -84,7 +84,8 @@ set after; `save` needs every tab approved; `sprite` takes `--out <file>`.
   since they serve the choice — and the chosen one is `selected`; the tab stays in the saved set.
 - `animated` shows the *Moving* tag and the *Replay*; `motion` is one line of what moves.
 - A `letters` item carries `alt`, one line of what its picture shows, for the clients that show no
-  image; `check` warns without it. The words of every item — `words` of a picture, the loaders'
+  image; `check` warns without it. A `pictures` item carries `frequency` — `often`, `sometimes`
+  or `rare` (`catalog.md › States`); `loop` leaves an `often` picture one-shot. The words of every item — `words` of a picture, the loaders'
   `words`, a letter's `subject`, `heading`, `message`, `action`, `detail`, `alt` and the tab's
   `template` — are what `strings <dir>` and the save export as `strings.<lang>.json`, so they are
   written as the product will show them (`catalog.md › Words`).

@@ -82,9 +82,10 @@
   --ill-duration-short: 300ms;    /* a glint, a small settle, an echo */
   --ill-duration: 600ms;          /* one gesture of a picture */
   --ill-duration-long: 1400ms;    /* one cycle of a loader, the rest between loops */
-  --ill-stagger: 60ms;            /* the step between parts appearing: ground, subject, details, accent */
+  --ill-stagger: 60ms;            /* the first step between parts appearing; the steps shrink after it */
+  --ill-rest: 6000ms;             /* the rest between two plays of a picture's gesture in the product */
   --ill-ease: cubic-bezier(0.2, 0, 0, 1);
-  --ill-ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+  --ill-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);  /* strong, for a drift across the picture */
   --ill-spring-smooth: var(--ill-ease);   /* a spring with no bounce; the linear() curve below where supported */
   --ill-spring-snappy: var(--ill-ease);   /* a spring with a little bounce (0.15); same */
 

@@ -1198,6 +1198,41 @@ Order and contents are still being refined.
 | T16 | `/commit`, `/handoff` | commit message from the diff; session summary into WORKLOG.md |
 | T17 | `security-reviewer` agent | authz gaps, injections, PII in logs, on the diff |
 
+## T61 — `/illustrations` choreography: roles, a shrinking stagger, the handoff, a rare loop, motion by frequency · `done` (0.34.0)
+
+From Emil Kowalski's `animate`, `choreograph`, `animation-performance` and `review-animations` skills
+(github.com/emilkowalski/skills, read 2026-11-18): what of them fits pictures rather than UI components.
+
+What was done:
+- **Roles** (`drawing.md › Animation`): the lead moves first, farthest and longest; the support (the echo)
+  shorter and after it; the decoration only appears; the rest is static; two leads mean two ideas.
+- **A shrinking stagger**: the parts arrive on `--ill-stagger` × 1, 1.6, 2, 2.3 — one arrival, not a
+  metronome — with the travel set by the role; **the echo takes over at 85 % of the gesture**
+  (`calc(var(--ill-duration) * 0.85)`, the example follows); a part appears from `scale(0.95)` and
+  opacity, never from `scale(0)` or off the canvas — `check` refuses `scale(0)`.
+- **A rare loop**: `--ill-rest` (6 s) is the rest between two plays; `loop` builds its period on it instead
+  of `--ill-duration-long`, so a picture in the product is a still thing that moves now and then.
+- **Motion by frequency** (`catalog.md › States`, `page.md`): `frequency: often | sometimes | rare` on a
+  picture — a state met many times a day plays its small gesture once and stays still (`loop` leaves it
+  one-shot), a rare one takes the whole delight budget.
+- `--ill-ease-in-out` is the strong `cubic-bezier(0.77, 0, 0.175, 1)`; a path that draws itself carries
+  `pathLength="100"`; an icon's press is `scale(0.97)` on `:active` and a hover motion is gated by
+  `@media (hover: hover) and (pointer: fine)`; one real mid-range phone before the save, since throttling
+  models a slow CPU only.
+- **The motion looked at, not assumed** (`mechanics.md › Common mechanics`): ¼× and frame by frame before a
+  moving tab is published — lead first, one arrival, the handoff, whole first and last frames, nothing from
+  nothing — and the strongest move when in doubt is to take the motion out; the tab seen again the next day.
+- Tests: the loop's period holds the rest and the gesture twice, an `often` picture left one-shot; a part
+  from `scale(0)` refused. Version 0.34.0.
+
+Not taken: component recipes, Motion and WAAPI, gesture physics, the 100–250 ms UI durations (a picture
+explains, so its gesture keeps 600 ms), hover and focus states of the review page.
+
+Done when:
+- `npm test` passes.
+- A set drawn on 0.34.0 shows an empty list that moves once and a welcome that performs, and the operator
+  can tell the lead of every picture from the page.
+
 ## T60 — `/illustrations` lighter to run and easier to take out: the procedure in five files, the quick path, tokens for the product, a licence · `done` (0.33.0)
 
 From the same review (Lili, 2026-11-11): SKILL.md (22 KB) and phases.md (33 KB) went into every run whole; a

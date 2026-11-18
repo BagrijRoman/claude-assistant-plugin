@@ -35,6 +35,14 @@ it — charming, warm, aspirational moments of the product's world — and every
 are looked at for it before the operator sees them: a picture that is correct but not lovely goes
 back to its builder with what to improve, and only then is the tab published.
 
+**The motion looked at, not assumed.** Before a moving tab is published, play it on the page at
+¼× and step through the gesture: does the lead move first and farthest, do the parts arrive as one
+group or as a metronome, does the echo take over before the lead stops, is the first frame and the
+last frame the whole picture, does anything appear from nothing. Then at 1×: is the gesture over in
+well under a second, does it earn its place for a state seen this often. When a motion is in doubt,
+**the strongest move is to take it out** — a still picture that is lovely beats a moving one that is
+busy; say so in the plan line. Look at the tab again the next day before the save.
+
 **Show, do not describe.** Whatever the operator chooses or approves, they see first. After every
 drawing round: `check` (fix what it lists), `build`, then **publish** the page as an artifact
 (`page.md › Publishing`) — the same address every time — and tell the operator the address and the

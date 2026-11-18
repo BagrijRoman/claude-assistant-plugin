@@ -35,6 +35,16 @@ product's i18n takes every key and the picture needs no words of its own.
 
 ## States
 
+**How often a state is seen decides how much it moves** (`frequency` in the manifest, read by `loop`):
+
+- `often` — met many times a day: `empty`, `empty-filtered`, the loading and saving states, a
+  row's own states. The smallest gesture, played once when the picture appears, then still; or no
+  motion at all. A thing seen fifty times a day must not perform fifty times.
+- `sometimes` — met now and then: most errors, access and offline states, the scenes. One gesture
+  and its echo, cycled on `--ill-rest`.
+- `rare` — met once or at a milestone: the welcome, the first success, the tour, the 404, the
+  onboarding steps. The whole delight budget: the gesture, the echo, the decoration appearing.
+
 | Group | Id | When | Words (heading · message · action) | The picture and its gesture |
 |-------|----|------|-------------------------------------|-----------------------------|
 | Empty | `empty` | a list, a board, a table before its first item | Nothing here yet · Add the first … to start. · Add … | the product's container (a tray, a shelf, a folder) open and empty; its lid settles, a leaf drifts in |

@@ -8,7 +8,7 @@
   <style>
     .empty__lid { transform-box: view-box; transform-origin: 160px 128px; animation: empty-settle var(--ill-duration) var(--ill-ease) 1 both; }
     .empty__leaf { transform-box: view-box; transform-origin: 232px 70px; animation: empty-drift var(--ill-duration-long) var(--ill-ease-in-out) 1 both; }
-    .empty__glint { animation: empty-glint var(--ill-duration-short) var(--ill-ease) 1 both; animation-delay: var(--ill-duration); }
+    .empty__glint { animation: empty-glint var(--ill-duration-short) var(--ill-ease) 1 both; animation-delay: calc(var(--ill-duration) * 0.85); }
     @keyframes empty-settle { 0% { transform: translateY(-18px) rotate(-6deg); } 100% { transform: translateY(0) rotate(0deg); } }
     @keyframes empty-drift { 0% { transform: translate(-30px, -60px) rotate(-40deg); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(0, 0) rotate(0deg); opacity: 1; } }
     @keyframes empty-glint { 0% { opacity: 0; } 100% { opacity: 1; } }
